@@ -1,18 +1,13 @@
 
 "use client";
 import * as z from "zod";
-import countries from "@/countries.json"; // Adjust the path as per your project structure
-import Link from "next/link";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useState } from "react";
+
 import { SettingsSchema } from "@/schemas";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { settings } from "@/actions/settings";
-import { Boxes } from "@/components/ui/background-boxes";
-import { cn } from "@/lib/utils";
+
 import {
   Form,
   FormField,
@@ -21,22 +16,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 
 import { Input } from "@/components/ui/input";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { FormError } from "@/components/form-error";
-import { FormSuccess } from "@/components/form-success";
-import { UserInfo } from "@/components/user-info";
-import UserPage from "../../client/page";
 
 
 function page() {

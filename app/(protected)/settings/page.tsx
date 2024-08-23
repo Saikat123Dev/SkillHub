@@ -1,8 +1,8 @@
 // SettingsPage.tsx
 "use client";
 import * as z from "zod";
-import countries from "@/countries.json"; // Adjust the path as per your project structure
-import Link from "next/link";
+
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition, useState } from "react";
@@ -11,8 +11,7 @@ import { SettingsSchema } from "@/schemas";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { settings } from "@/actions/settings";
-import { Boxes } from "@/components/ui/background-boxes";
-import { cn } from "@/lib/utils";
+
 import {
   Form,
   FormField,
@@ -46,9 +45,7 @@ const SettingsPage = () => {
   const [isPending, startTransition] = useTransition();
   const [inputValue, setInputValue] = useState("");
 
-  const filteredCountries = countries.filter((country) =>
-    country.name.toLowerCase().includes(inputValue.toLowerCase())
-  );
+
 
   const form = useForm<z.infer<typeof SettingsSchema>>({
     resolver: zodResolver(SettingsSchema),
