@@ -1,0 +1,188 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserGender {
+  male
+  female
+  others
+}
+
+model User {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  email           String        @unique
+  username        String?
+  emailVerified   DateTime? 
+  password        String
+  primarySkill    String?
+  gender          UserGender?
+  secondarySkills String?     
+  country         String?
+  about           String?
+  location        String?
+  linkedin        String?
+  github          String?
+  twitter         String?
+  class10        String?
+  percentage_10 String?
+  class12       String?
+  percentage_12 String?
+  college       String?
+  currentYear   String?
+  dept          String?
+  domain        String?
+  posts           Post[]
+  projects        Project[]
+  experience      Experience[]
+  
+  profilePic      String?
+  accounts        Account[]     @relation("UserAccounts")
+  Comment         Comment[]
+  CommentLike     CommentVote[]
+  votes           Vote[]
+  frinedToId      String?       @db.ObjectId
+  friendTo        User?         @relation("FriendTo", fields: [frinedToId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  friends         User[]        @relation("FriendTo")
+}
+
+model Project {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  about         String
+  techStack     String
+  demovideo     String?
+  collaborator  String?
+  liveLink      String?
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String @db.ObjectId  
+}
+
+model Experience{
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  company       String?
+  duration      String?
+  role          String?
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String @db.ObjectId
+}
+
+
+
+model Post {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+ 
+
+  title     String
+  content   Json?
+  slug      String?
+  published Boolean  @default(false)
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  authorId  String
+
+  author User @relation(fields: [authorId], references: [id])
+
+  @@map(name: "posts")
+
+  comments Comment[]
+  likes    Vote[]
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], name: "UserAccounts")
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model Comment {
+  id        String   @id @default(cuid()) @map("_id")
+  text      String
+  createdAt DateTime @default(now())
+  authorId  String   @db.ObjectId
+  postId    String   @db.ObjectId
+
+  // Self-referencing relationship
+  replyToId String?   @db.ObjectId
+  replyTo   Comment?  @relation("ReplyTo", fields: [replyToId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies   Comment[] @relation("ReplyTo")
+
+  // Other relationships
+  author User? @relation(fields: [authorId], references: [id])
+  post   Post? @relation(fields: [postId], references: [id])
+
+  votes CommentVote[]
+
+  // Indexes
+  @@index([replyToId])
+  @@index([authorId])
+  @@index([postId])
+}
+
+model Vote {
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId String
+  postId String
+  type   VoteType
+
+  // Relations for documentation/reference
+  user User? @relation(fields: [userId], references: [id])
+  post Post? @relation(fields: [postId], references: [id])
+
+  // Index for efficient querying
+  @@index([userId, postId])
+}
+
+enum VoteType {
+  Like
+  Dislike
+}
+
+model CommentVote {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  commentId String   @db.ObjectId
+  type      VoteType
+
+  user    User?    @relation(fields: [userId], references: [id])
+  comment Comment? @relation(fields: [commentId], references: [id])
+
+  @@index([userId, commentId])
+}
