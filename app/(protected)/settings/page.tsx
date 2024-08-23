@@ -2,7 +2,7 @@
 "use client";
 import * as z from "zod";
 import countries from "@/countries.json"; // Adjust the path as per your project structure
-
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition, useState } from "react";
@@ -46,32 +46,9 @@ const SettingsPage = () => {
   const [isPending, startTransition] = useTransition();
   const [inputValue, setInputValue] = useState("");
 
-  const [projects, setProjects] = useState([{}]);
-  const [experience, setexperience] = useState([{}]);
-
-  const addProject = () => {
-    setProjects([...projects, {}]);
-  };
-
-  const removeProject = (index) => {
-    if (projects.length > 1) {
-      const newProjects = projects.filter((_, i) => i !== index);
-      setProjects(newProjects);
-    }
-  };
   const filteredCountries = countries.filter((country) =>
     country.name.toLowerCase().includes(inputValue.toLowerCase())
   );
-  const addExperience = () => {
-    setexperience([...experience, {}]);
-  };
-
-  const removeExperience = (index: number) => {
-    if (experience.length > 1) {
-      const newexperience = experience.filter((_, i) => i !== index);
-      setexperience(newexperience);
-    }
-  };
 
   const form = useForm<z.infer<typeof SettingsSchema>>({
     resolver: zodResolver(SettingsSchema),
@@ -126,28 +103,13 @@ const SettingsPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full bg-gray-700">
-      <div className=" w-full min-h-full p-6 bg-blue-950 rounded-lg ">
+      <div className=" w-full min-h-full p-3 bg-blue-950 rounded-lg ">
         <header className="flex items-center justify-between">
           <h1 className="text-2xl text-white font-bold">Setting</h1>
         </header>
-        <Card className="border mt-6 bg-gray-800 shadow-lg rounded-lg ">
-          <div className="ml-6 mr-6 flex space-x-6">
-            <nav className="flex mt-7 flex-col w-1/4 space-y-4">
-              <div className="relative w-full">
-                <UserPage />
-              </div>
-              <button className="p-2 text-left text-white bg-blue-500 rounded-lg">
-                Edit Profile
-              </button>
-              <button className="p-2 text-left text-white rounded-lg">
-                Notifications
-              </button>
-              <button className="p-2 text-left text-white rounded-lg">
-                Password Management
-              </button>
-            </nav>
-
-            <div className="w-3/4 p-6 bg-gray-700 rounded-lg">
+        <Card className="border mt-6 bg-gray-400 shadow-lg rounded-lg ">
+          <div className="flex space-x-3">
+            <div className="w-5/5 p-3 bg-gray-700 rounded-lg">
               <h2 className="mb-4 text-white text-lg font-bold">
                 Edit Profile
               </h2>
@@ -159,7 +121,7 @@ const SettingsPage = () => {
                   >
                     <div className="space-y-4">
                       <div className="grid  gap-4">
-                        <div className="p-6 bg-gray-800 rounded-lg shadow-md">
+                        <div className="p-5 bg-gray-800 rounded-lg shadow-md">
                           <h1 className="text-yellow-400 text-2xl font-bold underline mb-4">
                             Personal Information
                           </h1>
@@ -584,7 +546,6 @@ const SettingsPage = () => {
                             </div>
                           </div>
                         </div>
-
                         <div className="p-6 bg-gray-800 rounded-lg shadow-md">
                           <h1 className="text-yellow-400 text-2xl font-bold underline mb-4">
                             ProfileLink
@@ -650,383 +611,6 @@ const SettingsPage = () => {
                               />
                             </div>
                           </div>
-                        </div>
-
-                        <div className="p-8 bg-gray-900 rounded-lg shadow-lg">
-                          <h1 className="text-yellow-400 text-3xl font-bold underline mb-6">
-                            Professional Profiles
-                          </h1>
-
-                          <div className="grid grid-cols-1  gap-8">
-                            <div>
-                              <FormField
-                                control={form.control}
-                                name="linkedin"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-white font-semibold">
-                                      LinkedIn Profile
-                                    </FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        type="url"
-                                        placeholder="https://www.linkedin.com/in/yourprofile"
-                                        disabled={isPending}
-                                        className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-red-500 mt-1" />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-
-                            <div>
-                              <FormField
-                                control={form.control}
-                                name="github"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-white font-semibold">
-                                      GitHub Profile
-                                    </FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        type="url"
-                                        placeholder="https://github.com/yourusername"
-                                        disabled={isPending}
-                                        className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-red-500 mt-1" />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-
-                            <div>
-                              <FormField
-                                control={form.control}
-                                name="twitter"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-white font-semibold">
-                                      Twitter Profile
-                                    </FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        type="url"
-                                        placeholder="https://twitter.com/yourusername"
-                                        disabled={isPending}
-                                        className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-red-500 mt-1" />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="p-8 bg-gray-900 rounded-lg shadow-lg">
-                          <h1 className="text-yellow-400 text-3xl font-bold underline mb-6">
-                            Projects
-                          </h1>
-
-                          <div
-                            className="grid grid-cols-1 gap-8"
-                            id="projects-container"
-                          >
-                            {projects.map((_, index) => (
-                              <div
-                                key={index}
-                                className="project-entry space-y-4 mb-8"
-                              >
-                                {/* Project Title */}
-                                <FormField
-                                  control={form.control}
-                                  name={`projects.${index}.title`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-white font-semibold">
-                                        Project Title
-                                      </FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          {...field}
-                                          type="text"
-                                          placeholder="Enter your project title"
-                                          disabled={isPending}
-                                          className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-red-500 mt-1" />
-                                    </FormItem>
-                                  )}
-                                />
-
-                                {/* Project Description */}
-                                <FormField
-                                  control={form.control}
-                                  name={`projects.${index}.about`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-white font-semibold">
-                                        Project Description
-                                      </FormLabel>
-                                      <FormControl>
-                                        <textarea
-                                          {...field}
-                                          placeholder="Describe your project"
-                                          disabled={isPending}
-                                          className="input-field resize-none overflow-hidden w-full p-2 border rounded-md bg-gray-700 text-white focus:border-yellow-400 focus:ring-yellow-400"
-                                          rows={3}
-                                          onInput={(e) => {
-                                            const target =
-                                              e.target as HTMLTextAreaElement;
-                                            target.style.height = "auto";
-                                            target.style.height = `${target.scrollHeight}px`;
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-red-500 mt-1" />
-                                    </FormItem>
-                                  )}
-                                />
-
-                                {/* Technologies Used */}
-                                <FormField
-                                  control={form.control}
-                                  name={`projects.${index}.techStack`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-white font-semibold">
-                                        Technologies Used
-                                      </FormLabel>
-                                      <FormControl>
-                                        <textarea
-                                          {...field}
-                                          placeholder="List the technologies used"
-                                          disabled={isPending}
-                                          className="input-field resize-none overflow-hidden w-full p-2 border rounded-md bg-gray-700 text-white focus:border-yellow-400 focus:ring-yellow-400"
-                                          rows={2}
-                                          onInput={(e) => {
-                                            const target =
-                                              e.target as HTMLTextAreaElement;
-                                            target.style.height = "auto";
-                                            target.style.height = `${target.scrollHeight}px`;
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-red-500 mt-1" />
-                                    </FormItem>
-                                  )}
-                                />
-
-                                {/* Demo Video Link */}
-                                <FormField
-                                  control={form.control}
-                                  name={`projects.${index}.demovideo`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-white font-semibold">
-                                        Demo Video Link (Optional)
-                                      </FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          {...field}
-                                          type="url"
-                                          placeholder="https://www.example.com/video"
-                                          disabled={isPending}
-                                          className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-red-500 mt-1" />
-                                    </FormItem>
-                                  )}
-                                />
-
-                                {/* Collaborator Profile Link */}
-                                <FormField
-                                  control={form.control}
-                                  name={`projects.${index}.collaborator`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-white font-semibold">
-                                        Collaborator Profile Link (Optional)
-                                      </FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          {...field}
-                                          type="url"
-                                          placeholder="https://www.github.com"
-                                          disabled={isPending}
-                                          className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-red-500 mt-1" />
-                                    </FormItem>
-                                  )}
-                                />
-
-                                {/* Live Project Link */}
-                                <FormField
-                                  control={form.control}
-                                  name={`projects.${index}.liveLink`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-white font-semibold">
-                                        Live Project Link (Optional)
-                                      </FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          {...field}
-                                          type="url"
-                                          placeholder="https://www.example.com/live"
-                                          disabled={isPending}
-                                          className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                                        />
-                                      </FormControl>
-                                      <FormMessage className="text-red-500 mt-1" />
-                                    </FormItem>
-                                  )}
-                                />
-                                <div className="flex justify-between mt-4">
-                                  {projects.length > 1 && (
-                                    <button
-                                      type="button"
-                                      className="remove-project-btn bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600 transition duration-300"
-                                      onClick={() => removeProject(index)}
-                                    >
-                                      Remove Project
-                                    </button>
-                                  )}
-
-                                  <button
-                                    type="button"
-                                    onClick={addProject}
-                                    id="add-btn"
-                                    className="bg-yellow-400 text-gray-900 font-bold py-2 px-4 rounded-md hover:bg-yellow-500 transition duration-300"
-                                  >
-                                    Add More Projects
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="p-8 bg-gray-900 rounded-lg shadow-lg">
-                          <h1 className="text-yellow-400 text-3xl font-bold underline mb-6">
-                            Experience(If any)
-                          </h1>
-                          {experience.map((_, index) => (
-                            <div key={index} className="flex flex-col mb-4">
-                              <div className="grid grid-cols-1 gap-8">
-                                <div className="experience-entry space-y-4 mb-8">
-                                  <FormField
-                                    control={form.control}
-                                    name={`experience.${index}.company`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel className="text-white font-semibold">
-                                          Name of the Company
-                                        </FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            {...field}
-                                            type="text"
-                                            placeholder="Enter name of the company"
-                                            disabled={isPending}
-                                            className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                                          />
-                                        </FormControl>
-                                        <FormMessage className="text-red-500 mt-1" />
-                                      </FormItem>
-                                    )}
-                                  />
-
-                                  <FormField
-                                    control={form.control}
-                                    name={`experience.${index}.duration`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel className="text-white font-semibold">
-                                          Duration
-                                        </FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            {...field}
-                                            type="text"
-                                            placeholder="Enter Duration you've worked for"
-                                            disabled={isPending}
-                                            className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                                          />
-                                        </FormControl>
-                                        <FormMessage className="text-red-500 mt-1" />
-                                      </FormItem>
-                                    )}
-                                  />
-
-                                  <FormField
-                                    control={form.control}
-                                    name={`experience.${index}.role`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel className="text-white font-semibold">
-                                          Role
-                                        </FormLabel>
-                                        <FormControl>
-                                          <textarea
-                                            {...field}
-                                            placeholder="Describe the  role in details"
-                                            disabled={isPending}
-                                            className="input-field resize-none overflow-hidden w-full p-2 border rounded-md bg-gray-700 text-white focus:border-yellow-400 focus:ring-yellow-400"
-                                            rows={3}
-                                            onInput={(e) => {
-                                              const target =
-                                                e.target as HTMLTextAreaElement;
-                                              target.style.height = "auto";
-                                              target.style.height = `${target.scrollHeight}px`;
-                                            }}
-                                          />
-                                        </FormControl>
-                                        <FormMessage className="text-red-500 mt-1" />
-                                      </FormItem>
-                                    )}
-                                  />
-
-                                  <div className="mt-4 flex justify-between">
-                                    {experience.length > 1 && (
-                                      <div className="flex justify-between mt-4">
-                                        <button
-                                          type="button"
-                                          className=" bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-700 transition duration-300"
-                                          onClick={() =>
-                                            removeExperience(index)
-                                          }
-                                        >
-                                          Remove
-                                        </button>
-                                      </div>
-                                    )}
-
-                                    <button
-                                      type="button"
-                                      onClick={addExperience}
-                                      className="bg-yellow-400 text-gray-900 font-bold py-2 px-4 rounded-md hover:bg-yellow-700 transition duration-300"
-                                    >
-                                      Add More
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
                         </div>
                       </div>
                     </div>
