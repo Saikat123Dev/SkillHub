@@ -87,7 +87,7 @@ export const UserInfo = ({ user }: UserInfoProps) => {
             alert("Upload Completed");
           }}
           onUploadError= {(error) => {
-            alert(`ERROR! ${error.message}`);
+            alert(`ERROR!  ${error.message}`);
           }}
         />
       )}
