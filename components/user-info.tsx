@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Icons } from "@/components/icons"; // Adjust path if necessary
 import { UploadButton } from "@uploadthing/react";
-import type { ExtendedUser } from "@/next-auth"; // Adjust path and import type if necessary
+import type { ExtendedUser }  from "@/next-auth"; // Adjust path and import type if necessary
 import { Pencil } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
