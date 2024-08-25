@@ -2,43 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import * as z from "zod";
 import { currentUser } from "@/lib/auth";
-import { SettingsSchema } from "@/schemas";
-import { getUserByEmail, getUserById } from "@/data/user";
 
-// Define a schema for the prcofile piture update
+import { getUserById } from "@/data/user";
+import { createClient } from "redis";
+
+// Initialize Redis client
+const redisClient = createClient({ url: process.env.REDIS_URL });
+
+redisClient.on('error', (err) => console.error('Redis Client Error', err));
+
+async function getRedisClient() {
+  if (!redisClient.isOpen) {
+    await redisClient.connect();
+  }
+  return redisClient;
+}
+
+// Define a schema for the profile picture update
 const ProfilePicSchema = z.object({
   profilePic: z.string().url(),
 });
 
-// Function to update settings including the profile picture
-export const updateSettings = async (
-  values: z.infer<typeof SettingsSchema>
-) => {
-  const user = await currentUser();
 
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
-
-  const dbUser = await getUserById(user.id);
-  if (!dbUser) {
-    return { error: "Unauthorized" };
-  }
-
-  // Validate the incoming values against the SettingsSchema
-  const validationResult = SettingsSchema.safeParse(values);
-  if (!validationResult.success) {
-    return { error: validationResult.error.errors };
-  }
-
-  // Update user settings
-  await db.user.update({
-    where: { id: user.id },
-    data: validationResult.data,
-  });
-
-  return { success: true };
-};
 
 // Function to update the profile picture
 export const updateProfilePic = async (
@@ -61,13 +46,17 @@ export const updateProfilePic = async (
     return { error: validationResult.error.errors };
   }
 
-  // Update profile picture
+  // Update profile picture in the database
   await db.user.update({
     where: { id: user.id },
     data: {
       profilePic: validationResult.data.profilePic,
     },
   });
+
+  // Cache the new profile picture URL in Redis
+  const redis = await getRedisClient();
+  await redis.set(`user:${user.id}:profilePic`, validationResult.data.profilePic);
 
   return { success: true };
 };
@@ -80,9 +69,23 @@ export const getProfilePic = async () => {
     return { error: "Unauthorized" };
   }
 
+  const redis = await getRedisClient();
+
+  // Try to get the profile picture from Redis cache
+  const cachedProfilePic = await redis.get(`user:${user.id}:profilePic`);
+  if (cachedProfilePic) {
+    return { profilePic: cachedProfilePic };
+  }
+
+  // If not found in Redis, fetch from the database
   const dbUser = await getUserById(user.id);
   if (!dbUser) {
     return { error: "Unauthorized" };
+  }
+
+  // Cache the profile picture in Redis for future requests
+  if (dbUser.profilePic) {
+    await redis.set(`user:${user.id}:profilePic`, dbUser.profilePic);
   }
 
   return { profilePic: dbUser.profilePic };

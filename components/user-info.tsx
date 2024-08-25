@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import { Icons } from "@/components/icons"; // Adjust path if necessary
 import { UploadButton } from "@uploadthing/react";
@@ -6,12 +6,11 @@ import type { ExtendedUser } from "@/next-auth"; // Adjust path and import type 
 import { Pencil } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
-// Interface for UserInfoProps
 interface UserInfoProps {
   user?: ExtendedUser;
 }
 
-// Function to get the current profile picture from the backend
+
 const fetchProfilePic = async (): Promise<string | null> => {
   const response = await fetch("/api/upload");
   if (response.ok) {
@@ -21,7 +20,7 @@ const fetchProfilePic = async (): Promise<string | null> => {
   return null;
 };
 
-// Function to update the profile picture on the backend
+// Function to update the profile picture on the server
 const updateProfilePic = async (url: string): Promise<void> => {
   await fetch("/api/upload", {
     method: "PUT",
@@ -45,19 +44,11 @@ export const UserInfo = ({ user }: UserInfoProps) => {
     fetchImageUrl();
   }, [user]);
 
-  // Update localStorage whenever imageUrl changes
-  useEffect(() => {
-    if (imageUrl) {
-      localStorage.setItem("userImageUrl", imageUrl);
-    } else {
-      localStorage.removeItem("userImageUrl");
-    }
-  }, [imageUrl]);
+ 
 
-  const handleImageReset = () => {
+  const handleImageReset = async () => {
     setImageUrl(null);
-    // Optionally, you can also update the backend to remove the profile picture
-    updateProfilePic("");
+    await updateProfilePic("");
   };
 
   return (
@@ -80,7 +71,7 @@ export const UserInfo = ({ user }: UserInfoProps) => {
           </div>
         ) : (
           <div className="h-full w-full bg-pink-300 flex items-center justify-center rounded-full text-[100px]">
-            {currentUser?.name[0]}
+            {currentUser?.name?.[0]}
           </div>
         )}
       </div>
