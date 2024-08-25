@@ -59,6 +59,19 @@ p:hover {
 
 
 }
+@keyframes marquee {
+    from {
+      transform: translateX(0%);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
+  
+  /* Marquee animation */
+  .animate-marquee {
+    animation: marquee 35s linear infinite; /* Adjust the speed here */
+  }
 
 .image-box:hover {
     box-shadow: rgba(255, 255, 255, 0.4) -5px 5px,

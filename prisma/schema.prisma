@@ -19,6 +19,7 @@ model User {
   name            String
   email           String        @unique
   username        String?
+  birthday        DateTime?
   emailVerified   DateTime? 
   birthday        DateTime?
   password        String

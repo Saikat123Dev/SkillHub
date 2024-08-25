@@ -144,65 +144,133 @@ export default function Widget() {
           backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          height: "850px",
+          height: "1px",
           width: "100%",
         }}>
-          <div className=" mx-auto min-h-screen p-8">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-16">
-              <h2 className="mt-20 md:mt-0 text-4xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-8 md:mb-0">
-                Boost Your Professional Network
-              </h2>
-              <p className="mt-4 font-medium text-base md:text-lg text-neutral-300 max-w-lg mx-auto">
-                Showcase projects and skills to the community, fostering recognition and valuable networking.
-              </p>
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-9">
-                {/* Individual image components */}
-                <div className="relative">
-                  {/* Background gradient wrapper */}
-                  <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-                    <Image
-                      src={connect}
-                      alt="Person with magnifying glass"
-                      width={700}
-                      height={200}
-                      className="w-full  rounded-3xl shadow-2xl object-contain border-4 border-spacing-48 border-black"
-                    />
-                  </BackgroundGradient>
-                </div>
-                {/* Repeat similar blocks for other images */}
-                <div className="relative">
-                  <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-                    <Image
-                      src={communicate}
-                      alt="Person with magnifying glass"
-                      width={600}
-                      height={400}
-                      className="w-full h-auto rounded-3xl shadow-lg object-contain border-4 border-black"
-                    />
-                  </BackgroundGradient>
-                </div>
-                <div className="relative">
-                  <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-                    <Image
-                      src={Article}
-                      alt="Person with magnifying glass"
-                      width={900}
-                      height={600}
-                      className="w-full h-auto rounded-3xl shadow-2xl object-contain border-4 border-spacing-48 border-black"
-                    />
-                  </BackgroundGradient>
-                </div>
-                
-              </div>
-            </div>
-          </div>
-        </div>
+             </div>
+             <div className="animate mx-auto p-8">
+  <div className="flex flex-col md:flex-row justify-between items-center mb-16">
+    <h2 className="mt-20 md:mt-0 text-4xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-8 md:mb-0">
+      Boost Your Professional Network
+    </h2>
+    <p className="mt-4 font-medium text-base md:text-lg text-neutral-300 max-w-lg mx-auto">
+      Showcase projects and skills to the community, fostering recognition and valuable networking.
+    </p>
+  </div>
+  <div className="p-4 overflow-hidden relative">
+    <div className="flex gap-9 animate-marquee">
+      {/* Duplicate Image Set 1 */}
+      <div className="relative flex-none max-h-[450px]">
+        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
+          <Image
+            src={connect}
+            alt="Person with magnifying glass"
+            width={500}
+            height={300} // Increased height for a medium-sized div
+            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
+          />
+        </BackgroundGradient>
+      </div>
+      <div className="relative flex-none max-h-[450px]">
+        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
+          <Image
+            src={Skill}
+            alt="Person with magnifying glass"
+            width={500}
+            height={300} // Increased height for a medium-sized div
+            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
+          />
+        </BackgroundGradient>
+      </div>
+      <div className="relative flex-none max-h-[450px]">
+        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
+          <Image
+            src={Badge}
+            alt="Person with magnifying glass"
+            width={500}
+            height={300} // Increased height for a medium-sized div
+            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
+          />
+        </BackgroundGradient>
+      </div>
+      <div className="relative flex-none max-h-[450px]">
+        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
+          <Image
+            src={Article}
+            alt="Person with magnifying glass"
+            width={500}
+            height={300} // Increased height for a medium-sized div
+            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
+          />
+        </BackgroundGradient>
+      </div>
+      <div className="relative flex-none max-h-[450px]">
+        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
+          <Image
+            src={communicate}
+            alt="Person with magnifying glass"
+            width={500}
+            height={300} // Increased height for a medium-sized div
+            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
+          />
+        </BackgroundGradient>
+      </div>
+      <div className="relative flex-none max-h-[450px]">
+        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
+          <Image
+            src={Global}
+            alt="Person with magnifying glass"
+            width={500}
+            height={300} // Increased height for a medium-sized div
+            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
+          />
+        </BackgroundGradient>
+      </div>
+
+      {/* Repeat similar blocks for other images */}
+      <div className="relative flex-none max-h-[450px]">
+        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
+          <Image
+            src={Skill}
+            alt="Skill"
+            width={500}
+            height={300}
+            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
+          />
+        </BackgroundGradient>
+      </div>
+
+      {/* Additional image blocks here */}
+      {/* ... */}
+
+      {/* Duplicate Image Set 2 (exact copy of Image Set 1) */}
+      <div className="relative flex-none max-h-[450px]">
+        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
+          <Image
+            src={connect}
+            alt="Person with magnifying glass"
+            width={500}
+            height={300}
+            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
+          />
+        </BackgroundGradient>
+      </div>
+
+      {/* Repeat similar blocks for other images */}
+      {/* ... */}
+    </div>
+  </div>
+
+ 
+</div>
+
+
+     
 
         {/* Footer section */}
+        <div></div>
         <div className="bg-white dark:bg-zinc-800   py-9 px-4" style={{
-          backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')",
+          backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wall paper-background_58702-8632.jpg')",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
