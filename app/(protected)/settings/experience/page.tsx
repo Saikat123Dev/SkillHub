@@ -4,7 +4,10 @@ import * as z from "zod";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useTransition, useState } from "react";
+import { FormError } from "@/components/form-error";
+import { Button } from "@/components/ui/button";
+import { FormSuccess } from "@/components/form-success";
 
 import { SettingsSchema } from "@/schemas";
 
@@ -25,6 +28,9 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 function page() {
     const user = useCurrentUser();
     const [experience, setexperience] = useState([{}]);
+    const [isPending] = useTransition();
+    const [error, setError] = useState<string | undefined>();
+    const [success, setSuccess] = useState<string | undefined>();
 
     const form = useForm<z.infer<typeof SettingsSchema>>({
         resolver: zodResolver(SettingsSchema),
@@ -73,7 +79,7 @@ function page() {
 
     <div className="w-4/4 p-4 bg-gray-700 rounded-lg">
     <Form {...form}>
-    <div className="p-8 bg-gray-900 rounded-lg shadow-lg">
+    <div className="p-8 bg-gray-800 rounded-lg shadow-lg">
     <h1 className="text-yellow-400 text-3xl font-bold underline mb-6">
       Experience(If any)
     </h1>
@@ -95,7 +101,7 @@ function page() {
                       type="text"
                       placeholder="Enter name of the company"
                    
-                      className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
+                      className="input-field text-white bg-gray-700 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
                     />
                   </FormControl>
                   <FormMessage className="text-red-500 mt-1" />
@@ -117,7 +123,7 @@ function page() {
                       type="text"
                       placeholder="Enter Duration you've worked for"
                      
-                      className="input-field text-white bg-gray-800 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
+                      className="input-field text-white bg-gray-700 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
                     />
                   </FormControl>
                   <FormMessage className="text-red-500 mt-1" />
@@ -182,6 +188,17 @@ function page() {
     ))}
   </div>
   </Form>
+  <FormError message={error} />
+                    <FormSuccess message={success} />
+                    <div className="flex justify-end mt-3">
+                      <Button
+                        disabled={isPending}
+                        type="submit"
+                        className="button"
+                      >
+                        Save
+                      </Button>
+                    </div>
   </div>
   </div>
   </div>

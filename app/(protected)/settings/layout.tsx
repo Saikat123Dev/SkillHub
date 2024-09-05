@@ -1,4 +1,5 @@
 import UserPage from "../client/page";
+
 import Link from "next/link";
 
 interface ProtectedLayoutProps {
