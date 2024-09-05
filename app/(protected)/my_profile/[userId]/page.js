@@ -2,7 +2,7 @@ import React from 'react';
 import { Inter } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Footer from './components/footer';
+
 import ScrollToTop from './components/helper/scroll-to-top';
 import AboutSection from "./components/homepage/about";
 import HeroSection from "./components/homepage/hero-section";
@@ -29,7 +29,7 @@ const HomePage = () => {
         <Skills />
         <ScrollToTop />
       </div>
-      <Footer />
+     
     </div>
   );
 };

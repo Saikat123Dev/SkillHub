@@ -1,8 +1,6 @@
 // SettingsPage.tsx
 "use client";
 import * as z from "zod";
-
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition, useState } from "react";
@@ -44,8 +42,6 @@ const SettingsPage = () => {
   const [success, setSuccess] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
   const [inputValue, setInputValue] = useState("");
-
-
 
   const form = useForm<z.infer<typeof SettingsSchema>>({
     resolver: zodResolver(SettingsSchema),
@@ -106,7 +102,7 @@ const SettingsPage = () => {
         </header>
         <Card className="border mt-6 bg-gray-400 shadow-lg rounded-lg ">
           <div className="flex space-x-3">
-            <div className="w-5/5 p-3 bg-gray-700 rounded-lg">
+            <div className="w-4/4 p-3 bg-gray-700 rounded-lg">
               <h2 className="mb-4 text-white text-lg font-bold">
                 Edit Profile
               </h2>
