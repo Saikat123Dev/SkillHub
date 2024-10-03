@@ -15,11 +15,12 @@ export default auth((req):any => {
   const isLoggedIn = !!req.auth;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-    const isUploadRoute = nextUrl.pathname.startsWith('/api/uploadthing');
+  const isUploadRoute = nextUrl.pathname.startsWith('/api/uploadthing');
+    const isFetch = nextUrl.pathname.startsWith('/api/users');
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
    
-  if (isApiAuthRoute || isUploadRoute) {
+  if (isApiAuthRoute || isUploadRoute || isFetch) {
     return null;
   }
 

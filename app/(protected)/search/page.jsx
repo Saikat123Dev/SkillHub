@@ -1,52 +1,70 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import Data from '@/utils/SearchData/data.json';
 import Link from 'next/link';
 import ScrollToTop from '../my_profile/[userId]/components/helper/scroll-to-top';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import ScrollReveal from 'scrollreveal';
 
 function Page() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
-    setData(Data);
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const users = await response.json();
+        console.log(users)
+        setData(users);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
-  useEffect(() => {
+  // Function to update URL and filter data
+  const updateFilters = (filters) => {
+    const params = new URLSearchParams();
+    
+    // Only add non-empty filters to the URL
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value && value.trim() !== '') {
+        params.set(key, value);
+      }
+    });
+
+    // Update the URL immediately
+    router.push(params.toString() ? `?${params.toString()}` : '');
+
+    // Filter the data
     let filtered = data;
-    const query = searchParams.get('query');
-    const filters = {};
-
-    // Collect all applied filters
-    for (const [key, value] of searchParams.entries()) {
-      if (key !== 'query') {
-        filters[key] = value;
-      }
-    }
-
-    // Apply filters
     filtered = filtered.filter(item => {
-      // Check all filters
-      for (const [key, value] of Object.entries(filters)) {
-        
-        if (!item[key] || !item[key].toLowerCase().includes(value.toLowerCase())) {
-          return false;
-        }
-      }
-
-      // If query exists, check username (default search)
-      if (query && (!item.username || !item.username.toLowerCase().includes(query.toLowerCase()))) {
-        return false;
-      }
-
-      return true;
+      return Object.entries(filters).every(([key, value]) => {
+        if (!value || value.trim() === '') return true;
+        return item[key] && item[key].toLowerCase().includes(value.toLowerCase());
+      });
     });
 
     setFilteredData(filtered);
+  };
+
+  useEffect(() => {
+    // Create an object of current filters from searchParams
+    const currentFilters = {};
+    for (const [key, value] of searchParams.entries()) {
+      currentFilters[key] = value;
+    }
+
+    // Update filters and data
+    updateFilters(currentFilters);
   }, [searchParams, data]);
 
   useEffect(() => {
@@ -79,14 +97,14 @@ function Page() {
         <tbody>
           {filteredData.map((item, index) => (
             <tr key={index} className="hover:bg-gray-100 transition duration-200 ease-in-out reveal">
-              <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.stream}</td>
-              <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.username}</td>
-              <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.primarySkillset}</td>
-              <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.institutionName}</td>
+              <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.dept}</td>
+              <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.name}</td>
+              <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.primarySkill}</td>
+              <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.college}</td>
               <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.country}</td>
               <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.profession}</td>
               <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">
-                <Link href='/profile'>
+                <Link href={`/profile/${item.id}`}>
                   <div className="w-10 h-10 bg-black rounded-full flex justify-center items-center hover:bg-gray-800 transition duration-300 cursor-pointer">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

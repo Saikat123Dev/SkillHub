@@ -15,71 +15,68 @@ enum UserGender {
 }
 
 model User {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  email           String        @unique
-  username        String?
-  birthday        DateTime?
-  emailVerified   DateTime? 
-  birthday        DateTime?
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String    @unique
+  username      String?
+  birthday      DateTime?
+  emailVerified DateTime?
+
   password        String
   primarySkill    String?
   gender          UserGender?
-  secondarySkills String?     
+  secondarySkills String?
   country         String?
   about           String?
   location        String?
   linkedin        String?
   github          String?
   twitter         String?
-  class10        String?
-  percentage_10 String?
-  class12       String?
-  percentage_12 String?
-  college       String?
-  currentYear   String?
-  dept          String?
-  domain        String?
+  class10         String?
+  percentage_10   String?
+  class12         String?
+  percentage_12   String?
+  college         String?
+  currentYear     String?
+  dept            String?
+  domain          String?
   posts           Post[]
   projects        Project[]
   experience      Experience[]
-  
-  profilePic      String?
-  accounts        Account[]     @relation("UserAccounts")
-  Comment         Comment[]
-  CommentLike     CommentVote[]
-  votes           Vote[]
-  frinedToId      String?       @db.ObjectId
-  friendTo        User?         @relation("FriendTo", fields: [frinedToId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  friends         User[]        @relation("FriendTo")
+
+  profilePic  String?
+  accounts    Account[]     @relation("UserAccounts")
+  Comment     Comment[]
+  CommentLike CommentVote[]
+  votes       Vote[]
+  frinedToId  String?       @db.ObjectId
+  friendTo    User?         @relation("FriendTo", fields: [frinedToId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  friends     User[]        @relation("FriendTo")
 }
 
 model Project {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  title         String
-  about         String
-  techStack     String
-  demovideo     String?
-  collaborator  String?
-  liveLink      String?
-  author   User   @relation(fields: [authorId], references: [id])
-  authorId String @db.ObjectId  
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  about        String
+  techStack    String
+  demovideo    String?
+  collaborator String?
+  liveLink     String?
+  author       User    @relation(fields: [authorId], references: [id])
+  authorId     String  @db.ObjectId
 }
 
-model Experience{
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  company       String?
-  duration      String?
-  role          String?
-  author   User   @relation(fields: [authorId], references: [id])
-  authorId String @db.ObjectId
+model Experience {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  company  String?
+  duration String?
+  role     String?
+  author   User    @relation(fields: [authorId], references: [id])
+  authorId String  @db.ObjectId
 }
-
-
 
 model Post {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
- 
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
   title     String
   content   Json?
@@ -87,14 +84,14 @@ model Post {
   published Boolean  @default(false)
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
-  authorId  String
+  authorId  String   @db.ObjectId
 
   author User @relation(fields: [authorId], references: [id])
 
-  @@map(name: "posts")
-
   comments Comment[]
   likes    Vote[]
+
+  @@map(name: "posts")
 }
 
 model Account {
