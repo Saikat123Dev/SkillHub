@@ -16,7 +16,7 @@ export default auth((req):any => {
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isUploadRoute = nextUrl.pathname.startsWith('/api/uploadthing');
-    const isFetch = nextUrl.pathname.startsWith('/api/users');
+    const isFetch = nextUrl.pathname.startsWith('/api');
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
    

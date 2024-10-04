@@ -4,18 +4,18 @@ import { LayoutDashboard, Home, StickyNote, Layers, Flag, Calendar, LifeBuoy, Se
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
-};
+}
 
 const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
-  return ( 
+  return (
     <div className="flex min-h-screen">
       <Sidebar>
-        <SidebarItem 
+        <SidebarItem
           itemKey="home"
           icon={<Home size={20} />}
           text="Home"
           href="/home"
-          alert 
+          alert
         />
         <SidebarItem
           itemKey="dashboard"
@@ -24,24 +24,24 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
           href="/dashboard"
           alert
         />
-        <SidebarItem 
+        <SidebarItem
           itemKey="calendar"
-          icon={<Calendar size={20} />} 
+          icon={<Calendar size={20} />}
           text="Calendar"
           href="/calendar"
-          alert 
+          alert
         />
-        <SidebarItem 
+        <SidebarItem
           itemKey="tasks"
-          icon={<Layers size={20} />} 
-          text="Tasks" 
+          icon={<Layers size={20} />}
+          text="Tasks"
           href="/tasks"
           alert
         />
-        <SidebarItem 
+        <SidebarItem
           itemKey="reporting"
-          icon={<Flag size={20} />} 
-          text="Reporting" 
+          icon={<Flag size={20} />}
+          text="Reporting"
           href="/reporting"
           alert
         />
@@ -53,9 +53,9 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
           alert
         />
       </Sidebar>
-      <div className="flex flex-col flex-grow w-full overflow-auto">
+      <div className="flex flex-col flex-grow w-full overflow-y-auto">
         <Navbar />
-        <div className="flex-grow p-4">
+        <div className="flex-grow p-4 overflow-auto">
           {children}
         </div>
       </div>

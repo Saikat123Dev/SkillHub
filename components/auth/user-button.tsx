@@ -37,12 +37,12 @@ export const UserButton = () => {
         <div>
           <DropdownMenuItem>
             <FaUser className="h-4 w-4 mr-2" />
-           <Link href={`http://localhost:3000/my_profile/${userId}`}>
-           Profile
-           </Link>
+            <Link href={`http://localhost:3000/profile/${userId}`}>
+              Profile
+            </Link>
           </DropdownMenuItem>
         </div>
-        
+
         {/* Profile Settings */}
         <div>
           <DropdownMenuItem>
@@ -50,7 +50,7 @@ export const UserButton = () => {
             Profile Settings
           </DropdownMenuItem>
         </div>
-        
+
         {/* Logout Button */}
         <LogoutButton>
           <DropdownMenuItem>

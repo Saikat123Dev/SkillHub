@@ -1,16 +1,19 @@
-'use client'
+// SearchBar.tsx
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+type FilterType = 'country' | 'college' | 'primarySkill' | 'name' | 'gender' | 'profession';
+
 function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [inputValue, setInputValue] = useState('');
-  const [appliedFilters, setAppliedFilters] = useState<Record<string, string>>({});
-  const [currentFilter, setCurrentFilter] = useState('');
+  const [inputValue, setInputValue] = useState<string>('');
+  const [appliedFilters, setAppliedFilters] = useState<Record<FilterType, string>>({});
+  const [currentFilter, setCurrentFilter] = useState<FilterType | ''>('');
 
-  const allFilters = [
+  const allFilters: FilterType[] = [
     'country',
     'college',
     'primarySkill',
@@ -20,25 +23,19 @@ function SearchBar() {
   ];
 
   useEffect(() => {
-    const query = searchParams.get('query') || '';
-    setInputValue(query);
-
-    const filters: Record<string, string> = {};
+    const filters: Partial<Record<FilterType, string>> = {};
     allFilters.forEach(filter => {
       const value = searchParams.get(filter);
       if (value) {
         filters[filter] = value;
       }
     });
-    setAppliedFilters(filters);
+    setAppliedFilters(filters as Record<FilterType, string>);
+    setInputValue(searchParams.get('query') || '');
   }, [searchParams]);
 
-  const updateURL = (newFilters: Record<string, string>, newQuery?: string) => {
+  const updateURL = (newFilters: Record<FilterType, string>, newQuery?: string) => {
     const queryParams = new URLSearchParams();
-
-    if (newQuery !== undefined && newQuery !== '') {
-      queryParams.set('query', newQuery);
-    }
 
     Object.entries(newFilters).forEach(([key, value]) => {
       if (value) {
@@ -46,17 +43,19 @@ function SearchBar() {
       }
     });
 
+    if (newQuery) {
+      queryParams.set('query', newQuery);
+    }
+
     const queryString = queryParams.toString();
-    router.push(queryString ? `/search?${queryString}` : '/search');
+    router.push(queryString ? `/search?${queryString}` : '/search', { scroll: false });
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (currentFilter) {
-      // If a filter is selected, add it with the current input value
       handleAddFilter();
     } else {
-      // Otherwise, treat it as a regular search
       updateURL(appliedFilters, inputValue);
     }
   };
@@ -74,21 +73,20 @@ function SearchBar() {
     }
   };
 
-  const handleRemoveFilter = (filter: string) => {
+  const handleRemoveFilter = (filter: FilterType) => {
     const newFilters = { ...appliedFilters };
     delete newFilters[filter];
     setAppliedFilters(newFilters);
-    updateURL(newFilters, inputValue);
+    updateURL(newFilters);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
+    setInputValue(e.target.value);
+  };
 
-    if (!currentFilter && newValue === '') {
-      // Only update URL immediately if we're not in filter mode and the input is cleared
-      updateURL(appliedFilters, '');
-    }
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCurrentFilter(e.target.value as FilterType);
+    setInputValue('');
   };
 
   const availableFilters = allFilters.filter(filter => !appliedFilters[filter]);
@@ -106,10 +104,7 @@ function SearchBar() {
 
         <select
           value={currentFilter}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-            setCurrentFilter(e.target.value);
-            setInputValue(''); // Clear input when filter changes
-          }}
+          onChange={handleFilterChange}
           className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring focus:ring-blue-300 transition duration-200 ease-in-out hover:border-blue-500"
         >
           <option value="">Select Filter</option>
@@ -120,22 +115,12 @@ function SearchBar() {
           ))}
         </select>
 
-        {currentFilter ? (
-          <button
-            type="button"
-            onClick={handleAddFilter}
-            className="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition duration-200 ease-in-out"
-          >
-            Add Filter
-          </button>
-        ) : (
-          <button
-            type="submit"
-            className="bg-green-500 text-white rounded-lg px-4 py-2 hover:bg-green-600 transition duration-200 ease-in-out"
-          >
-            Search
-          </button>
-        )}
+        <button
+          type="submit"
+          className="bg-green-500 text-white rounded-lg px-4 py-2 hover:bg-green-600 transition duration-200 ease-in-out"
+        >
+          {currentFilter ? 'Add Filter' : 'Search'}
+        </button>
       </form>
 
       <div className="mt-2 flex flex-wrap gap-2">
@@ -143,7 +128,7 @@ function SearchBar() {
           <div key={filter} className="bg-gray-200 rounded-full px-3 py-1 flex items-center">
             <span>{filter}: {value}</span>
             <button
-              onClick={() => handleRemoveFilter(filter)}
+              onClick={() => handleRemoveFilter(filter as FilterType)}
               className="ml-2 text-red-500 hover:text-red-700"
             >
               ×

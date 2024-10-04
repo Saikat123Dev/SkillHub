@@ -20,7 +20,7 @@ model User {
   email         String    @unique
   username      String?
   birthday      DateTime?
-  emailVerified DateTime?
+  emailVerified DateTime? //Date-Time
 
   password        String
   primarySkill    String?
