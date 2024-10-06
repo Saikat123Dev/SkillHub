@@ -49,9 +49,10 @@ model User {
   Comment     Comment[]
   CommentLike CommentVote[]
   votes       Vote[]
-  frinedToId  String?       @db.ObjectId
-  friendTo    User?         @relation("FriendTo", fields: [frinedToId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  friends     User[]        @relation("FriendTo")
+
+  FriendRequest FriendRequest[] @relation("Sender")
+
+  receivedFriendRequests FriendRequest[] @relation("Receiver")
 }
 
 model Project {
@@ -64,6 +65,28 @@ model Project {
   liveLink     String?
   author       User    @relation(fields: [authorId], references: [id])
   authorId     String  @db.ObjectId
+}
+
+model FriendRequest {
+  id         String              @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String              @db.ObjectId
+  receiverId String              @db.ObjectId
+  status     FriendRequestStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  sender   User @relation("Sender", fields: [senderId], references: [id])
+  receiver User @relation("Receiver", fields: [receiverId], references: [id])
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 model Experience {
