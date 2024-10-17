@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {}
 
-module.exports = nextConfig
 module.exports = {
-    images: {
-      domains: ['media.dev.to'],
-    },
-  };
+  ...nextConfig,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'media.dev.to',
+        pathname: '/**',
+      },
+    ],
+  },
+};

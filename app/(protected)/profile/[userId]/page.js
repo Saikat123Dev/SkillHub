@@ -46,9 +46,9 @@ const HomePage = ({ params }) => {
   return (
     <div className={`flex flex-col ${inter.className}`}>
       <ToastContainer />
-      <Navbar name={userProfile?.name} userId={userId} /> {/* Pass userId to Navbar */}
+      <Navbar name={userProfile?.name} userId={userId} /> 
       <div className="flex-grow">
-        <HeroSection />
+        <HeroSection profileUserId={userId} />
         <AboutSection />
         <Skills />
         <ScrollToTop />

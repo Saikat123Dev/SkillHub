@@ -8,15 +8,17 @@ import { BsGithub, BsLinkedin } from "react-icons/bs";
 import { FaFacebook, FaTwitterSquare } from "react-icons/fa";
 import { RiContactsFill } from "react-icons/ri";
 import { SiLeetcode } from "react-icons/si";
-import { useState } from "react";
-import { useCurrentUser } from "../../../../../../../hooks/use-current-user"
-function HeroSection() {
+import { useState, useEffect } from "react";
+import { useCurrentUser } from "../../../../../../../hooks/use-current-user";
+
+function HeroSection({ profileUserId }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [purpose, setPurpose] = useState("collaboration");
   const [skills, setSkills] = useState("");
-  const [receiverId, setReceiverId] = useState("user_id_here"); // Set the receiver ID
-   const session = useCurrentUser()
+  const [notification, setNotification] = useState(null); // New state for notifications
+  const session = useCurrentUser(); // Get the logged-in user's session
+
   const handleDropdownToggle = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -26,30 +28,46 @@ function HeroSection() {
     alert("Connection request sent! with credentials");
   };
 
-  const handlePreview = () => {
-    alert(`Message: ${message}\nPurpose: ${purpose}\nSkills: ${skills}`);
-  };
-
   const connectRequest = async () => {
-   
-    const senderId = session.id
+    const senderId = session?.id; // Ensure senderId is defined
+    if (!senderId) {
+      setNotification({ type: "error", message: "Error: User is not logged in." });
+      return;
+    }
+    
     try {
-      const response = await fetch('/api/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receiverId: "66ffbe8d8c71a5afa10f17db" , senderId}),
+      const response = await fetch("/api/connect/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          receiverId: profileUserId, 
+          senderId,
+          message,
+          purpose,
+          skills
+         }),
       });
 
       if (response.ok) {
-        alert('Connection request sent successfully!');
+        setNotification({ type: "success", message: "Connection request sent successfully!" });
       } else {
-        alert('Failed to send connection request.');
+        const errorData = await response.json();
+        setNotification({ type: "error", message: `Failed to send request: ${errorData.message || "Unknown error"}` });
       }
     } catch (error) {
-      alert('Error sending connection request.');
-      console.error(error);
+      setNotification({ type: "error", message: "Error sending connection request." });
     }
   };
+
+  // Automatically clear the notification after 5 seconds
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  const isOwnProfile = profileUserId == session.id;
 
   return (
     <section className="relative flex flex-col items-center justify-between py-4 lg:py-12">
@@ -60,6 +78,17 @@ function HeroSection() {
         height={795}
         className="absolute -top-[98px] -z-10"
       />
+
+      {/* Notification Section */}
+      {notification && (
+        <div
+          className={`fixed top-5 right-5 px-4 py-3 rounded-lg shadow-md transition duration-300 ease-in-out ${
+            notification.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+          }`}
+        >
+          {notification.message}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 items-start lg:grid-cols-2 lg:gap-12 gap-y-8">
         <div className="order-2 lg:order-1 flex flex-col items-start justify-center p-2 pb-20 md:pb-10 lg:pt-10">
@@ -111,28 +140,36 @@ function HeroSection() {
           <div className="flex ml-32 items-center gap-3">
             <div className="relative inline-block text-left">
               <div className="flex items-center bg-gradient-to-r to-pink-500 from-violet-600 p-[1px] rounded-full">
-                {/* CONNECT Button */}
-                <button
-                  className="px-3 text-xs md:px-8 py-3 md:py-4 bg-gradient-to-r to-pink-500 from-violet-600 rounded-l-full border-none text-center md:text-sm font-medium uppercase tracking-wider text-white no-underline transition-all duration-200 ease-out md:font-semibold"
-                  id="connectButton"
-                  onClick={connectRequest}
-                >
-                  CONNECT
-                </button>
-
-                {/* Divider Line */}
-                <div className="w-[1px] h-8 bg-white"></div>
-
-                {/* Dropdown Icon Button */}
-                <button
-                  className="p-3 md:py-4  rounded-r-full border-none text-center  transition-all duration-200 ease-out flex items-center justify-center"
-                  onClick={handleDropdownToggle}
-                >
-                  <RiContactsFill size={16} className="text-white" />
-                </button>
+                {isOwnProfile ? (
+                  <Link href="/settings">
+                    <button
+                      className="px-3 text-xs md:px-8 py-3 md:py-4 bg-gradient-to-r to-pink-500 from-violet-600 rounded-full border-none text-center md:text-sm font-medium uppercase tracking-wider text-white no-underline transition-all duration-200 ease-out md:font-semibold"
+                      id="editButton"
+                    >
+                      EDIT PROFILE
+                    </button>
+                  </Link>
+                ) : (
+                  <>
+                    <button
+                      className="px-3 text-xs md:px-8 py-3 md:py-4 bg-gradient-to-r to-pink-500 from-violet-600 rounded-l-full border-none text-center md:text-sm font-medium uppercase tracking-wider text-white no-underline transition-all duration-200 ease-out md:font-semibold"
+                      id="connectButton"
+                      onClick={connectRequest}
+                    >
+                      CONNECT
+                    </button>
+                    <div className="w-[1px] h-8 bg-white"></div>
+                    <button
+                      className="p-3 md:py-4  rounded-r-full border-none text-center  transition-all duration-200 ease-out flex items-center justify-center"
+                      onClick={handleDropdownToggle}
+                    >
+                      <RiContactsFill size={16} className="text-white" />
+                    </button>
+                  </>
+                )}
               </div>
 
-              {isDropdownOpen && (
+              {!isOwnProfile && isDropdownOpen && (
                 <div
                   id="dropdown"
                   className="absolute right-0 z-10 mt-2 w-64 rounded-lg shadow-xl bg-gradient-to-br from-indigo-50 via-white to-indigo-100 ring-1 ring-indigo-200 ring-opacity-50 transition-transform duration-300 transform scale-95 origin-top-right"
@@ -171,24 +208,16 @@ function HeroSection() {
                       </div>
                       <div className="mt-4">
                         <label className="block text-sm font-medium text-gray-700">
-                          Skills or Topics of Mutual Interest (optional)
+                          Relevant Skills
                         </label>
                         <input
-                          type="text"
                           id="skills"
-                          placeholder="e.g., JavaScript, UX Design"
+                          type="text"
+                          placeholder="JavaScript, React, Node.js, etc."
                           value={skills}
                           onChange={(e) => setSkills(e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-lg p-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
-                      </div>
-                      <div className="mt-6 flex justify-end space-x-3">
-                        <button
-                          type="submit"
-                          className="bg-indigo-600 text-white hover:bg-indigo-500 rounded-full px-5 py-2 shadow-md transition duration-300 ease-in-out transform hover:scale-105"
-                        >
-                          Send Request
-                        </button>
                       </div>
                     </form>
                   </div>
@@ -197,56 +226,14 @@ function HeroSection() {
             </div>
           </div>
         </div>
-        <div className="order-1 lg:order-2 from-[#0d1224] border-[#1b2c68a0] relative rounded-lg border bg-gradient-to-r to-[#0a0d37]">
-          <div className="flex flex-row">
-            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-pink-500 to-violet-600"></div>
-            <div className="h-[1px] w-full bg-gradient-to-r from-violet-600 to-transparent"></div>
-          </div>
-          <div className="px-4 lg:px-8 py-5">
-            <div className="flex flex-row space-x-2">
-              <div className="h-3 w-3 rounded-full bg-red-400"></div>
-              <div className="h-3 w-3 rounded-full bg-orange-400"></div>
-              <div className="h-3 w-3 rounded-full bg-green-200"></div>
-            </div>
-          </div>
-          <div className="relative flex h-full w-full items-center justify-center pt-2 lg:pt-8">
-            <div className="absolute lg:-left-20 hidden lg:block">
-              <Image
-                src="/hero-profile.svg"
-                alt="Profile"
-                width={210}
-                height={695}
-                className="lg:h-96"
-              />
-            </div>
-            <div className="w-full px-6 lg:pr-20 flex flex-col items-center">
-              <Image
-                src={personalData.profilePic}
-                alt="Profile Picture"
-                width={280}
-                height={280}
-                className="relative z-10 mb-6 rounded-full object-cover shadow-lg"
-              />
-              <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-                {personalData.name}
-              </h2>
-              <p className="mt-2 text-sm text-gray-300 sm:text-base lg:text-lg">
-                {personalData.description}
-              </p>
-              <div className="mt-6 flex space-x-4">
-                <Link href="#resume">
-                  <button className="px-8 py-2 text-white bg-pink-500 rounded-full">
-                    Download Resume
-                  </button>
-                </Link>
-                <Link href="#projects">
-                  <button className="px-8 py-2 text-white bg-violet-600 rounded-full">
-                    View Projects
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
+        <div className="order-1 lg:order-2 p-3 lg:p-0 flex justify-center lg:justify-end">
+          <Image
+            src={personalData.image}
+            alt={personalData.name}
+            width={300}
+            height={300}
+            className="rounded-full shadow-md"
+          />
         </div>
       </div>
     </section>

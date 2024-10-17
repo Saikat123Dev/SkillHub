@@ -71,6 +71,9 @@ model FriendRequest {
   senderId   String              @db.ObjectId
   receiverId String              @db.ObjectId
   status     FriendRequestStatus @default(PENDING)
+  projectDescription String?
+  purpose            String?
+  mutualSkill        String?
   createdAt  DateTime            @default(now())
   updatedAt  DateTime            @updatedAt
 
