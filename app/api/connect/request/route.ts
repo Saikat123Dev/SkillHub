@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { useSession }  from 'next-auth/react';
-import { useCurrentUser } from "../../../hooks/use-current-user"
+import { useCurrentUser } from "../../../../hooks/use-current-user"
 
 const prisma = new PrismaClient();
 
