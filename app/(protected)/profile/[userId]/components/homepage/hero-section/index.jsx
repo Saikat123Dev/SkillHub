@@ -8,15 +8,15 @@ import { BsGithub, BsLinkedin } from "react-icons/bs";
 import { FaFacebook, FaTwitterSquare } from "react-icons/fa";
 import { RiContactsFill } from "react-icons/ri";
 import { SiLeetcode } from "react-icons/si";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCurrentUser } from "../../../../../../../hooks/use-current-user";
-
 
 function HeroSection({ profileUserId }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [purpose, setPurpose] = useState("collaboration");
   const [skills, setSkills] = useState("");
+  const [notification, setNotification] = useState(null); // New state for notifications
   const session = useCurrentUser(); // Get the logged-in user's session
 
   const handleDropdownToggle = () => {
@@ -28,14 +28,10 @@ function HeroSection({ profileUserId }) {
     alert("Connection request sent! with credentials");
   };
 
-  const handlePreview = () => {
-    alert(`Message: ${message}\nPurpose: ${purpose}\nSkills: ${skills}`);
-  };
-
   const connectRequest = async () => {
     const senderId = session?.id; // Ensure senderId is defined
     if (!senderId) {
-      alert("Error: User is not logged in.");
+      setNotification({ type: "error", message: "Error: User is not logged in." });
       return;
     }
     
@@ -43,27 +39,36 @@ function HeroSection({ profileUserId }) {
       const response = await fetch("/api/connect/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ receiverId: profileUserId, senderId }),
+        body: JSON.stringify({ 
+          receiverId: profileUserId, 
+          senderId,
+          message,
+          purpose,
+          skills
+         }),
       });
-      
-      // Log response for debugging
-      console.log("Response:", response);
-  
+
       if (response.ok) {
-        alert("Connection request sent successfully!");
+        setNotification({ type: "success", message: "Connection request sent successfully!" });
       } else {
-        const errorData = await response.json(); // Assuming the response is JSON
-        console.error("Error Response:", errorData);
-        alert(`Failed to send connection request: ${errorData.message || "Unknown error"}`);
+        const errorData = await response.json();
+        setNotification({ type: "error", message: `Failed to send request: ${errorData.message || "Unknown error"}` });
       }
     } catch (error) {
-      console.error("Error sending connection request:", error);
-      alert("Error sending connection request.");
+      setNotification({ type: "error", message: "Error sending connection request." });
     }
   };
-  
-  const isOwnProfile = profileUserId == session.id
-  
+
+  // Automatically clear the notification after 5 seconds
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  const isOwnProfile = profileUserId == session.id;
+
   return (
     <section className="relative flex flex-col items-center justify-between py-4 lg:py-12">
       <Image
@@ -73,6 +78,17 @@ function HeroSection({ profileUserId }) {
         height={795}
         className="absolute -top-[98px] -z-10"
       />
+
+      {/* Notification Section */}
+      {notification && (
+        <div
+          className={`fixed top-5 right-5 px-4 py-3 rounded-lg shadow-md transition duration-300 ease-in-out ${
+            notification.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+          }`}
+        >
+          {notification.message}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 items-start lg:grid-cols-2 lg:gap-12 gap-y-8">
         <div className="order-2 lg:order-1 flex flex-col items-start justify-center p-2 pb-20 md:pb-10 lg:pt-10">
@@ -124,9 +140,8 @@ function HeroSection({ profileUserId }) {
           <div className="flex ml-32 items-center gap-3">
             <div className="relative inline-block text-left">
               <div className="flex items-center bg-gradient-to-r to-pink-500 from-violet-600 p-[1px] rounded-full">
-                {/* Conditional rendering for Connect or Edit button */}
                 {isOwnProfile ? (
-                  <Link href="/edit-profile">
+                  <Link href="/settings">
                     <button
                       className="px-3 text-xs md:px-8 py-3 md:py-4 bg-gradient-to-r to-pink-500 from-violet-600 rounded-full border-none text-center md:text-sm font-medium uppercase tracking-wider text-white no-underline transition-all duration-200 ease-out md:font-semibold"
                       id="editButton"
@@ -143,11 +158,7 @@ function HeroSection({ profileUserId }) {
                     >
                       CONNECT
                     </button>
-
-                    {/* Divider Line */}
                     <div className="w-[1px] h-8 bg-white"></div>
-
-                    {/* Dropdown Icon Button */}
                     <button
                       className="p-3 md:py-4  rounded-r-full border-none text-center  transition-all duration-200 ease-out flex items-center justify-center"
                       onClick={handleDropdownToggle}
@@ -197,24 +208,16 @@ function HeroSection({ profileUserId }) {
                       </div>
                       <div className="mt-4">
                         <label className="block text-sm font-medium text-gray-700">
-                          Skills or Topics of Mutual Interest (optional)
+                          Relevant Skills
                         </label>
                         <input
-                          type="text"
                           id="skills"
-                          placeholder="e.g., JavaScript, UX Design"
+                          type="text"
+                          placeholder="JavaScript, React, Node.js, etc."
                           value={skills}
                           onChange={(e) => setSkills(e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-lg p-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
-                      </div>
-                      <div className="mt-6 flex justify-end space-x-3">
-                        <button
-                          type="submit"
-                          className="bg-indigo-600 text-white hover:bg-indigo-500 rounded-full px-5 py-2 shadow-md transition duration-300 ease-in-out transform hover:scale-105"
-                        >
-                          Send Request
-                        </button>
                       </div>
                     </form>
                   </div>
@@ -223,14 +226,13 @@ function HeroSection({ profileUserId }) {
             </div>
           </div>
         </div>
-
-        <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+        <div className="order-1 lg:order-2 p-3 lg:p-0 flex justify-center lg:justify-end">
           <Image
-            src={personalData.imageUrl}
-            alt="profile"
-            width={250}
-            height={250}
-            className="rounded-full object-cover"
+            src={personalData.image}
+            alt={personalData.name}
+            width={300}
+            height={300}
+            className="rounded-full shadow-md"
           />
         </div>
       </div>

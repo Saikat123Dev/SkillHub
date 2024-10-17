@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
   
    
    
-    const { receiverId,senderId } = await req.json();
+    const { receiverId,senderId,message,skills,purpose } = await req.json();
+     console.log(message)
    console.log(receiverId,senderId)
      if (!senderId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -37,6 +38,9 @@ export async function POST(req: NextRequest) {
       data: {
         senderId: senderId,
         receiverId: receiverId,
+        projectDescription:message,
+        purpose:purpose,
+        mutualSkill:skills
       },
     });
 

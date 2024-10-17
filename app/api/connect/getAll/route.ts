@@ -1,4 +1,4 @@
-// app/api/friend-request/sent/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -8,8 +8,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     console.log(searchParams)
-    const receiverId = searchParams.get('receiverId'); // Update variable name to receiverId
-    
+    const receiverId = searchParams.get('receiverId'); 
     if (!receiverId) {
       return NextResponse.json({ message: 'Receiver ID is required' }, { status: 400 });
     }
@@ -17,7 +16,7 @@ export async function GET(req: NextRequest) {
     const sentRequests = await prisma.friendRequest.findMany({
       where: { receiverId: receiverId }, // Ensure we filter by the receiverId
       include: {
-        sender: { // Assuming you want to get sender info; adjust based on your schema
+        sender: { 
           select: {
             id: true,
             name: true,
