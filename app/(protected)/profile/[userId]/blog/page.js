@@ -5,7 +5,6 @@ import BlogCard from "./[slug]/blog-card";
 import Navbar from "../components/navbar";
 import '../css/card.scss';
 import '../css/globals.scss';
-import Footer from "../components/footer";
 import ScrollToTop from "../components/helper/scroll-to-top";
 async function getBlogs() {
   const res = await fetch(`https://dev.to/api/articles?username=${personalData.devUsername}`)
@@ -45,7 +44,7 @@ async function page() {
       </div>
     </div>
     <ScrollToTop/>
-    <Footer/>
+   
     </>
   );
 };

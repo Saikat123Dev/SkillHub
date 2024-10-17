@@ -43,7 +43,6 @@ model User {
   posts           Post[]
   projects        Project[]
   experience      Experience[]
-
   profilePic  String?
   accounts    Account[]     @relation("UserAccounts")
   Comment     Comment[]
