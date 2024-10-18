@@ -12,7 +12,6 @@ const ChatRoom = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const messagesEndRef = useRef(null);
   const session = useCurrentUser();
@@ -64,10 +63,8 @@ const ChatRoom = () => {
   const sendMessage = (e) => {
     e.preventDefault();
     if (inputMessage.trim() && username.trim() && socket) {
-      const messageData = { user: username, message: inputMessage };
+      const messageData = { user: username, message: inputMessage, date: new Date() }; // Add date to message
       socket.emit('message', messageData);
-      
-      // Immediately clear the input and add the message to the local state
       setMessages((prevMessages) => [...prevMessages, messageData]);
       setInputMessage('');
     }
@@ -82,47 +79,47 @@ const ChatRoom = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <div className="bg-white shadow-md p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Group Chat</h1>
+    <div className="min-h-screen bg-gradient-to-br from-purple-700 via-indigo-800 to-gray-900 text-white flex flex-col items-center p-6">
+      <div className="shadow-lg rounded-lg border border-white border-opacity-20  p-4 flex justify-between items-center mb-4 w-full max-w-3xl">
+        <h1 className=" text-3xl font-bold text-gray-200">Group Chat</h1>
         <span
-          className={`px-2 py-1 rounded ${
+          className={`px-3 py-1 rounded-full text-black font-semibold ${
             connectionStatus === 'connected'
               ? 'bg-green-500'
               : connectionStatus === 'error'
               ? 'bg-red-500'
               : 'bg-yellow-500'
-          } text-white`}
+          }`}
         >
           {connectionStatus}
         </span>
       </div>
-      <div className="flex-grow overflow-auto p-4">
+      <div className="flex-grow overflow-auto rounded-lg p-4 shadow-inner w-full max-w-3xl">
         {messages.map((msg, index) => (
           <div key={index} className={`mb-4 ${msg.user === username ? 'text-right' : 'text-left'}`}>
             <div
-              className={`inline-block p-2 rounded-lg ${
-                msg.user === username ? 'bg-gray-300' : 'bg-gray-200'
+              className={`inline-block p-3 rounded-lg transition-transform duration-200 ease-in-out ${
+                msg.user === username ? 'bg-blue-200' : 'bg-gray-300'
               }`}
             >
-              <p className="font-bold text-black">{msg.user}</p>
-              <p>{msg.message}</p>
-              <p className="text-xs opacity-50">{msg.date ? new Date(msg.date).toLocaleString() : 'Just now'}</p>
+              <p className="font-semibold text-black">{msg.user}</p>
+              <p className="text-gray-700">{msg.message}</p>
+              <p className="text-xs text-gray-500 opacity-70">{msg.date ? new Date(msg.date).toLocaleString() : 'Just now'}</p>
             </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={sendMessage} className="bg-white p-4 flex items-center relative">
+      <form onSubmit={sendMessage} className="text-black bg-white p-4 flex items-center rounded-lg shadow-md mt-4 w-full max-w-3xl">
         <button
           type="button"
           onClick={toggleEmojiPicker}
-          className="mr-2 px-3 py-2 rounded bg-gray-300"
+          className="mr-2 px-3 py-2 rounded-full hover:bg-gray-400 transition"
         >
           😊
         </button>
         {showEmojiPicker && (
-          <div className="absolute bottom-16 left-0">
+          <div className="absolute bottom-16 left-0 z-10">
             <Picker onEmojiClick={onEmojiClick} />
           </div>
         )}
@@ -130,10 +127,10 @@ const ChatRoom = () => {
           type="text"
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          className="flex-grow p-2 border border-gray-300 rounded-l"
+          className="flex-grow p-2 borderborder border-white border-opacity-20 bg-opacity-30 backdrop-blur-lg rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           placeholder="Type a message..."
         />
-        <button type="submit" className="bg-gray-500 text-white p-2 rounded-r hover:bg-gray-600">
+        <button type="submit" className="bg-gray-500 text-black p-2 rounded-r-md hover:bg-gray-600 transition">
           <Send size={24} />
         </button>
       </form>

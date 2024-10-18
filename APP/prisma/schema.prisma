@@ -21,6 +21,7 @@ model User {
   username      String?
   birthday      DateTime?
   emailVerified DateTime? //Date-Time
+  group         Group[]
 
   password        String
   primarySkill    String?
@@ -52,6 +53,15 @@ model User {
   FriendRequest FriendRequest[] @relation("Sender")
 
   receivedFriendRequests FriendRequest[] @relation("Receiver")
+}
+
+model Group{
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  grpname     String  @unique
+  grpbio     String    @unique
+  adminId  String   @db.ObjectId
+
+  admin  User @relation(fields: [adminId], references: [id])
 }
 
 model Project {

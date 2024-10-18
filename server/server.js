@@ -27,7 +27,7 @@ io.on("connection", (socket) => {
     console.log("User joined:", username);
     socket.username = username;
     onlineUsers.add(username);
-    io.emit("updateOnlineUsers", Array.from(onlineUsers)); // Emit online users to all clients
+    io.emit("updateOnlineUsers", Array.from(onlineUsers)); 
     callback();
   });
   

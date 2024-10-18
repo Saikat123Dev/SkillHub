@@ -8,7 +8,7 @@ interface ProtectedLayoutProps {
 
 const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
   return (
-    <div className="flex min-h-screen">
+    <div className="h-screen flex">
       <Sidebar>
         <SidebarItem
           itemKey="home"
@@ -53,9 +53,9 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
           alert
         />
       </Sidebar>
-      <div className="flex flex-col flex-grow w-full overflow-y-auto">
+      <div className="flex flex-col flex-grow w-full overflow-hidden">
         <Navbar />
-        <div className="flex-grow p-4 overflow-auto">
+        <div className="flex-grow p-4 overflow-y-auto">
           {children}
         </div>
       </div>
