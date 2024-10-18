@@ -1,39 +1,48 @@
-"use client"
-import React, { useState, useEffect, useRef } from 'react';
-import io from 'socket.io-client';
-import { Send } from 'lucide-react';
-import { useCurrentUser } from '@/hooks/use-current-user';
-import dynamic from 'next/dynamic';
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import io from "socket.io-client";
+import { Send } from "lucide-react";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import dynamic from "next/dynamic";
 
-const Picker = dynamic(() => import('emoji-picker-react'), { ssr: false });
+const Picker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
 const ChatRoom = () => {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
+  const [inputMessage, setInputMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState("disconnected");
 
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const messagesEndRef = useRef(null);
   const session = useCurrentUser();
   const username = session.name;
 
+  const room = "room1"; // Hardcoded room name
+
   useEffect(() => {
-    const newSocket = io('http://localhost:3001', {
-      transports: ['websocket'],
+    const newSocket = io("http://localhost:3001", {
+      transports: ["websocket"],
       withCredentials: true,
     });
 
-    newSocket.on('connect', () => {
-      setConnectionStatus('connected');
+    newSocket.on("connect", () => {
+      setConnectionStatus("connected");
+
+      // Join the room after connecting
+      if (username) {
+        newSocket.emit("joinRoom", { username, room }, () => {
+          console.log(`${username} joined room: ${room}`);
+        });
+      }
     });
 
-    newSocket.on('connect_error', (error) => {
-      setConnectionStatus('error');
+    newSocket.on("connect_error", (error) => {
+      setConnectionStatus("error");
     });
 
-    newSocket.on('disconnect', (reason) => {
-      setConnectionStatus('disconnected');
+    newSocket.on("disconnect", (reason) => {
+      setConnectionStatus("disconnected");
     });
 
     setSocket(newSocket);
@@ -41,7 +50,7 @@ const ChatRoom = () => {
     return () => {
       newSocket.close();
     };
-  }, []);
+  }, [username]);
 
   useEffect(() => {
     if (!socket) return;
@@ -50,29 +59,47 @@ const ChatRoom = () => {
       setMessages((prevMessages) => [...prevMessages, message]);
     };
 
-    socket.on('message', messageListener);
+    // Listen for messages within the room
+    socket.on("message", messageListener);
 
     return () => {
-      socket.off('message', messageListener);
+      socket.off("message", messageListener);
     };
   }, [socket]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = (e) => {
     e.preventDefault();
     if (inputMessage.trim() && username.trim() && socket) {
       const messageData = { user: username, message: inputMessage };
-      socket.emit('message', messageData);
       
-      // Immediately clear the input and add the message to the local state
-      setMessages((prevMessages) => [...prevMessages, messageData]);
-      setInputMessage('');
+      // Send the message to the room
+      socket.emit("message", messageData);
+  
+      // Clear the input field
+      setInputMessage("");
     }
   };
-
+  
+  // Use this to listen for messages from the server
+  useEffect(() => {
+    if (!socket) return;
+  
+    const messageListener = (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    };
+  
+    // Listen for messages within the room
+    socket.on("message", messageListener);
+  
+    return () => {
+      socket.off("message", messageListener);
+    };
+  }, [socket]);
+  
   const onEmojiClick = (emojiObject) => {
     setInputMessage((prevMessage) => prevMessage + emojiObject.emoji);
   };
@@ -84,14 +111,14 @@ const ChatRoom = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <div className="bg-white shadow-md p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Group Chat</h1>
+        <h1 className="text-2xl font-bold">Group Chat - {room}</h1>
         <span
           className={`px-2 py-1 rounded ${
-            connectionStatus === 'connected'
-              ? 'bg-green-500'
-              : connectionStatus === 'error'
-              ? 'bg-red-500'
-              : 'bg-yellow-500'
+            connectionStatus === "connected"
+              ? "bg-green-500"
+              : connectionStatus === "error"
+              ? "bg-red-500"
+              : "bg-yellow-500"
           } text-white`}
         >
           {connectionStatus}
@@ -99,15 +126,20 @@ const ChatRoom = () => {
       </div>
       <div className="flex-grow overflow-auto p-4">
         {messages.map((msg, index) => (
-          <div key={index} className={`mb-4 ${msg.user === username ? 'text-right' : 'text-left'}`}>
+          <div
+            key={index}
+            className={`mb-4 ${msg.user === username ? "text-right" : "text-left"}`}
+          >
             <div
               className={`inline-block p-2 rounded-lg ${
-                msg.user === username ? 'bg-gray-300' : 'bg-gray-200'
+                msg.user === username ? "bg-gray-300" : "bg-gray-200"
               }`}
             >
               <p className="font-bold text-black">{msg.user}</p>
               <p>{msg.message}</p>
-              <p className="text-xs opacity-50">{msg.date ? new Date(msg.date).toLocaleString() : 'Just now'}</p>
+              <p className="text-xs opacity-50">
+                {msg.date ? new Date(msg.date).toLocaleString() : "Just now"}
+              </p>
             </div>
           </div>
         ))}
