@@ -112,10 +112,7 @@ model Experience {
 
 model Post {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  title     String
   content   Json?
-  slug      String?
   published Boolean  @default(false)
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
@@ -128,6 +125,23 @@ model Post {
 
   @@map(name: "posts")
 }
+
+// model Article {
+//   id String @id @default(auto()) @map("_id") @db.ObjectId
+//   content   Json?
+//   slug      String?
+//   published Boolean  @default(false)
+//   createdAt DateTime @default(now()) @map(name: "created_at")
+//   updatedAt DateTime @default(now()) @map(name: "updated_at")
+//   authorId  String   @db.ObjectId
+
+//   author User @relation(fields: [authorId], references: [id])
+
+//   comments Comment[]
+//   likes    Vote[]
+
+//   @@map(name: "posts")
+// }
 
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId

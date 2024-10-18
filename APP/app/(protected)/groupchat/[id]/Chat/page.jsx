@@ -1,38 +1,47 @@
-"use client"
-import React, { useState, useEffect, useRef } from 'react';
-import io from 'socket.io-client';
-import { Send } from 'lucide-react';
-import { useCurrentUser } from '@/hooks/use-current-user';
-import dynamic from 'next/dynamic';
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import io from "socket.io-client";
+import { Send } from "lucide-react";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import dynamic from "next/dynamic";
 
-const Picker = dynamic(() => import('emoji-picker-react'), { ssr: false });
+const Picker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
 const ChatRoom = () => {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
+  const [inputMessage, setInputMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const messagesEndRef = useRef(null);
   const session = useCurrentUser();
   const username = session.name;
 
+  const room = "room1"; // Hardcoded room name
+
   useEffect(() => {
-    const newSocket = io('http://localhost:3001', {
-      transports: ['websocket'],
+    const newSocket = io("http://localhost:3001", {
+      transports: ["websocket"],
       withCredentials: true,
     });
 
-    newSocket.on('connect', () => {
-      setConnectionStatus('connected');
+    newSocket.on("connect", () => {
+      setConnectionStatus("connected");
+
+      // Join the room after connecting
+      if (username) {
+        newSocket.emit("joinRoom", { username, room }, () => {
+          console.log(`${username} joined room: ${room}`);
+        });
+      }
     });
 
-    newSocket.on('connect_error', (error) => {
-      setConnectionStatus('error');
+    newSocket.on("connect_error", (error) => {
+      setConnectionStatus("error");
     });
 
-    newSocket.on('disconnect', (reason) => {
-      setConnectionStatus('disconnected');
+    newSocket.on("disconnect", (reason) => {
+      setConnectionStatus("disconnected");
     });
 
     setSocket(newSocket);
@@ -40,7 +49,7 @@ const ChatRoom = () => {
     return () => {
       newSocket.close();
     };
-  }, []);
+  }, [username]);
 
   useEffect(() => {
     if (!socket) return;
@@ -49,15 +58,16 @@ const ChatRoom = () => {
       setMessages((prevMessages) => [...prevMessages, message]);
     };
 
-    socket.on('message', messageListener);
+    // Listen for messages within the room
+    socket.on("message", messageListener);
 
     return () => {
-      socket.off('message', messageListener);
+      socket.off("message", messageListener);
     };
   }, [socket]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = (e) => {
@@ -67,9 +77,32 @@ const ChatRoom = () => {
       socket.emit('message', messageData);
       setMessages((prevMessages) => [...prevMessages, messageData]);
       setInputMessage('');
+    
+      
+      // Send the message to the room
+      socket.emit("message", messageData);
+  
+      // Clear the input field
+      setInputMessage("");
     }
   };
-
+  
+  // Use this to listen for messages from the server
+  useEffect(() => {
+    if (!socket) return;
+  
+    const messageListener = (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    };
+  
+    // Listen for messages within the room
+    socket.on("message", messageListener);
+  
+    return () => {
+      socket.off("message", messageListener);
+    };
+  }, [socket]);
+  
   const onEmojiClick = (emojiObject) => {
     setInputMessage((prevMessage) => prevMessage + emojiObject.emoji);
   };
@@ -96,7 +129,10 @@ const ChatRoom = () => {
       </div>
       <div className="flex-grow overflow-auto rounded-lg p-4 shadow-inner w-full max-w-3xl">
         {messages.map((msg, index) => (
-          <div key={index} className={`mb-4 ${msg.user === username ? 'text-right' : 'text-left'}`}>
+          <div
+            key={index}
+            className={`mb-4 ${msg.user === username ? "text-right" : "text-left"}`}
+          >
             <div
               className={`inline-block p-3 rounded-lg transition-transform duration-200 ease-in-out ${
                 msg.user === username ? 'bg-blue-200' : 'bg-gray-300'

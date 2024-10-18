@@ -120,7 +120,5 @@ export const RegisterSchema = z.object({
 
 
 export const postPatchSchema = z.object({
-  title: z.string().min(3).max(128),
-  slug: z.string().min(3).max(128).optional(),
   content: z.any(),
 })

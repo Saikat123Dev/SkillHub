@@ -6,28 +6,16 @@ import { useOptimistic, useState } from "react";
 
 const PostInteraction = ({
   postId,
-  likes,
-  commentNumber,
+
 }: {
   postId: number;
-  likes: string[];
-  commentNumber: number;
+  
 }) => {
   const { data: session } = useAuth();
   const userId = session?.user?.id;
 
-  const [likeState, setLikeState] = useState({
-    likeCount: likes.length,
-    isLiked: userId ? likes.includes(userId) : false,
-  });
+ 
 
-  const [optimisticLike, switchOptimisticLike] = useOptimistic(
-    likeState,
-    (state) => ({
-      likeCount: state.isLiked ? state.likeCount - 1 : state.likeCount + 1,
-      isLiked: !state.isLiked,
-    })
-  );
 
   const likeAction = () => {
     switchOptimisticLike();
