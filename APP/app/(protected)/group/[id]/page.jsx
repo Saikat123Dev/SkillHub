@@ -1,10 +1,33 @@
-'use client'
+
 import React from 'react';
 import { User, Users, Info, Check, X } from 'lucide-react';
-import { useRouter } from 'next/navigation'; // Correct way to use Router in Next.js
+// import { useRouter } from 'next/navigation'; 
+import { IndividualGroup } from '@/actions/group';
+import { currentUser } from "@/lib/auth";
+import { getUserById } from "@/data/user";
 
-const WhatsAppGroup = () => {
-  const router = useRouter(); // Correct usage of useRouter hook for navigation
+const WhatsAppGroup = async({params}) => {
+  console.log('params',params);
+  const id=params?.id;
+ 
+
+  
+
+ 
+  // const router = useRouter();
+
+
+  const grp=await IndividualGroup(id);
+  console.log('grp',grp);
+  const admin = await getUserById(grp.adminId);
+  if (!admin) {
+    return { error: "Cannot find Admin" };
+  }
+  console.log('admin',admin);
+  const user=await currentUser();
+  const currid=user?.id;
+  
+
 
   const groupCreator = {
     name: "John Doe",
@@ -18,29 +41,27 @@ const WhatsAppGroup = () => {
     { name: "Carol White", username: "@carolwhite", avatar: "/api/placeholder/32/32" },
   ];
 
-  const groupenable = () => {
-    router.push('/groupchat'); // Using router.push to navigate to '/groupchat'
-  };
+
 
   return (
     <div className="min-w-full mx-auto bg-gray-200 rounded-lg shadow-lg overflow-hidden">
       <div className="bg-green-600 text-white p-4">
-        <h1 className="text-3xl font-extrabold">Tech Enthusiasts</h1>
-        <p className="text-sm">Created by {groupCreator.name}</p>
+        <h1 className="text-3xl font-extrabold">{grp.grpname}</h1>
+        <p className="text-sm">Created by {admin.name}</p>
       </div>
 
       <div className="p-4">
         <div className="flex items-center mb-4">
-          <img src={groupCreator.avatar} alt={groupCreator.name} className="w-10 h-10 rounded-full mr-3" />
+          <img src={groupCreator.avatar} alt={admin.name} className="w-10 h-10 rounded-full mr-3" />
           <div>
-            <p className="font-semibold">{groupCreator.name}</p>
-            <p className="text-sm text-gray-600">{groupCreator.username}</p>
+            <p className="font-semibold">{admin.name}</p>
+            <p className="text-sm text-gray-600">{admin.username}</p>
           </div>
         </div>
 
         <div className="mb-4">
           <h2 className="text-xl font-bold mb-2">Group Bio</h2>
-          <p className="text-lg text-gray-700">A community for tech lovers to discuss the latest trends and innovations in technology.</p>
+          <p className="text-lg text-gray-700">{grp.grpbio}</p>
         </div>
 
         <div className="mb-4">
@@ -58,9 +79,10 @@ const WhatsAppGroup = () => {
           </div>
         </div>
 
-        <div className="flex justify-between">
+       {currid!==grp.adminId && <div className="flex justify-between">
           <button 
-            onClick={groupenable} 
+          //  onClick={groupenable} 
+           
             className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center"
           >
             <Check size={18} className="mr-2" />
@@ -72,7 +94,7 @@ const WhatsAppGroup = () => {
             <X size={18} className="mr-2" />
             Decline
           </button>
-        </div>
+        </div>}
       </div>
     </div>
   );

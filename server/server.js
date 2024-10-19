@@ -30,21 +30,8 @@ io.on("connection", (socket) => {
     
     // Store the room and username in the socket object
     socket.username = username;
-    socket.room = room;
-    
-    // Join the room
-    socket.join(room);
-
-    // Add the user to the room's set of online users
-    if (!rooms[room]) {
-      rooms[room] = new Set();
-    }
-    rooms[room].add(username);
-
-    // Notify everyone in the room about the updated online users
-    io.to(room).emit("updateOnlineUsers", Array.from(rooms[room]));
-
-    // Callback to confirm the user joined successfully
+    onlineUsers.add(username);
+    io.emit("updateOnlineUsers", Array.from(onlineUsers)); 
     callback();
   });
   socket.on('message', (messageData) => {
