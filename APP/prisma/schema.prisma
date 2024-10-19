@@ -22,6 +22,7 @@ model User {
   birthday      DateTime?
   emailVerified DateTime? //Date-Time
   group         Group[]
+  groupMembership  GroupMembership[]
 
   password        String
   primarySkill    String?
@@ -60,9 +61,30 @@ model Group{
   grpname     String  @unique
   grpbio     String    @unique
   adminId  String   @db.ObjectId
+  members    GroupMembership[]
+
+
 
   admin  User @relation(fields: [adminId], references: [id])
 }
+model GroupMembership {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String   @db.ObjectId
+  groupId  String   @db.ObjectId
+  // role     GroupRole
+
+  user     User     @relation(fields: [userId], references: [id])
+  group    Group    @relation(fields: [groupId], references: [id])
+
+  @@unique([userId, groupId]) 
+  @@index([groupId])
+}
+
+// enum GroupRole {
+//   MEMBER
+//   ADMIN
+//   MODERATOR
+// }
 
 model Project {
   id           String  @id @default(auto()) @map("_id") @db.ObjectId

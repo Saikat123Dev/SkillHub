@@ -82,7 +82,7 @@ const FriendRequestsPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ requestId: id }), // Send the request ID
+        body: JSON.stringify({ requestId: id }),
       });
       if (!response.ok) {
         const errorData = await response.json();

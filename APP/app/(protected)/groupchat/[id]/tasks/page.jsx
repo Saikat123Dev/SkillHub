@@ -49,7 +49,7 @@ const TasksPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-700 via-indigo-800 to-gray-900 justify-between text-white flex  items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-700 via-indigo-800 to-gray-900 justify-between text-white flex  items-center  p-4">
       {Object.entries(tasks).map(([list, items]) => (
         <div key={list} className="border border-white border-opacity-20 rounded-lg p-4 min-w-[300px]">
           <h2 className="font-bold text-lg mb-4">{list}</h2>

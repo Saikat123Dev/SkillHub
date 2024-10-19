@@ -49,6 +49,7 @@ function HeroSection({ profileUserId }) {
       });
 
       if (response.ok) {
+        
         setNotification({ type: "success", message: "Connection request sent successfully!" });
       } else {
         const errorData = await response.json();
