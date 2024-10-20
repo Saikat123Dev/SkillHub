@@ -14,6 +14,11 @@ type FriendRequest = {
   createdAt: string;
   updatedAt: string;
   sender: {
+
+
+
+
+    
     id: string;
     name: string;
     email: string;

@@ -61,3 +61,23 @@ export const IndividualGroup=async(grpid: any)=>{
     throw new Error("Failed to get group");
   }
 }
+
+export const AllGroups = async (userid: any) => {
+  try {
+    const groups = await db.group.findMany({
+      where: {
+        adminId: userid
+      },
+      select: {
+        id: true,
+        grpname: true,
+    }
+  });
+    
+    return groups;
+  } catch (error) {
+    console.error("Error in AllGroups function:", error);
+    throw new Error("Failed to find all groups");
+  }
+};
+

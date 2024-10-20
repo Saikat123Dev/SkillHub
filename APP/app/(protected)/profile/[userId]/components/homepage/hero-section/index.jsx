@@ -10,6 +10,7 @@ import { RiContactsFill } from "react-icons/ri";
 import { SiLeetcode } from "react-icons/si";
 import { useState, useEffect } from "react";
 import { useCurrentUser } from "../../../../../../../hooks/use-current-user";
+import { AllGroups } from "@/actions/group";
 
 function HeroSection({ profileUserId }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -17,7 +18,22 @@ function HeroSection({ profileUserId }) {
   const [purpose, setPurpose] = useState("collaboration");
   const [skills, setSkills] = useState("");
   const [notification, setNotification] = useState(null); // New state for notifications
-  const session = useCurrentUser(); // Get the logged-in user's session
+  const session = useCurrentUser();
+  const[groups,setGroups]=useState([]);
+  useEffect(() => {
+    // Fetch groups when the component mounts
+    const loadGroups = async () => {
+      if (session?.id) {
+        const groups = await AllGroups(session.id);
+        setGroups(groups);
+      }
+    };
+    loadGroups();
+  }, [session]);
+
+  
+  
+  // Get the logged-in user's session
 
   const handleDropdownToggle = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -171,59 +187,88 @@ function HeroSection({ profileUserId }) {
               </div>
 
               {!isOwnProfile && isDropdownOpen && (
-                <div
-                  id="dropdown"
-                  className="absolute right-0 z-10 mt-2 w-64 rounded-lg shadow-xl bg-gradient-to-br from-indigo-50 via-white to-indigo-100 ring-1 ring-indigo-200 ring-opacity-50 transition-transform duration-300 transform scale-95 origin-top-right"
-                >
-                  <div className="py-4 px-5 bg-white bg-opacity-90 rounded-lg">
-                    <form
-                      id="connectionForm"
-                      className="p-4 bg-white bg-opacity-90 rounded-lg shadow-md border border-gray-200"
-                      onSubmit={handleFormSubmit}
-                    >
-                      <textarea
-                        id="message"
-                        rows="4"
-                        maxLength="300"
-                        placeholder="Provide a brief description of the project..."
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      ></textarea>
-                      <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Collaboration Purpose
-                        </label>
-                        <select
-                          id="purpose"
-                          value={purpose}
-                          onChange={(e) => setPurpose(e.target.value)}
-                          className="mt-1 block w-full border border-gray-300 rounded-lg p-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        >
-                          <option value="collaboration">Open-Source Project</option>
-                          <option value="skill-sharing">Hackathon Team</option>
-                          <option value="mentorship">Startup</option>
-                          <option value="networking">Research</option>
-                          <option value="discussion">Others</option>
-                        </select>
-                      </div>
-                      <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Relevant Skills
-                        </label>
-                        <input
-                          id="skills"
-                          type="text"
-                          placeholder="JavaScript, React, Node.js, etc."
-                          value={skills}
-                          onChange={(e) => setSkills(e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
+  <div
+    id="dropdown"
+    className="absolute right-0 z-10 mt-2 w-64 rounded-lg shadow-xl bg-gradient-to-br from-indigo-50 via-white to-indigo-100 ring-1 ring-indigo-200 ring-opacity-50 transition-transform duration-300 transform scale-95 origin-top-right"
+  >
+    <div className="py-4 px-5 bg-opacity-90 rounded-lg">
+      <form
+        id="connectionForm"
+        className="p-4 bg-opacity-90 rounded-lg shadow-lg border border-gray-200 space-y-4"
+        onSubmit={handleFormSubmit}
+      >
+        <textarea
+          id="message"
+          rows="4"
+          maxLength="300"
+          placeholder="Provide a brief description of the project..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 ease-in-out text-gray-800"
+        ></textarea>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Collaboration Purpose
+          </label>
+          <select
+            id="purpose"
+            value={purpose}
+            onChange={(e) => setPurpose(e.target.value)}
+            className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 ease-in-out bg-white text-gray-800"
+          >
+            <option value="collaboration">Open-Source Project</option>
+            <option value="skill-sharing">Hackathon Team</option>
+            <option value="mentorship">Startup</option>
+            <option value="networking">Research</option>
+            <option value="discussion">Others</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Relevant Skills
+          </label>
+          <input
+            id="skills"
+            type="text"
+            placeholder="JavaScript, React, Node.js, etc."
+            value={skills}
+            onChange={(e) => setSkills(e.target.value)}
+            className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 ease-in-out bg-white text-gray-800"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Select Group (if any)
+          </label>
+          <select
+            id="group"
+            className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 ease-in-out bg-white text-gray-800"
+          >
+            <option value="">No Group</option>
+            {groups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.grpname}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="text-right">
+          <button
+            type="submit"
+            className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-transform duration-300 ease-in-out"
+          >
+            Send Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
             </div>
           </div>
         </div>

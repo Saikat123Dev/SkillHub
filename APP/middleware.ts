@@ -19,10 +19,15 @@ export default auth((req):any => {
     const isFetch = nextUrl.pathname.startsWith('/api');
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  // const isnewroute=nextUrl.pathname.startsWith('/settings');
+
    
-  if (isApiAuthRoute || isUploadRoute || isFetch) {
+  if (isApiAuthRoute || isUploadRoute || isFetch ) {
     return null;
   }
+  // if(isnewroute){
+  //   return null;
+  // }
 
   if (isAuthRoute) {
     if (isLoggedIn) {
