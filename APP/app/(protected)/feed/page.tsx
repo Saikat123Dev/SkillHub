@@ -1,4 +1,4 @@
-
+"use client"
 import AddPost from "@/components/AddPost";
 
 import Feed from "@/components/feed/Feed";

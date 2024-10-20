@@ -3,8 +3,11 @@ import React from 'react';
 import { User, Users, Info, Check, X } from 'lucide-react';
 // import { useRouter } from 'next/navigation'; 
 import { IndividualGroup } from '@/actions/group';
-import { currentUser } from "@/lib/auth";
+
 import { getUserById } from "@/data/user";
+import {Plus} from 'lucide-react'
+import Link from 'next/link'
+import { useCurrentUser } from "../../../../hooks/use-current-user"
 
 const WhatsAppGroup = async({params}) => {
   console.log('params',params);
@@ -24,8 +27,10 @@ const WhatsAppGroup = async({params}) => {
     return { error: "Cannot find Admin" };
   }
   console.log('admin',admin);
-  const user=await currentUser();
-  const currid=user?.id;
+  // const user=await currentUser();
+
+  const session=useCurrentUser();
+  const currid=session?.id;
   
 
 
@@ -95,6 +100,21 @@ const WhatsAppGroup = async({params}) => {
             Decline
           </button>
         </div>}
+        {currid===grp.adminId && <div>
+          <button 
+          //  onClick={groupenable} 
+           
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center"
+          >
+           <Link
+              href="/search"
+              className="text-white rounded-full font-bold flex items-center"
+            >
+              <Plus className="mr-2" size={18} />{" "}
+             Members
+            </Link>
+          </button>
+          </div>}
       </div>
     </div>
   );
