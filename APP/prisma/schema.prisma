@@ -61,10 +61,10 @@ model Group{
   grpname     String  @unique
   grpbio     String    @unique
   adminId  String   @db.ObjectId
-  members    GroupMembership[]
+  members  GroupMembership[]
 
 
-
+  
   admin  User @relation(fields: [adminId], references: [id])
 }
 model GroupMembership {
@@ -108,7 +108,7 @@ model FriendRequest {
   mutualSkill        String?
   createdAt  DateTime            @default(now())
   updatedAt  DateTime            @updatedAt
-
+  groupUrl  String?
   sender   User @relation("Sender", fields: [senderId], references: [id])
   receiver User @relation("Receiver", fields: [receiverId], references: [id])
 

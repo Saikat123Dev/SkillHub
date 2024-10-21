@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   
    
    
-    const { receiverId,senderId,message,skills,purpose } = await req.json();
+    const { receiverId,senderId,message,skills,purpose,groupUrl } = await req.json();
      console.log(message)
    console.log(receiverId,senderId)
      if (!senderId) {
@@ -40,7 +40,8 @@ export async function POST(req: NextRequest) {
         receiverId: receiverId,
         projectDescription:message,
         purpose:purpose,
-        mutualSkill:skills
+        mutualSkill:skills,
+        groupUrl
       },
     });
 
