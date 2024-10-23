@@ -57,15 +57,10 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
       },
     });
 
-    const verificationToken = await generateVerificationToken(email);
-    const sendEmailPromise = sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token
-    );
+   
+    await Promise.all([redisSetPromise, dbCreatePromise]);
 
-    await Promise.all([redisSetPromise, dbCreatePromise, sendEmailPromise]);
-
-    return { success: "Registration completed, confirmation email sent!" };
+    return { success: "Registration completed" };
   } catch (error) {
     console.error("Registration error:", error);
     return { error: "Failed to register user. Please try again." };
