@@ -1,211 +1,312 @@
+// @flow strict
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import Link from 'next/link';
+import { personalData } from "@/utils/data/personal-data";
+import Image from "next/image";
+import Link from "next/link";
+import { BsGithub, BsLinkedin } from "react-icons/bs";
+import { FaFacebook, FaTwitterSquare } from "react-icons/fa";
+import { RiContactsFill } from "react-icons/ri";
+import { SiLeetcode } from "react-icons/si";
+import { useState, useEffect } from "react";
+import { useCurrentUser } from "../../../../../../../hooks/use-current-user";
+import { AllGroups } from "@/actions/group";
 
-type FriendRequest = {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
-  projectDescription: string;
-  purpose: string;
-  mutualSkill: string;
-  groupUrl: string;
-  createdAt: string;
-  updatedAt: string;
-  sender: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  avatar: string; // If you have an avatar in your friend request structure
-};
-
-// Function to generate a random background color
-const getRandomColor = () => {
-  const colors = ["#FF5733", "#33C1FF", "#33FF57", "#FF33A1", "#FFBD33", "#9B33FF"]; // Define some random colors
-  return colors[Math.floor(Math.random() * colors.length)];
-};
-
-const getInitials = (name: string) => {
-  const nameParts = name.split(" ");
-  return nameParts.map((part) => part[0]).join("").toUpperCase();
-};
-
-const FriendRequestsPage = () => {
-  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+function HeroSection({ profileUserId }) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [purpose, setPurpose] = useState("collaboration");
+  const [skills, setSkills] = useState("");
+  const [notification, setNotification] = useState(null);
   const session = useCurrentUser();
-  const receiverId = session?.id; // Get the logged-in user's session
+  const [groups, setGroups] = useState([]);
+  const [group, setGroup] = useState("");
 
-  const fetchFriendRequests = async () => {
-    try {
-      console.log("Receiver ID:", receiverId); // Log receiverId
-
-      const response = await fetch(`http://localhost:3000/api/connect/getAll?receiverId=${receiverId}`);
-      console.log("Response:", response); // Log full response
-
-      if (!response.ok) {
-        const errorData = await response.json(); // Try to get error message from the response
-        throw new Error(errorData.message || "Failed to fetch friend requests");
+  useEffect(() => {
+    const loadGroups = async () => {
+      if (session?.id) {
+        const fetchedGroups = await AllGroups(session.id);
+        setGroups(fetchedGroups);
       }
+    };
+    loadGroups();
+  }, [session]);
 
-      const data = await response.json();
-      console.log("Data:", data);
-      if (Array.isArray(data)) {
-        setFriendRequests(data);
-      } else if (data.message) {
-        setFriendRequests([]);
-        setError(data.message);
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const connectRequest = async (e) => {
+    e.preventDefault();
+    const senderId = session?.id;
+    if (!senderId) {
+      setNotification({
+        type: "error",
+        message: "Error: User is not logged in.",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/connect/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          receiverId: profileUserId,
+          senderId,
+          message,
+          purpose,
+          skills,
+          groupUrl: group ? `http://localhost:3000/group/${group}` : "",
+        }),
+      });
+
+      if (response.ok) {
+        setNotification({
+          type: "success",
+          message: "Connection request sent successfully!",
+        });
       } else {
-        throw new Error("Invalid data format");
+        const errorData = await response.json();
+        setNotification({
+          type: "error",
+          message: `Failed to send request: ${
+            errorData.message || "Unknown error"
+          }`,
+        });
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setLoading(false);
+      setNotification({
+        type: "error",
+        message: "Error sending connection request.",
+      });
     }
   };
 
   useEffect(() => {
-    fetchFriendRequests();
-  }, []);
-
-  // Function to handle accepting a friend request
-  const acceptFriendRequest = async (id: string) => {
-    try {
-      const response = await fetch("http://localhost:3000/api/connect/accept", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ requestId: id }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to accept friend request");
-      }
-      setFriendRequests((prevRequests) => prevRequests.filter((req) => req.id !== id));
-    } catch (error) {
-      console.log("Error while accepting friend request:", error.message);
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [notification]);
 
-  // Function to handle rejecting a friend request
-  const rejectFriendRequest = async (id: string) => {
-    try {
-      const response = await fetch("http://localhost:3000/api/connect/reject", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ requestId: id }), // Send the request ID
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to reject friend request");
-      }
-      setFriendRequests((prevRequests) => prevRequests.filter((req) => req.id !== id));
-    } catch (error) {
-      console.log("Error while rejecting friend request:", error.message);
-    }
-  };
+  const isOwnProfile = profileUserId === session?.id;
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-indigo-500 flex flex-col items-center p-10">
-      <h1 className="text-4xl text-white font-bold mb-8">Friend Requests</h1>
-      {loading ? (
-        <p className="text-white">Loading...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : friendRequests.length === 0 ? (
-        <p className="text-white">No friend requests available.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
-          {friendRequests
-            .filter((request) => request.status === "PENDING") // Only show pending requests
-            .map((request) => (
-              <div
-                key={request.id}
-                className={`p-6 bg-white rounded-lg shadow-lg transition-transform duration-200 border-gray-300 hover:scale-105`}
-              >
-                <div className="flex items-center space-x-4">
-                  {request.avatar ? (
-                    <img
-                      className="w-16 h-16 rounded-full shadow-md"
-                      src={request.avatar}
-                      alt={request.sender.name}
-                    />
-                  ) : (
-                    <div
-                      className="w-16 h-16 rounded-full shadow-md flex items-center justify-center"
-                      style={{ backgroundColor: getRandomColor() }}
-                    >
-                      <span className="text-white font-bold">{getInitials(request.sender.name)}</span>
-                    </div>
-                  )}
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-800">{request.sender.name}</h2>
-                    <p className="text-sm text-gray-600">
-                      Status:{" "}
-                      <span
-                        className={`font-bold ${
-                          request.status === "PENDING"
-                            ? "text-yellow-500"
-                            : request.status === "ACCEPTED"
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {request.status}
-                      </span>
-                    </p>
-                  </div>
-                </div>
+    <section className="relative flex flex-col items-center justify-between py-4 lg:py-12">
+      <Image
+        src="/hero.svg"
+        alt="Hero"
+        width={1572}
+        height={795}
+        className="absolute -top-[98px] -z-10"
+      />
 
-                <div className="mt-4">
-                  <p className="text-gray-700">
-                    <strong>Project Description:</strong> {request.projectDescription}
-                  </p>
-                  <p className="text-gray-700">
-                    <strong>Purpose:</strong> {request.purpose}
-                  </p>
-                  <p className="text-gray-700">
-                    <strong>Mutual Skill:</strong> {request.mutualSkill}
-                  </p>
-                  <div className="text-gray-700">
-                    <strong>Group:</strong>{" "}
-                    <Link href={request.groupUrl}>
-                      <a className="text-blue-500">Group</a>
-                    </Link>
-                  </div>
-                </div>
-
-                {request.status === "PENDING" && (
-                  <div className="mt-4 flex space-x-3">
-                    <button
-                      onClick={() => acceptFriendRequest(request.id)}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition-colors"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => rejectFriendRequest(request.id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-colors"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+      {/* Notification Section */}
+      {notification && (
+        <div
+          className={`fixed top-5 right-5 px-4 py-3 rounded-lg shadow-md transition duration-300 ease-in-out ${
+            notification.type === "success"
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
+        >
+          {notification.message}
         </div>
       )}
-    </div>
-  );
-};
 
-export default FriendRequestsPage;
+      <div className="grid grid-cols-1 items-start lg:grid-cols-2 lg:gap-12 gap-y-8">
+        <div className="order-2 lg:order-1 flex flex-col items-start justify-center p-2 pb-20 md:pb-10 lg:pt-10">
+          <h1 className="text-3xl font-bold leading-10 text-white md:font-extrabold lg:text-[2.6rem] lg:leading-[3.5rem]">
+            Hello, <br />
+            This is <span className=" text-pink-500">{personalData.name}</span>
+            {` , I'm a Professional `}
+            <span className=" text-[#16f2b3]">{personalData.designation}</span>.
+          </h1>
+
+          <div className="my-12 flex items-center gap-5">
+  {personalData.github && (
+    <Link
+      href={personalData.github}
+      target="_blank"
+      className="transition-all text-pink-500 hover:scale-125 duration-300"
+    >
+      <BsGithub size={35} />
+    </Link>
+  )}
+  {personalData.linkedin && (
+    <Link
+      href={personalData.linkedin}
+      target="_blank"
+      className="transition-all text-pink-500 hover:scale-125 duration-300"
+    >
+      <BsLinkedin size={35} />
+    </Link>
+  )}
+  {personalData.facebook && (
+    <Link
+      href={personalData.facebook}
+      target="_blank"
+      className="transition-all text-pink-500 hover:scale-125 duration-300"
+    >
+      <FaFacebook size={35} />
+    </Link>
+  )}
+  {personalData.leetcode && (
+    <Link
+      href={personalData.leetcode}
+      target="_blank"
+      className="transition-all text-pink-500 hover:scale-125 duration-300"
+    >
+      <SiLeetcode size={35} />
+    </Link>
+  )}
+  {personalData.twitter && (
+    <Link
+      href={personalData.twitter}
+      target="_blank"
+      className="transition-all text-pink-500 hover:scale-125 duration-300"
+    >
+      <FaTwitterSquare size={35} />
+    </Link>
+  )}
+</div>
+
+
+          <div className="flex ml-32 items-center gap-3">
+            <div className="relative inline-block text-left">
+              <div className="flex items-center bg-gradient-to-r to-pink-500 from-violet-600 p-[1px] rounded-full">
+                {isOwnProfile ? (
+                  <Link href="/settings">
+                    <button
+                      className="px-3 text-xs md:px-8 py-3 md:py-4 bg-gradient-to-r to-pink-500 from-violet-600 rounded-full border-none text-center md:text-sm font-medium uppercase tracking-wider text-white no-underline transition-all duration-200 ease-out md:font-semibold"
+                      id="editButton"
+                    >
+                      EDIT PROFILE
+                    </button>
+                  </Link>
+                ) : (
+                  <>
+                    <button
+                      className="px-3 text-xs md:px-8 py-3 md:py-4 bg-gradient-to-r to-pink-500 from-violet-600 rounded-l-full border-none text-center md:text-sm font-medium uppercase tracking-wider text-white no-underline transition-all duration-200 ease-out md:font-semibold"
+                      id="connectButton"
+                      onClick={handleDropdownToggle}
+                    >
+                      CONNECT
+                    </button>
+                    <div className="w-[1px] h-8 bg-white"></div>
+                    <button
+                      className="p-3 md:py-4 rounded-r-full border-none text-center transition-all duration-200 ease-out flex items-center justify-center"
+                      onClick={handleDropdownToggle}
+                    >
+                      <RiContactsFill size={16} className="text-white" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {!isOwnProfile && isDropdownOpen && (
+                <div
+                  id="dropdown"
+                  className="absolute right-0 z-10 mt-2 w-64 rounded-lg shadow-xl bg-gradient-to-br from-indigo-50 via-white to-indigo-100 ring-1 ring-indigo-200 ring-opacity-50 transition-transform duration-300 transform scale-95 origin-top-right"
+                >
+                  <div className="py-4 px-5 bg-opacity-90 rounded-lg">
+                    <form
+                      id="connectionForm"
+                      className="p-4 bg-opacity-90 rounded-lg shadow-lg border border-gray-200 space-y-4"
+                      onSubmit={connectRequest}
+                    >
+                      <textarea
+                        id="message"
+                        rows="4"
+                        maxLength="300"
+                        placeholder="Provide a brief description of the project..."
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 ease-in-out text-gray-800"
+                      ></textarea>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Collaboration Purpose
+                        </label>
+                        <select
+                          id="purpose"
+                          value={purpose}
+                          onChange={(e) => setPurpose(e.target.value)}
+                          className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 ease-in-out bg-white text-gray-800"
+                        >
+                          <option value="collaboration">
+                            Open-Source Project
+                          </option>
+                          <option value="skill-sharing">
+                            Hackathon Team
+                          </option>
+                          <option value="mentorship">Startup</option>
+                          <option value="networking">Research</option>
+                          <option value="discussion">Others</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Relevant Skills
+                        </label>
+                        <input
+                          id="skills"
+                          type="text"
+                          placeholder="JavaScript, React, Node.js, etc."
+                          value={skills}
+                          onChange={(e) => setSkills(e.target.value)}
+                          className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 ease-in-out bg-white text-gray-800"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Select Group (if any)
+                        </label>
+                        <select
+                          id="group"
+                          className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 ease-in-out bg-white text-gray-800"
+                          onChange={(e) => setGroup(e.target.value)}
+                        >
+                          <option value="">No Group</option>
+                          {groups.map((group) => (
+                            <option key={group.id} value={group.id}>
+                              {group.grpname}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="text-right">
+                        <button
+                          type="submit"
+                          className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-transform duration-300 ease-in-out"
+                        >
+                          Send Request
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="order-1 lg:order-2 p-3 lg:p-0 flex justify-center lg:justify-end">
+          <Image
+            src={personalData.image}
+            alt={personalData.name}
+            width={300}
+            height={300}
+            className="rounded-full shadow-md"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default HeroSection;
