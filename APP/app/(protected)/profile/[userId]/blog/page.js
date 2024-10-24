@@ -3,8 +3,8 @@
 import { personalData } from "@/utils/data/personal-data";
 import BlogCard from "./[slug]/blog-card";
 import Navbar from "../components/navbar";
-import '../css/card.scss';
-import '../css/globals.scss';
+// import '../css/card.scss';
+// import '../css/globals.scss';
 import ScrollToTop from "../components/helper/scroll-to-top";
 async function getBlogs() {
   const res = await fetch(`https://dev.to/api/articles?username=${personalData.devUsername}`)
