@@ -1,8 +1,7 @@
 import { projectsData } from '@/utils/data/projects-data';
 import ProjectCard from '../components/homepage/projects/project-card';
 import Navbar from '../components/navbar';
-import '../css/card.scss';
-import '../css/globals.scss';
+
 import ScrollToTop from '../components/helper/scroll-to-top';
 const Projects = () => {
 

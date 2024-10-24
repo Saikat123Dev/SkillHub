@@ -90,10 +90,15 @@ function SearchBar() {
   };
 
   const availableFilters = allFilters.filter(filter => !appliedFilters[filter]);
+  const handleBlur=()=>{
+    router.push('/search');
+
+
+  }
 
   return (
     <>
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-2 items-center">
+      <form onSubmit={handleSearch} onBlur={handleBlur} className="flex flex-wrap gap-2 items-center">
         <input
           type="text"
           value={inputValue}

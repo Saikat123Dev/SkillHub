@@ -10,7 +10,7 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
     return (
       
         <div className="flex flex-row  w-full overflow-auto">
-          <nav className="flex flex-col space-y-4 w-72 min-h-full bg-blue-950 p-1 rounded-lg shadow-lg overflow-y-auto">
+          <nav className="flex flex-col space-y-4 w-72 min-h-full bg-slate-300 p-1 rounded-lg shadow-lg overflow-y-auto">
             <div className="relative w-full mb-6 mt-5">
               <UserPage />
             </div>

@@ -9,8 +9,8 @@ import ScrollToTop from './components/helper/scroll-to-top';
 import AboutSection from "./components/homepage/about";
 import HeroSection from "./components/homepage/hero-section";
 import Skills from "./components/homepage/skills";
-import './css/card.scss';
-import './css/globals.scss';
+// import './css/card.scss';
+// import './css/globals.scss';
 import Navbar from "./components/navbar";
 
 const inter = Inter({ subsets: ['latin'] });
@@ -44,7 +44,7 @@ const HomePage = ({ params }) => {
   }, [userId]);
 
   return (
-    <div className={`flex flex-col ${inter.className}`}>
+    <div className="flex flex-col  ">
       <ToastContainer />
       <Navbar name={userProfile?.name} userId={userId} /> 
       <div className="flex-grow">

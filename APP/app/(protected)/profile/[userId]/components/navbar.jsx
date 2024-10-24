@@ -3,10 +3,10 @@ import Link from "next/link";
 
 function Navbar({ name, userId }) {
   return (
-    <nav className="bg-transparent">
+    <nav>
       <div className="flex items-center justify-between py-5">
         <div className="flex flex-shrink-0 items-center">
-          <div className="text-[#16f2b3] text-3xl font-bold">
+          <div className="text-slate-700 text-3xl font-bold">
             {name || "User Name"} {/* Fallback for name */}
           </div>
         </div>
@@ -20,7 +20,7 @@ function Navbar({ name, userId }) {
               className="block px-4 py-2 no-underline outline-none hover:no-underline"
               href={`/profile/${userId}`}
             >
-              <div className="text-sm text-white transition-colors duration-300 hover:text-pink-600">
+              <div className="text-base text-black transition-colors duration-300 hover:text-pink-600 font-bold hover:scale-110">
                 ABOUT
               </div>
             </Link>
@@ -31,7 +31,7 @@ function Navbar({ name, userId }) {
               className="block px-4 py-2 no-underline outline-none hover:no-underline"
               href={`/profile/${userId}/blog`}
             >
-              <div className="text-sm text-white transition-colors duration-300 hover:text-pink-600">
+              <div className=" text-black text-base transition-colors duration-300 font-bold hover:text-pink-600 hover:scale-110">
                 POSTS
               </div>
             </Link>
@@ -42,7 +42,7 @@ function Navbar({ name, userId }) {
               className="block px-4 py-2 no-underline outline-none hover:no-underline"
               href={`/profile/${userId}/projects`}
             >
-              <div className="text-sm text-white transition-colors duration-300 hover:text-pink-600">
+              <div className=" text-black font-bold text-base transition-colors duration-300 hover:text-pink-600 hover:scale-110">
                 PROJECTS
               </div>
             </Link>

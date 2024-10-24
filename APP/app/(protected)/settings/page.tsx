@@ -96,7 +96,7 @@ const SettingsPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full bg-gray-700">
-      <div className=" w-full min-h-full p-3 bg-blue-950 rounded-lg ">
+      <div className=" w-full min-h-full p-3 bg-gray-200 rounded-lg ">
         <header className="flex items-center justify-between">
           <h1 className="text-2xl text-white font-bold">Setting</h1>
         </header>
@@ -543,6 +543,112 @@ const SettingsPage = () => {
                           <h1 className="text-yellow-400 text-2xl font-bold underline mb-4">
                             ProfileLink
                           </h1>
+                          <div className="grid grid-cols-1 gap-6">
+                            <div>
+                             
+                              <FormField
+                                control={form.control}
+                                name="linkedin"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-white font-semibold">
+                                     Linkedin Profile
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        type="url"
+                                        placeholder="e.g., https://www.linkedin.com/in/username"
+                                        disabled={isPending}
+                                        className="input-field text-white bg-gray-700 border-gray-600 focus:border-yellow-400 focus:ring-yellow-400"
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-red-500 mt-1" />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            <div>
+                             
+                              <FormField
+                                control={form.control}
+                                name="github"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-white">
+                                      GitHub Profile
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        type="url"
+                                        placeholder="e.g., https://www.github.com/username"
+                                        disabled={isPending}
+                                         className="input-field text-white bg-gray-700 border-gray-600 focus:border-yellow-400 focus:ring-yellow-400"
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-red-500" />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div>
+                             
+                              <FormField
+                                control={form.control}
+                                name="twitter"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-white">
+                                     Twitter Profile
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        type="url"
+                                        placeholder="e.g., https://www.twitter.com/username"
+                                        disabled={isPending}
+                                         className="input-field text-white bg-gray-700 border-gray-600 focus:border-yellow-400 focus:ring-yellow-400"
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-red-500" />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div>
+                             
+                              <FormField
+                                control={form.control}
+                                name="leetcode"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-white">
+                                     Leetcode Profile
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        type="url"
+                                        placeholder="e.g., https://www.leetcode.com/username"
+                                        disabled={isPending}
+                                         className="input-field text-white bg-gray-700 border-gray-600 focus:border-yellow-400 focus:ring-yellow-400"
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-red-500" />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+
+                        
+                          </div>
+                          <div className=" mt-6 p-6 bg-gray-800 rounded-lg shadow-md">
+                          <h1 className="text-yellow-400 text-2xl font-bold underline mb-4">
+                            SkillSet
+                          </h1>
 
                           <div className="grid grid-cols-1 gap-6">
                             <div>
@@ -574,7 +680,7 @@ const SettingsPage = () => {
                               />
                             </div>
 
-                            <div>
+                            <div className="mt-4">
                               <h3 className="text-slate-300 font-serif text-lg mb-2 mt-3">
                                 `List additional skills that complement your
                                 primary expertise. These should be areas where
@@ -593,9 +699,9 @@ const SettingsPage = () => {
                                       <Input
                                         {...field}
                                         type="text"
-                                        placeholder="Secondary Skills"
+                                        placeholder="e.g., React, Node.js" 
                                         disabled={isPending}
-                                        className="input-field"
+                                        className="input-field text-white bg-gray-700 border-gray-600 focus:border-yellow-400 focus:ring-yellow-400"
                                       />
                                     </FormControl>
                                     <FormMessage className="text-red-500" />
@@ -605,7 +711,8 @@ const SettingsPage = () => {
                             </div>
                           </div>
                         </div>
-                      </div>
+                     
+                    </div>
                     </div>
 
                     <FormError message={error} />
