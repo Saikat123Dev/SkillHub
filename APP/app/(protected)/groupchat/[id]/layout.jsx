@@ -24,10 +24,10 @@ const Layout = ({ params, children }) => {
             Tasks
           </Link>
           <Link 
-            href={`/groupchat/${id}/leaderboard`}
+            href={`/groupchat/${id}/calender`}
             className="px-3 py-2 rounded hover:bg-blue-600"
           >
-            Leaderboard
+            Calender
           </Link>
           <Link 
             href={`/groupchat/${id}/announcements`}
@@ -36,10 +36,10 @@ const Layout = ({ params, children }) => {
             Announcements
           </Link>
           <Link 
-            href={`/groupchat/${id}/achievements`}
+            href={`/groupchat/${id}/leaderboard`}
             className="px-3 py-2 rounded hover:bg-blue-600"
           >
-            Achievements
+           Leaderboard
           </Link>
           <Link 
             href={`/groupchat/${id}/Chat`}

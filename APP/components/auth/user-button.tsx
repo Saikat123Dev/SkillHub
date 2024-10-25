@@ -43,13 +43,7 @@ export const UserButton = () => {
           </DropdownMenuItem>
         </div>
 
-        {/* Profile Settings */}
-        <div>
-          <DropdownMenuItem>
-            <FaCog className="h-4 w-4 mr-2" />
-            Profile Settings
-          </DropdownMenuItem>
-        </div>
+      
 
         {/* Logout Button */}
         <LogoutButton>
