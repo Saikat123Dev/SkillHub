@@ -36,7 +36,7 @@ function HeroSection({ profileUserId }) {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const connectRequest = async (e) => {
+  const connectRequest = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     const senderId = session?.id;
     if (!senderId) {

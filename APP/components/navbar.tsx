@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus,Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@/components/auth/user-button";
 import SearchBar from "./search-bar";
@@ -16,8 +16,12 @@ export const Navbar = () => {
         {/* Use your SearchBar component here */}
         <SearchBar />
 
-        {/* Use your UserButton component here */}
+        
         <div className="flex items-center justify-center gap-10">
+
+        <Link href='/connections'>
+        <Bell size={30} color="black" style={{ fill: 'yellow', color: 'yellow' }}/>
+        </Link>
           <Button className="border-neutral-200 dark:border-slate-800 transform transition-transform duration-300 hover:scale-95 px-3 py-1">
             <Link href="/feed" className="text-white rounded-full font-bold">
               Create Post
@@ -32,6 +36,8 @@ export const Navbar = () => {
               Group
             </Link>
           </Button>
+
+
           <UserButton />
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { Navbar } from "../../components/navbar";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
-import { LayoutDashboard, Home, StickyNote, Layers, Flag, Calendar, LifeBuoy, Settings } from "lucide-react";
+import { LayoutDashboard, Home,  Calendar,  Settings } from "lucide-react";
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -14,14 +14,14 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
           itemKey="home"
           icon={<Home size={20} />}
           text="Home"
-          href="/home"
+          href="/feed"
           alert
         />
         <SidebarItem
-          itemKey="dashboard"
+          itemKey="groups"
           icon={<LayoutDashboard size={20} />}
-          text="Dashboard"
-          href="/dashboard"
+          text="Groups"
+          href="/groups"
           alert
         />
         <SidebarItem
@@ -31,20 +31,8 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
           href="/calendar"
           alert
         />
-        <SidebarItem
-          itemKey="tasks"
-          icon={<Layers size={20} />}
-          text="Tasks"
-          href="/tasks"
-          alert
-        />
-        <SidebarItem
-          itemKey="reporting"
-          icon={<Flag size={20} />}
-          text="Reporting"
-          href="/reporting"
-          alert
-        />
+       
+       
         <SidebarItem
           itemKey="settings"
           icon={<Settings size={20} />}
