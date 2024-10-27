@@ -71,7 +71,7 @@ model GroupMembership {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   userId   String   @db.ObjectId
   groupId  String   @db.ObjectId
-  // role     GroupRole
+  role     GroupRole
 
   user     User     @relation(fields: [userId], references: [id])
   group    Group    @relation(fields: [groupId], references: [id])
@@ -80,11 +80,10 @@ model GroupMembership {
   @@index([groupId])
 }
 
-// enum GroupRole {
-//   MEMBER
-//   ADMIN
-//   MODERATOR
-// }
+enum GroupRole {
+  MEMBER
+  ADMIN
+}
 
 model Project {
   id           String  @id @default(auto()) @map("_id") @db.ObjectId
