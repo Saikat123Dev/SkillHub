@@ -8,7 +8,7 @@ interface ProtectedLayoutProps {
 
 const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
   return (
-    <div className="h-screen flex">
+    <div className=" h-screen flex">
       <Sidebar className="w-64"> {/* Adjusted width here */}
         <SidebarItem
           itemKey="home"
