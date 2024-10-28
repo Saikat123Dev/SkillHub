@@ -3,7 +3,7 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation"; // Import useRouter
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 
@@ -25,7 +25,8 @@ import { login } from "@/actions/login";
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
+  const callbackUrl = searchParams.get("callbackUrl"); // Get the callback URL from query params
+  const router = useRouter(); // Initialize the router
 
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -54,6 +55,13 @@ export const LoginForm = () => {
           if (data?.success) {
             form.reset();
             setSuccess(data.success);
+            if (data.redirect) {
+              // Redirect to the specified URL after successful login
+              router.push(data.redirect);
+            } else {
+              // Default to the callback URL or a fallback URL
+              router.push(callbackUrl || "/settings");
+            }
           }
         })
         .catch(() => setError("Something went wrong"));

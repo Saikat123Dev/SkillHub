@@ -1,4 +1,4 @@
-"use client";
+
 import CardWrapper from "./card-wrapper";
 import { useState, useTransition } from "react";
 import * as z from "zod";
@@ -18,11 +18,13 @@ import { Button } from "../ui/button";
 import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
 import { register } from "@/actions/register";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter(); // Initialize router
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -52,8 +54,12 @@ export const RegisterForm = () => {
 
     startTransition(() => {
       register({ ...values, birthday: isoFormattedBirthday }).then((data) => {
-        setError(data.error);
-        setSuccess(data.success);
+        if (data.success) {
+          setSuccess(data.success);
+          router.push("/settings"); // Redirect to /settings on success
+        } else {
+          setError(data.error);
+        }
       });
     });
   };
@@ -65,7 +71,6 @@ export const RegisterForm = () => {
         backButtonLabel="Already have an account?"
         backButtonHref="/auth/login"
         showSocial
-       
       >
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
