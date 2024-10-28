@@ -1,6 +1,6 @@
 import { Navbar } from "../../components/navbar";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
-import { LayoutDashboard, Home,  Calendar,  Settings } from "lucide-react";
+import { LayoutDashboard, Home, Calendar, Settings } from "lucide-react";
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -9,7 +9,7 @@ interface ProtectedLayoutProps {
 const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
   return (
     <div className="h-screen flex">
-      <Sidebar>
+      <Sidebar className="w-64"> {/* Adjusted width here */}
         <SidebarItem
           itemKey="home"
           icon={<Home size={20} />}
@@ -31,8 +31,6 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
           href="/calendar"
           alert
         />
-       
-       
         <SidebarItem
           itemKey="settings"
           icon={<Settings size={20} />}

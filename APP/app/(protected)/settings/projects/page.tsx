@@ -59,9 +59,9 @@ function page() {
   return (
     <>
    <div className="flex flex-col items-center justify-center min-h-screen w-full bg-gray-700">
-      <div className="min-w-full min-h-full p-3 bg-blue-950 rounded-lg ">
+      <div className="min-w-full min-h-full p-3 bg-slate-500 rounded-lg ">
         <header className="flex items-center justify-between">
-          <h1 className="text-2xl text-white font-bold">Setting</h1>
+          <h1 className="text-2xl text-white font-bold">Settings</h1>
         </header>
       
 

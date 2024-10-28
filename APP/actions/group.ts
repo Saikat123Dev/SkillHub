@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
 
-
 export const creategroup = async (formData: { get: (arg0: string) => any }) => {
   try {
     const grpname = formData.get("Name");
@@ -17,7 +16,7 @@ export const creategroup = async (formData: { get: (arg0: string) => any }) => {
     // Await the currentUser() promise to resolve
     const user = await currentUser();
     console.log("currentuser", user);
-    
+
     if (!user) {
       return { error: "Unauthorized" };
     }
@@ -27,7 +26,7 @@ export const creategroup = async (formData: { get: (arg0: string) => any }) => {
     if (!dbUser) {
       return { error: "Unauthorized" };
     }
-    console.log("dbUser",dbUser);
+    console.log("dbUser", dbUser);
 
     // Create a new group
     const new_grp = await db.group.create({
@@ -35,6 +34,15 @@ export const creategroup = async (formData: { get: (arg0: string) => any }) => {
         grpname,
         grpbio,
         adminId: dbUser.id,
+        members: {
+          create: {
+            userId: dbUser.id,
+            role: "ADMIN",
+          },
+        },
+      },
+      include: {
+        members: true, // Include the members relation in the response
       },
     });
 
@@ -43,41 +51,39 @@ export const creategroup = async (formData: { get: (arg0: string) => any }) => {
   } catch (error) {
     console.error("Error in addgroup function:", error);
     throw new Error("Failed to create group");
-  } 
+  }
 };
 
-export const IndividualGroup=async(grpid: any)=>{
-  try{
+export const IndividualGroup = async (grpid: any) => {
+  try {
     const group = await db.group.findUnique({
       where: {
         id: grpid,
-      }
-      
-    })
+      },
+    });
     return group;
-    console.log("group",group);
-  }catch(error){
+    console.log("group", group);
+  } catch (error) {
     console.error("Error in IndividualGroup function:", error);
     throw new Error("Failed to get group");
   }
-}
+};
 
 export const AllGroups = async (userid: any) => {
   try {
     const groups = await db.group.findMany({
       where: {
-        adminId: userid
+        adminId: userid,
       },
       select: {
         id: true,
         grpname: true,
-    }
-  });
-    
+      },
+    });
+
     return groups;
   } catch (error) {
     console.error("Error in AllGroups function:", error);
     throw new Error("Failed to find all groups");
   }
 };
-

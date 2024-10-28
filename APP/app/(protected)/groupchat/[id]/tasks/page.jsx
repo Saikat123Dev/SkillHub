@@ -2,7 +2,9 @@
 import React, { useState } from 'react';
 import { PlusCircle, X, Plus, Trash2 } from 'lucide-react';
 
-const KanbanBoard = () => {
+const KanbanBoard = ({params}) => {
+  console.log('params',params);
+  
   const teamMembers = [
     { id: 1, name: 'John Doe' },
     { id: 2, name: 'Jane Smith' },

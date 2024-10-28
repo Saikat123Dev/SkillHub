@@ -95,14 +95,14 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full bg-gray-700">
-      <div className=" w-full min-h-full p-3 bg-gray-200 rounded-lg ">
+    <div className="flex flex-col items-center justify-center min-h-screen min-w-full bg-gray-700">
+      <div className=" min-w-full min-h-full p-1 bg-slate-500 rounded-lg ">
         <header className="flex items-center justify-between">
-          <h1 className="text-2xl text-white font-bold">Setting</h1>
+          <h1 className="text-2xl text-white font-bold">Settings</h1>
         </header>
         <Card className="border mt-6 bg-gray-400 shadow-lg rounded-lg ">
-          <div className="flex space-x-3">
-            <div className="w-4/4 p-3 bg-gray-700 rounded-lg">
+          <div className="flex space-x-1">
+            <div className="w-full p-3 bg-gray-700 rounded-lg">
               <h2 className="mb-4 text-white text-lg font-bold">
                 Edit Profile
               </h2>
