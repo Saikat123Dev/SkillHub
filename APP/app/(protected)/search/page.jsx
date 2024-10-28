@@ -1,161 +1,126 @@
-"use client"
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import ScrollReveal from 'scrollreveal';
 
 function Page() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const limit = 10;
-  const observerRef = useRef();
-
-  const fetchUsers = useCallback(async (pageNumber = 1) => {
-    if (loading) return;
-
-    setLoading(true);
-    try {
-      const queryString = searchParams.toString();
-      const response = await fetch(`/api/users?${queryString}&page=${pageNumber}&limit=${limit}`);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const { users, totalPages } = await response.json();
-      console.log('Received data:', { users, totalPages });
-
-      if (pageNumber === 1) {
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const users = await response.json();
+        console.log('Fetched users:', users); // Debug: Check all users fetched
         setData(users);
-      } else {
-        setData((prevData) => [...prevData, ...users]);
+        setFilteredData(users); // Set initial display to all users
+      } catch (error) {
+        console.error('Error fetching users:', error);
       }
-
-      setHasMore(pageNumber < totalPages);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-    setData([]); // Clear existing data when search params change
-    fetchUsers(1);
-  }, [searchParams, fetchUsers]);
-
-  useEffect(() => {
-    const filters = {
-      country: searchParams.get('country') || '',
-      college: searchParams.get('college') || '',
-      primarySkill: searchParams.get('primarySkill') || '',
-      name: searchParams.get('name') || '',
-      gender: searchParams.get('gender') || '',
-      profession: searchParams.get('profession') || '',
     };
 
-    const query = searchParams.get('query') || '';
+    fetchUsers();
+  }, []);
 
-    const filtered = data.filter((item) => {
-      const matchesQuery = query === '' || item.name.toLowerCase().includes(query.toLowerCase());
-      const matchesFilters = Object.entries(filters).every(([key, value]) => {
-        if (!value) return true;
-        return item[key] && item[key].toLowerCase().includes(value.toLowerCase());
-      });
-      return matchesQuery && matchesFilters;
+  const updateFilters = (filters) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value && value.trim() !== '') {
+        params.set(key, value);
+      }
     });
+    router.push(params.toString() ? `?${params.toString()}` : '');
 
-    setFilteredData(filtered);
-  }, [data, searchParams]);
+    const filtered = data.filter((item) =>
+      Object.entries(filters).every(([key, value]) =>
+        !value || item[key]?.toLowerCase().includes(value.toLowerCase())
+      )
+    );
+    console.log('Filtered data:', filtered); // Debug: Check filtered users
+    setFilteredData(filtered.length ? filtered : data); // Default to all if no match
+  };
 
-  const lastUserRef = useCallback(
-    (node) => {
-      if (loading) return;
-      if (observerRef.current) observerRef.current.disconnect();
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          setPage((prevPage) => prevPage + 1);
-          fetchUsers(page + 1);
-        }
-      });
-      if (node) observerRef.current.observe(node);
-    },
-    [loading, hasMore, fetchUsers, page]
-  );
+  useEffect(() => {
+    const currentFilters = {};
+    for (const [key, value] of searchParams.entries()) {
+      currentFilters[key] = value;
+    }
+    updateFilters(currentFilters);
+  }, [searchParams, data]);
+
+  useEffect(() => {
+    ScrollReveal().reveal('.reveal', {
+      duration: 1000,
+      distance: '50px',
+      easing: 'ease-in-out',
+      origin: 'bottom',
+      reset: true,
+    });
+  }, [filteredData]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Search Results</h1>
-      <h2 className="text-2xl font-semibold my-4 text-blue-600">User List</h2>
+    <>
+      <p>Search Results</p>
+      <h2 className="text-2xl font-bold mb-4 text-blue-600 reveal">SearchList</h2>
 
-      {filteredData.length === 0 && !loading ? (
-        <p className="text-lg text-gray-600">No users found</p>
+      {filteredData.length === 0 ? (
+        <p>No users found</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-            <thead className="sticky top-0 bg-gray-100">
-              <tr className="text-gray-700">
-                <th className="border-b p-3 text-left">Stream</th>
-                <th className="border-b p-3 text-left">Username</th>
-                <th className="border-b p-3 text-left">Primary Skillset</th>
-                <th className="border-b p-3 text-left">Institution Name</th>
-                <th className="border-b p-3 text-left">Country</th>
-                <th className="border-b p-3 text-left">Profession</th>
-                <th className="border-b p-3 text-center">View Profile</th>
+        <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md reveal">
+          <thead>
+            <tr className="bg-gray-200 text-gray-700">
+              <th className="border border-gray-300 p-2">Stream</th>
+              <th className="border border-gray-300 p-2">Username</th>
+              <th className="border border-gray-300 p-2">Primary Skillset</th>
+              <th className="border border-gray-300 p-2">Institution Name</th>
+              <th className="border border-gray-300 p-2">Country</th>
+              <th className="border border-gray-300 p-2">Profession</th>
+              <th className="border border-gray-300 p-2">View Profile</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.map((item, index) => (
+              <tr key={index} className="hover:bg-gray-100 transition duration-200 ease-in-out reveal">
+                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.dept}</td>
+                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.name}</td>
+                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.primarySkill}</td>
+                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.college}</td>
+                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.country}</td>
+                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.profession}</td>
+                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">
+                  <Link href={`/profile/${item.id}`}>
+                    <div className="w-10 h-10 bg-black rounded-full flex justify-center items-center hover:bg-gray-800 transition duration-300 cursor-pointer">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="white"
+                        className="w-6 h-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                  </Link>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item, index) => (
-                <tr 
-                  key={item.id}
-                  ref={index === filteredData.length - 1 ? lastUserRef : null}
-                  className="hover:bg-gray-50 transition duration-200"
-                >
-                  <td className="border-b p-3">{item.dept}</td>
-                  <td className="border-b p-3">{item.name}</td>
-                  <td className="border-b p-3">{item.primarySkill}</td>
-                  <td className="border-b p-3">{item.college}</td>
-                  <td className="border-b p-3">{item.country}</td>
-                  <td className="border-b p-3">{item.profession}</td>
-                  <td className="border-b p-3 text-center">
-                    <Link href={`/profile/${item.id}`}>
-                      <div className="inline-block w-8 h-8 bg-blue-500 rounded-full items-center justify-center hover:bg-blue-600 transition duration-300">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="white"
-                          className="w-5 h-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </div>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       )}
-
-      {loading && (
-        <div className="flex justify-center items-center my-8">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
-          <p className="ml-4 text-lg font-semibold text-gray-700">Loading users...</p>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 
