@@ -113,6 +113,7 @@ function Page() {
                         />
                       </svg>
                     </div>
+                    +
                   </Link>
                 </td>
               </tr>

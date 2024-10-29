@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -10,12 +10,18 @@ import {
   Users,
   AlertCircle
 } from 'lucide-react';
+import { Findgrouprole } from '@/actions/group';
 
-const Calendar = () => {
+
+const Calendar = ({params}) => {
+  console.log('params',params);
+  const groupId=params.id;
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [view, setView] = useState('month'); // month, week, day
+  const [view, setView] = useState('month'); 
   const [showEventModal, setShowEventModal] = useState(false);
+  const[isAdmin,setisAdmin]=useState(false);
+  const[isLoading,setisLoading]=useState(false);
   const [events, setEvents] = useState([
     {
       id: 1,
@@ -28,6 +34,24 @@ const Calendar = () => {
       color: 'bg-blue-500'
     }
   ]);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const {isAdmin} = await Findgrouprole(groupId)
+        setisAdmin(isAdmin===true)
+        if(isAdmin)
+        console.log('admin',isAdmin );
+      } catch (error) { 
+        console.error('Error checking admin status:', error);
+      } finally {
+        setisLoading(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [groupId]);
+
   const [newEvent, setNewEvent] = useState({
     title: '',
     start: new Date(),
@@ -56,7 +80,7 @@ const Calendar = () => {
       days.push(new Date(year, month, i));
     }
     
-    // Add next month's days
+   
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
       days.push(new Date(year, month + 1, i));
@@ -124,10 +148,45 @@ const Calendar = () => {
     setCurrentDate(newDate);
   };
 
+  const formatDateForInput = (date) => {
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  };
+
+  // Helper function to parse datetime-local input value
+  const parseDateFromInput = (dateString) => {
+    const date = new Date(dateString);
+    return date;
+  };
+
   const handleDateClick = (date) => {
+    // Set the initial times for the new event
+    const startDate = new Date(date);
+    startDate.setHours(9, 0, 0); // Set default start time to 9:00 AM
+    const endDate = new Date(date);
+    endDate.setHours(10, 0, 0); // Set default end time to 10:00 AM
+
+    setNewEvent({
+      ...newEvent,
+      start: startDate,
+      end: endDate
+    });
     setSelectedDate(date);
     setShowEventModal(true);
   };
+
+  // Update the event modal input handlers
+  const handleStartDateChange = (e) => {
+    const newDate = parseDateFromInput(e.target.value);
+    setNewEvent({ ...newEvent, start: newDate });
+  };
+
+  const handleEndDateChange = (e) => {
+    const newDate = parseDateFromInput(e.target.value);
+    setNewEvent({ ...newEvent, end: newDate });
+  };
+
 
   const handleAddEvent = () => {
     if (newEvent.title.trim()) {
@@ -293,7 +352,7 @@ const Calendar = () => {
         </div>
 
         {/* Event Modal */}
-        {showEventModal && (
+        {isAdmin && showEventModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
             <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md">
               <div className="flex justify-between items-center mb-4">
@@ -321,20 +380,20 @@ const Calendar = () => {
                   <div>
                     <label className="block text-sm font-medium mb-1">Start</label>
                     <input
-                      type="datetime-local"
-                      className="w-full p-2 bg-gray-700 rounded border border-white/20"
-                      value={newEvent.start.toISOString().slice(0, 16)}
-                      onChange={(e) => setNewEvent({ ...newEvent, start: new Date(e.target.value) })}
-                    />
+                  type="datetime-local"
+                  className="w-full p-2 bg-gray-700 rounded border border-white/20"
+                  value={formatDateForInput(newEvent.start)}
+                  onChange={handleStartDateChange}
+                />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">End</label>
                     <input
-                      type="datetime-local"
-                      className="w-full p-2 bg-gray-700 rounded border border-white/20"
-                      value={newEvent.end.toISOString().slice(0, 16)}
-                      onChange={(e) => setNewEvent({ ...newEvent, end: new Date(e.target.value) })}
-                    />
+                  type="datetime-local"
+                  className="w-full p-2 bg-gray-700 rounded border border-white/20"
+                  value={formatDateForInput(newEvent.end)}
+                  onChange={handleEndDateChange}
+                />
                   </div>
                 </div>
 

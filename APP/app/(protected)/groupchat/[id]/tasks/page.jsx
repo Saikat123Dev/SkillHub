@@ -1,9 +1,56 @@
 'use client'
-import React, { useState } from 'react';
-import { PlusCircle, X, Plus, Trash2 } from 'lucide-react';
+import React, { useState,useEffect } from 'react';
+import { PlusCircle, X, Plus, Trash2,Lock } from 'lucide-react';
+import {Findgrouprole} from '../../../../../actions/group'
+import { createLane, deleteLane, createCard, deleteCard, moveCard, getLanesByGroup } from '../../../../../actions/tasks'
+
+
 
 const KanbanBoard = ({params}) => {
-  console.log('params',params);
+  const groupId = params.id
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [lanes, setLanes] = useState([])
+  const[NewLaneTitle,setNewLaneTitle]=useState(" ")
+  const[showNewLaneForm,setShowNewLaneForm]=useState(false);
+  const [draggedCard, setDraggedCard] = useState(null)
+  const [showNewCardForm, setShowNewCardForm] = useState({ visible: false, laneId: null })
+  const [newCard, setNewCard] = useState({
+    title: '',
+    description: '',
+    label: '',
+    assignee: null,
+    priority: null
+  })
+
+  useEffect(() => {
+    const initialize = async () => {
+      try {
+        // Check admin status
+        const { isAdmin } = await Findgrouprole(groupId)
+        setIsAdmin(isAdmin === true)
+
+        // Fetch lanes and cards
+        const { success, lanes: fetchedLanes } = await getLanesByGroup(groupId)
+        if (success) {
+          const formattedLanes = fetchedLanes.map(lane => ({
+            ...lane,
+            cards: lane.cards.map(card => ({
+              ...card,
+              priority: priorities.find(p => p.id === card.priority),
+            }))
+          }))
+          setLanes(formattedLanes)
+        }
+      } catch (error) {
+        console.error('Initialization error:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    initialize()
+  }, [groupId])
   
   const teamMembers = [
     { id: 1, name: 'John Doe' },
@@ -18,140 +65,142 @@ const KanbanBoard = ({params}) => {
     { id: 'low', label: 'Low', color: 'bg-green-100 text-green-800' }
   ];
 
-  const [lanes, setLanes] = useState([
-    {
-      id: 'lane1',
-      title: 'Planned Tasks',
-      cards: [
-        { 
-          id: 'card1', 
-          title: 'Write Blog', 
-          description: 'Can AI make memes', 
-          label: '30 mins',
-          assignee: teamMembers[0],
-          priority: priorities[0]
-        },
-        { 
-          id: 'card2', 
-          title: 'Pay Rent', 
-          description: 'Transfer via NEFT', 
-          label: '5 mins',
-          assignee: teamMembers[1],
-          priority: priorities[1]
-        }
-      ]
-    },
-    {
-      id: 'lane2',
-      title: 'In Progress',
-      cards: []
-    },
-    {
-      id: 'lane3',
-      title: 'Completed',
-      cards: []
-    }
-  ]);
-
-  const [draggedCard, setDraggedCard] = useState(null);
-  const [showNewCardForm, setShowNewCardForm] = useState({ visible: false, laneId: null });
-  const [newCard, setNewCard] = useState({ 
-    title: '', 
-    description: '', 
-    label: '',
-    assignee: null,
-    priority: null
-  });
-  const [showNewLaneForm, setShowNewLaneForm] = useState(false);
-  const [newLaneTitle, setNewLaneTitle] = useState('');
-
-  const handleDragStart = (card, laneId) => {
-    setDraggedCard({ ...card, sourceLaneId: laneId });
-  };
+  const handleDragStart = (card, sourceLaneId) => {
+    setDraggedCard({ ...card, sourceLaneId })
+  }
 
   const handleDragOver = (e) => {
-    e.preventDefault();
-  };
+    e.preventDefault()
+  }
 
-  const handleDrop = (targetLaneId) => {
-    if (draggedCard && draggedCard.sourceLaneId !== targetLaneId) {
-      const updatedLanes = lanes.map(lane => {
-        if (lane.id === draggedCard.sourceLaneId) {
-          return {
-            ...lane,
-            cards: lane.cards.filter(card => card.id !== draggedCard.id)
-          };
-        }
-        if (lane.id === targetLaneId) {
-          return {
-            ...lane,
-            cards: [...lane.cards, { 
-              ...draggedCard,
-              id: draggedCard.id
-            }]
-          };
-        }
-        return lane;
-      });
-      setLanes(updatedLanes);
-    }
-    setDraggedCard(null);
-  };
+  const handleDrop = async (targetLaneId) => {
+    if (!isAdmin || !draggedCard) return
 
-  const handleNewCardSubmit = (laneId) => {
-    if (newCard.title.trim() && newCard.assignee && newCard.priority) {
-      const updatedLanes = lanes.map(lane => {
-        if (lane.id === laneId) {
-          return {
-            ...lane,
-            cards: [...lane.cards, { 
-              id: `card${Date.now()}`,
-              ...newCard
-            }]
-          };
-        }
-        return lane;
-      });
-      setLanes(updatedLanes);
-      setNewCard({ title: '', description: '', label: '', assignee: null, priority: null });
-      setShowNewCardForm({ visible: false, laneId: null });
-    }
-  };
-
-  const handleDeleteCard = (cardId, laneId) => {
-    const updatedLanes = lanes.map(lane => {
-      if (lane.id === laneId) {
-        return {
-          ...lane,
-          cards: lane.cards.filter(card => card.id !== cardId)
-        };
+    try {
+      const { success } = await moveCard(draggedCard.id, targetLaneId)
+      if (success) {
+        const updatedLanes = lanes.map(lane => {
+          if (lane.id === draggedCard.sourceLaneId) {
+            return {
+              ...lane,
+              cards: lane.cards.filter(card => card.id !== draggedCard.id)
+            }
+          }
+          if (lane.id === targetLaneId) {
+            return {
+              ...lane,
+              cards: [...lane.cards, draggedCard]
+            }
+          }
+          return lane
+        })
+        setLanes(updatedLanes)
       }
-      return lane;
-    });
-    setLanes(updatedLanes);
-  };
-
-  const handleAddLane = () => {
-    if (newLaneTitle.trim()) {
-      setLanes([...lanes, {
-        id: `lane${Date.now()}`,
-        title: newLaneTitle,
-        cards: []
-      }]);
-      setNewLaneTitle('');
-      setShowNewLaneForm(false);
+    } catch (error) {
+      console.error('Error moving card:', error)
     }
-  };
+    setDraggedCard(null)
+  }
+  const handleNewCardSubmit = async (laneId) => {
+    if (!isAdmin || !newCard.title.trim() || !newCard.assignee || !newCard.priority) return
 
-  const handleDeleteLane = (laneId) => {
-    setLanes(lanes.filter(lane => lane.id !== laneId));
-  };
+    try {
+    
+      const { success, card } = await createCard(laneId, newCard)
+      if (success) {
+        const formattedCard = {
+          ...card,
+          priority: priorities.find(p => p.id === card.priority)
+        }
+        const updatedLanes = lanes.map(lane => {
+          if (lane.id === laneId) {
+            return {
+              ...lane,
+              cards: [...lane.cards, formattedCard]
+            }
+          }
+          return lane
+        })
+        setLanes(updatedLanes)
+        setNewCard({ title: '', description: '', label: '', assignee: null, priority: null })
+        setShowNewCardForm({ visible: false, laneId: null })
+      }
+    } catch (error) {
+      console.error('Error creating card:', error)
+    }
+  }
+
+  const handleDeleteCard = async (cardId, laneId) => {
+    if (!isAdmin) return
+
+    try {
+      const { success } = await deleteCard(cardId)
+      if (success) {
+        const updatedLanes = lanes.map(lane => {
+          if (lane.id === laneId) {
+            return {
+              ...lane,
+              cards: lane.cards.filter(card => card.id !== cardId)
+            }
+          }
+          return lane
+        })
+        setLanes(updatedLanes)
+      }
+    } catch (error) {
+      console.error('Error deleting card:', error)
+    }
+  }
+
+  const handleAddLane = async () => {
+    if (!isAdmin || !NewLaneTitle.trim()) return
+
+    try {
+      const { success, lane } = await createLane(groupId, NewLaneTitle)
+      if (success) {
+        setLanes([...lanes, { ...lane, cards: [] }])
+        setNewLaneTitle('')
+        setShowNewLaneForm(false)
+      }
+    } catch (error) {
+      console.error('Error creating lane:', error)
+    }
+  }
+
+  const handleDeleteLane = async (laneId) => {
+    if (!isAdmin) return
+
+    try {
+      const { success } = await deleteLane(laneId)
+      if (success) {
+        setLanes(lanes.filter(lane => lane.id !== laneId))
+      }
+    } catch (error) {
+      console.error('Error deleting lane:', error)
+    }
+  }
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+    </div>
+  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-700 via-indigo-800 to-gray-900 text-white p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Kanban Board</h1>
+          {!isAdmin && (
+            <div className='flex items-center gap-2 bg-white/10 px-3 py-1 rounded-lg'>
+              <Lock size={16}/>
+              <span className="text-sm">Read-only mode</span>
+              </div>
+          ) 
+
+          }
+          {isAdmin && (
           <button
             onClick={() => setShowNewLaneForm(true)}
             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all"
@@ -159,41 +208,51 @@ const KanbanBoard = ({params}) => {
             <Plus size={20} />
             <span>Add Lane</span>
           </button>
+           )}
         </div>
+         
 
         <div className="flex gap-6 overflow-x-auto pb-8">
           {lanes.map(lane => (
             <div
               key={lane.id}
-              className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-lg rounded-xl p-4"
+              className={`flex-shrink-0 w-80 bg-white/10 backdrop-blur-lg rounded-xl p-4 ${
+                isAdmin ? 'cursor-pointer' : 'cursor-default'
+              }`}
               onDragOver={handleDragOver}
               onDrop={() => handleDrop(lane.id)}
             >
               <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold text-lg">{lane.title} ({lane.cards.length})</h2>
+                {isAdmin && (
                 <button
                   onClick={() => handleDeleteLane(lane.id)}
                   className="text-white/60 hover:text-red-400 transition-colors"
                 >
                   <Trash2 size={16} />
                 </button>
+                )}
               </div>
-              
+<div className='space-y-4'>              
               {lane.cards.map(card => (
                 <div
                   key={card.id}
-                  className="bg-white/5 backdrop-blur-lg p-4 rounded-lg mb-3 cursor-move hover:bg-white/10 transition-all border border-white/10"
+                  className={`flex-shrink-0 w-72 py-5 bg-white/10 backdrop-blur-lg rounded-xl p-4 ${
+                    isAdmin ? 'cursor-pointer' : 'cursor-default'
+                  }`}
                   draggable
                   onDragStart={() => handleDragStart(card, lane.id)}
                 >
                   <div className="flex justify-between items-start">
                     <h3 className="font-semibold">{card.title}</h3>
+                    {isAdmin && (
                     <button
                       onClick={() => handleDeleteCard(card.id, lane.id)}
                       className="text-white/60 hover:text-red-400"
                     >
                       <X size={16} />
                     </button>
+                    )}
                   </div>
                   <p className="text-sm text-white/70 mt-2">{card.description}</p>
                   <div className="flex flex-wrap gap-2 mt-3">
@@ -215,6 +274,7 @@ const KanbanBoard = ({params}) => {
                   </div>
                 </div>
               ))}
+              </div> 
 
               {showNewCardForm.visible && showNewCardForm.laneId === lane.id ? (
                 <div className="bg-white/5 backdrop-blur-lg p-4 rounded-lg border border-white/10">
@@ -294,24 +354,33 @@ const KanbanBoard = ({params}) => {
                   </div>
                 </div>
               ) : (
-                <button
-                  onClick={() => setShowNewCardForm({ visible: true, laneId: lane.id })}
-                  className="flex items-center gap-1 text-white/60 hover:text-white/90 transition-colors w-full justify-center py-2"
-                >
-                  <PlusCircle size={16} />
-                  <span>Add Card</span>
-                </button>
+                <>
+               {isAdmin ? (
+  <button
+    onClick={() => setShowNewCardForm({ visible: true, laneId: lane.id })}
+    className="flex items-center gap-1 text-white/60 hover:text-white/90 transition-colors w-full justify-center py-2"
+  >
+    <PlusCircle size={16} />
+    <span>Add Card</span>
+  </button>
+) : (
+  <div className="flex items-center gap-1 text-white/40 justify-center py-2">
+    <Lock size={16} />
+  </div>
+)}
+                </>
               )}
             </div>
           ))}
+          
 
-          {showNewLaneForm && (
+          {isAdmin && showNewLaneForm && (
             <div className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-lg rounded-xl p-4">
               <input
                 type="text"
                 placeholder="Lane Title"
                 className="w-full mb-2 p-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50"
-                value={newLaneTitle}
+                value={NewLaneTitle}
                 onChange={(e) => setNewLaneTitle(e.target.value)}
               />
               <div className="flex gap-2">
