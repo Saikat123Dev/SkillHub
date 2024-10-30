@@ -135,3 +135,60 @@ export const Findgrouprole = async (groupid: any) => {
     throw new Error("Failed to find group role");
   }
 };
+
+export const findMyAllGroups=async()=>{
+  const user = await currentUser();
+  console.log("currentuser", user);
+
+  if (!user) {
+    return { error: "Unauthorized" };
+  }
+
+  // Await the getUserById() promise to resolve
+  const dbUser = await getUserById(user.id);
+  if (!dbUser) {
+    return { error: "Unauthorized" };
+  }
+  console.log("dbUser", dbUser);
+
+  try{
+    const groups = await db.groupMembership.findMany({
+      where: {
+        userId: dbUser.id
+      },
+      include: {
+        group: {
+          select: {
+            id: true,
+            grpname: true,
+            grpbio: true,
+            admin: {
+              select: {
+                name: true,
+                id: true
+              }
+            },
+            members: {
+              select: {
+                user: {
+                  select: {
+                    name: true,
+                    id: true
+                  }
+                },
+                role: true
+              }
+            }
+          }
+        }
+      }
+    });
+    return groups;
+    console.log('groups',groups);
+
+
+  }catch(error){
+    console.error("Error in findAllGroups function:", error);
+    throw new Error("Failed to find all groups");
+  }
+}

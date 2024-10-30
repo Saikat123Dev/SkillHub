@@ -21,7 +21,7 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
           itemKey="groups"
           icon={<LayoutDashboard size={20} />}
           text="Groups"
-          href="/groups"
+          href="/mygroups"
           alert
         />
         <SidebarItem
