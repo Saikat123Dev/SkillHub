@@ -1,24 +1,22 @@
-import React from 'react';
-import { Check, X, Plus } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { IndividualGroup } from '@/actions/group';
 import { getUserById } from "@/data/user";
 import Link from 'next/link';
 import { currentUser } from "@/lib/auth";
-
+import AcceptButton from '@/components/acceptButton'; // Adjust path as necessary
 
 const WhatsAppGroup = async ({ params }) => {
-  const id = params?.id;
+  const {id,requestId} = params;
 
-  const grp = await IndividualGroup(id);
+  // Fetch the current user and group data
   const user = await currentUser();
-
-  console.log("currentUser", user);
-
   if (!user) {
-    return { error: "Unauthorized" };
+    return <div>Unauthorized</div>;
   }
 
-  const currid = user.id; 
+  const grp = await IndividualGroup(id);
+
+  const currid =user.id;
   const admin = await getUserById(grp.adminId);
 
   // Ensure admin data is available
@@ -70,20 +68,17 @@ const WhatsAppGroup = async ({ params }) => {
 
         {currid !== grp.adminId ? (
           <div className="flex justify-between">
-            <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center">
-              <Check size={18} className="mr-2" />
-              Accept
-            </button>
+            <AcceptButton groupId={grp.id} requestId={requestId} userId={currid} />
             <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded flex items-center">
               <X size={18} className="mr-2" />
               Decline
             </button>
           </div>
         ) : (
-          <div className='w-32'>
+          <div className="w-32">
             <Link href="/search" className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center">
               <Plus className="mr-2" size={20} />
-               Members
+              Members
             </Link>
           </div>
         )}

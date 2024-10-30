@@ -13,7 +13,6 @@ export const creategroup = async (formData: { get: (arg0: string) => any }) => {
       throw new Error("Missing required fields: grpname, grpbio");
     }
 
-    // Await the currentUser() promise to resolve
     const user = await currentUser();
     console.log("currentuser", user);
 
@@ -21,14 +20,12 @@ export const creategroup = async (formData: { get: (arg0: string) => any }) => {
       return { error: "Unauthorized" };
     }
 
-    // Await the getUserById() promise to resolve
     const dbUser = await getUserById(user.id);
     if (!dbUser) {
       return { error: "Unauthorized" };
     }
     console.log("dbUser", dbUser);
 
-    // Create a new group
     const new_grp = await db.group.create({
       data: {
         grpname,
@@ -42,14 +39,14 @@ export const creategroup = async (formData: { get: (arg0: string) => any }) => {
         },
       },
       include: {
-        members: true, 
-    }
-  });
+        members: true,
+      }
+    });
 
     console.log("New group created:", new_grp);
     return new_grp;
   } catch (error) {
-    console.error("Error in addgroup function:", error);
+    console.error("Error in creategroup function:", error);
     throw new Error("Failed to create group");
   }
 };
@@ -61,8 +58,8 @@ export const IndividualGroup = async (grpid: any) => {
         id: grpid,
       },
     });
-    return group;
     console.log("group", group);
+    return group;
   } catch (error) {
     console.error("Error in IndividualGroup function:", error);
     throw new Error("Failed to get group");
@@ -80,7 +77,6 @@ export const AllGroups = async (userid: any) => {
         grpname: true,
       },
     });
-
     return groups;
   } catch (error) {
     console.error("Error in AllGroups function:", error);
@@ -97,33 +93,28 @@ export const Findgrouprole = async (groupid: any) => {
       return { error: "Unauthorized" };
     }
 
-    // Await the getUserById() promise to resolve
     const dbUser = await getUserById(user.id);
     if (!dbUser) {
       return { error: "Unauthorized" };
     }
     console.log("dbUser", dbUser);
 
-    // Find the user's role in the specified group
     const groupMembers = await db.groupMembership.findUnique({
       where: {
         userId_groupId: {
           userId: dbUser.id,
           groupId: groupid,
         },
-        
       },
       select: {
         role: true,
       },
     });
 
-    // Check if the group membership entry exists
     if (!groupMembers) {
       return { error: "User is not a member of the group" };
     }
 
-  
     const isAdmin = groupMembers.role === "ADMIN";
 
     return {
@@ -131,7 +122,7 @@ export const Findgrouprole = async (groupid: any) => {
       role: groupMembers.role,
     };
   } catch (error) {
-    console.error("Error in findgrouprole function:", error);
+    console.error("Error in Findgrouprole function:", error);
     throw new Error("Failed to find group role");
   }
 };

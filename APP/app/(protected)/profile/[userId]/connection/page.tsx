@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import Link from 'next/link';
 
 type FriendRequest = {
   id: string;
@@ -11,6 +12,7 @@ type FriendRequest = {
   projectDescription: string;
   purpose: string;
   mutualSkill: string;
+  groupUrl:string;
   createdAt: string;
   updatedAt: string;
   sender: {
@@ -32,7 +34,6 @@ const getRandomColor = () => {
   return colors[Math.floor(Math.random() * colors.length)];
 };
 
-// Function to get initials from the sender's name
 const getInitials = (name: string) => {
   const nameParts = name.split(' ');
   return nameParts.map((part) => part[0]).join('').toUpperCase();
@@ -43,13 +44,13 @@ const FriendRequestsPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const session = useCurrentUser();
-  const receiverId =session.id; // Get the logged-in user's session
+  const receiverId =session?.id; // Get the logged-in user's session
 
   const fetchFriendRequests = async () => {
     try {
       console.log('Receiver ID:', receiverId); // Log receiverId
 
-      const response = await fetch(`http://localhost:3000/api/connect/getAll?receiverId=${receiverId}`);"66ffbe8d8c71a5afa10f1806"
+      const response = await fetch(`http://localhost:3000/api/connect/getAll?receiverId=${receiverId}`);
       console.log('Response:', response); // Log full response
 
       if (!response.ok) {
@@ -58,13 +59,11 @@ const FriendRequestsPage = () => {
       }
 
       const data = await response.json();
-      console.log('Data:', data); // Log the fetched data
-
+      console.log('Data:', data); 
       if (Array.isArray(data)) {
         setFriendRequests(data);
       } else if (data.message) {
-        setFriendRequests([]); // Clear previous requests or handle it accordingly
-        setError(data.message);
+        setFriendRequests([]);    setError(data.message);
       } else {
         throw new Error('Invalid data format');
       }
@@ -166,6 +165,12 @@ const FriendRequestsPage = () => {
                   <p className="text-gray-700"><strong>Project Description:</strong> {request.projectDescription}</p>
                   <p className="text-gray-700"><strong>Purpose:</strong> {request.purpose}</p>
                   <p className="text-gray-700"><strong>Mutual Skill:</strong> {request.mutualSkill}</p>
+                  <div className="text-gray-700">
+    <strong>Group:</strong>
+    <Link href={`${request.groupUrl}/${request.id}`}>Group</Link>
+
+</div>
+
                 </div>
 
                 {request.status === 'PENDING' && (
