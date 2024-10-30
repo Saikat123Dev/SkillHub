@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+// import { Inter } from 'next/font/google'
 import { SessionProvider } from 'next-auth/react'
 import { auth } from '@/auth'
 import './globals.css'
@@ -9,7 +9,7 @@ import { extractRouterConfig } from "uploadthing/server";
  
 import { ourFileRouter } from "@/app/api/uploadthing/core";
  
-const inter = Inter({ subsets: ['latin'] })
+// const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -26,7 +26,7 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang="en">
-        <body className={inter.className}>
+        <body >
           <Toaster />
             <NextSSRPlugin
           /**

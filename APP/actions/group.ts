@@ -42,9 +42,9 @@ export const creategroup = async (formData: { get: (arg0: string) => any }) => {
         },
       },
       include: {
-        members: true, // Include the members relation in the response
-      },
-    });
+        members: true, 
+    }
+  });
 
     console.log("New group created:", new_grp);
     return new_grp;
@@ -85,5 +85,53 @@ export const AllGroups = async (userid: any) => {
   } catch (error) {
     console.error("Error in AllGroups function:", error);
     throw new Error("Failed to find all groups");
+  }
+};
+
+export const Findgrouprole = async (groupid: any) => {
+  try {
+    const user = await currentUser();
+    console.log("currentuser", user);
+
+    if (!user) {
+      return { error: "Unauthorized" };
+    }
+
+    // Await the getUserById() promise to resolve
+    const dbUser = await getUserById(user.id);
+    if (!dbUser) {
+      return { error: "Unauthorized" };
+    }
+    console.log("dbUser", dbUser);
+
+    // Find the user's role in the specified group
+    const groupMembers = await db.groupMembership.findUnique({
+      where: {
+        userId_groupId: {
+          userId: dbUser.id,
+          groupId: groupid,
+        },
+        
+      },
+      select: {
+        role: true,
+      },
+    });
+
+    // Check if the group membership entry exists
+    if (!groupMembers) {
+      return { error: "User is not a member of the group" };
+    }
+
+  
+    const isAdmin = groupMembers.role === "ADMIN";
+
+    return {
+      isAdmin,
+      role: groupMembers.role,
+    };
+  } catch (error) {
+    console.error("Error in findgrouprole function:", error);
+    throw new Error("Failed to find group role");
   }
 };

@@ -15,14 +15,15 @@ enum UserGender {
 }
 
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  email         String    @unique
-  username      String?
-  birthday      DateTime?
- //Date-Time
-  group         Group[]
-  groupMembership  GroupMembership[]
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  email           String            @unique
+  username        String?
+  birthday        DateTime?
+  //Date-Time
+  group           Group[]
+  groupMembership GroupMembership[]
+  cards           Cards[]
 
   password        String
   primarySkill    String?
@@ -45,44 +46,66 @@ model User {
   posts           Post[]
   projects        Project[]
   experience      Experience[]
-  profilePic  String?
-  accounts    Account[]     @relation("UserAccounts")
-  Comment     Comment[]
-  CommentLike CommentVote[]
-  votes       Vote[]
+  profilePic      String?
+  accounts        Account[]     @relation("UserAccounts")
+  Comment         Comment[]
+  CommentLike     CommentVote[]
+  votes           Vote[]
 
   FriendRequest FriendRequest[] @relation("Sender")
 
   receivedFriendRequests FriendRequest[] @relation("Receiver")
 }
 
-model Group{
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  grpname     String  @unique
-  grpbio     String    @unique
-  adminId  String   @db.ObjectId
-  members  GroupMembership[]
+model Group {
+  id      String            @id @default(auto()) @map("_id") @db.ObjectId
+  grpname String            @unique
+  grpbio  String            @unique
+  adminId String            @db.ObjectId
+  members GroupMembership[]
+  lanes   Lanes[]
 
-
-  
-  admin  User @relation(fields: [adminId], references: [id])
+  admin User @relation(fields: [adminId], references: [id])
 }
+
 model GroupMembership {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId   String   @db.ObjectId
-  groupId  String   @db.ObjectId
-  role     GroupRole
+  id      String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String    @db.ObjectId
+  groupId String    @db.ObjectId
+  role    GroupRole
 
-  user     User     @relation(fields: [userId], references: [id])
-  group    Group    @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id])
 
-  @@unique([userId, groupId]) 
+  @@unique([userId, groupId])
   @@index([groupId])
 }
 
 enum GroupRole {
   MEMBER
   ADMIN
+}
+
+model Cards {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  label       String
+  priority    String
+  userId      String   @db.ObjectId
+  assignee    User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  laneId      String   @db.ObjectId
+  lanes       Lanes    @relation(fields: [laneId], references: [id])
+}
+
+model Lanes {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  title   String
+  cards   Cards[]
+  groupId String  @db.ObjectId
+  group   Group   @relation(fields: [groupId], references: [id])
 }
 
 model Project {
@@ -98,18 +121,18 @@ model Project {
 }
 
 model FriendRequest {
-  id         String              @id @default(auto()) @map("_id") @db.ObjectId
-  senderId   String              @db.ObjectId
-  receiverId String              @db.ObjectId
-  status     FriendRequestStatus @default(PENDING)
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  senderId           String              @db.ObjectId
+  receiverId         String              @db.ObjectId
+  status             FriendRequestStatus @default(PENDING)
   projectDescription String?
   purpose            String?
   mutualSkill        String?
-  createdAt  DateTime            @default(now())
-  updatedAt  DateTime            @updatedAt
-  groupUrl  String?
-  sender   User @relation("Sender", fields: [senderId], references: [id])
-  receiver User @relation("Receiver", fields: [receiverId], references: [id])
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  groupUrl           String?
+  sender             User                @relation("Sender", fields: [senderId], references: [id])
+  receiver           User                @relation("Receiver", fields: [receiverId], references: [id])
 
   @@unique([senderId, receiverId])
   @@index([senderId])
@@ -132,7 +155,7 @@ model Experience {
 }
 
 model Post {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   content   Json?
   published Boolean  @default(false)
   createdAt DateTime @default(now()) @map(name: "created_at")

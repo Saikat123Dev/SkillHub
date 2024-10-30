@@ -11,7 +11,6 @@ import Global from '@/images/Global Connecti 770a56d2-46ae-435d-abb7-3c33115e9ba
 import Skill from '@/images/Skill.png'; 
 import connect from '@/images/Connect.png'; 
 import { BackgroundGradient } from "@/components/ui/background-gradient"; 
-import './page.css'; 
 import { SparklesPreview } from "@/components/sparkleBackground";
 
 export default function Widget() {
@@ -19,7 +18,7 @@ export default function Widget() {
     <div className="min-h-full">
       {/* Header section */}
       <div className="relative h-screen bg-cover bg-center" style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
-        {/* Navigation bar */}
+       
         <nav className="fixed top-0 left-0 w-full flex justify-between items-center p-4 md:p-6 z-20 ">
           <div className="text-white text-xl md:text-2xl font-bold">Skill Connect</div>
           <div className="flex items-center space-x-4 md:space-x-6 text-white">
@@ -81,7 +80,7 @@ export default function Widget() {
         </div>
 
         {/* Feature section */}
-        <div className="flex flex-col md:flex-row items-center justify-center min-h-screen bg-white-900 text-white p-6">
+        <div className="flex flex-col md:flex-row items-center justify-center min-h-screen bg-white-900 text-white p-6"  style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
           <div className="md:w-1/2">
             {/* Image component */}
             <img
@@ -109,7 +108,7 @@ export default function Widget() {
         </div>
 
         {/* Collaboration section */}
-        <div className="flex flex-col md:flex-row items-center p-6 bg-white-900 light:bg-zinc-800">
+        <div className="flex flex-col md:flex-row items-center p-6 bg-white-900 light:bg-zinc-800"  style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
           <div className="md:w-1/2 p-6">
             <h2 className="text-3xl font-bold text-white light:text-white">
               Real-Time Collaboration Groups
@@ -137,17 +136,9 @@ export default function Widget() {
         </div>
 
 
-        {/* Call to action section */}
-        <div className=" text-white p-8" style={{
-          backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          height: "1px",
-          width: "100%",
-        }}>
-             </div>
-             <div className="animate mx-auto p-8">
-  <div className="flex flex-col md:flex-row justify-between items-center mb-16">
+        
+             <div className="animate mx-auto p-8" style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
+  <div className="flex flex-col md:flex-row justify-between items-center mb-16"  >
     <h2 className="mt-20 md:mt-0 text-4xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-8 md:mb-0">
       Boost Your Professional Network
     </h2>
@@ -155,7 +146,7 @@ export default function Widget() {
       Showcase projects and skills to the community, fostering recognition and valuable networking.
     </p>
   </div>
-  <div className="p-4 overflow-hidden relative">
+  <div className="p-4 overflow-hidden relative"  style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
     <div className="flex gap-9 animate-marquee">
       {/* Duplicate Image Set 1 */}
       <div className="relative flex-none max-h-[450px]">
@@ -266,7 +257,7 @@ export default function Widget() {
      
 
         {/* Footer section */}
-        <div></div>
+      
         <div className="bg-white dark:bg-zinc-800   py-9 px-4" style={{
           backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wall paper-background_58702-8632.jpg')",
           backgroundSize: "cover",

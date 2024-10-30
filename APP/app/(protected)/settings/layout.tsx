@@ -9,7 +9,7 @@ interface ProtectedLayoutProps {
 const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
     return (
       
-        <div className="flex flex-row  w-full overflow-auto">
+        <div className="flex flex-row   w-full overflow-auto">
           <nav className="flex flex-col space-y-4 w-72 min-h-full bg-slate-500 p-1 rounded-lg shadow-lg overflow-y-auto">
             <div className="relative w-full mb-6 mt-5">
               <UserPage />
@@ -48,4 +48,3 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
   }
   
   export default ProtectedLayout;
-  
