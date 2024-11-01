@@ -10,6 +10,9 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@nextui-org/react": "^2.1.13",
+    "appwrite": "^13.0.0",
+      "zustand": "^4.4.4",
     "@auth/prisma-adapter": "^1.0.12",
     "@editorjs/checklist": "^1.6.0",
     "@editorjs/code": "^2.9.0",

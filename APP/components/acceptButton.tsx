@@ -5,47 +5,36 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation';
 
 type AcceptButtonProps = {
-  requestId: string;
   groupId: string;
   userId: string;
 };
 
-export default function AcceptButton({ requestId, groupId, userId }: AcceptButtonProps) {
+export default function AcceptButton({ groupId, userId }: AcceptButtonProps) {
   const [status, setStatus] = useState("pending");
-  const router = useRouter(); // Use the router
-
+  const router = useRouter(); 
+  
   const handleAccept = async () => {
     try {
-      // Run both requests in parallel
-      const [acceptResponse, addGroupResponse] = await Promise.all([
-        // Accept friend request
-        fetch(`/api/connect/accept`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ requestId }),
-        }),
+      // Make a single request to add the user to the group
+      const addGroupResponse = await fetch(`/api/group/${groupId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, groupId }),
+      });
 
-        // Add user to the group
-        fetch(`/api/group/${groupId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, groupId }),
-        }),
-      ]);
-
-      // Check if both responses were successful
-      if (acceptResponse.ok && addGroupResponse.ok) {
+      // Check if the response was successful
+      if (addGroupResponse.ok) {
         setStatus("accepted");
         // Redirect using useRouter
         router.push(`/groupchat/${groupId}`); // Use groupId in the URL
-        console.log("Friend request accepted and user added to group successfully.");
+        console.log("User added to group successfully.");
       } else {
         setStatus("error");
-        console.error("Failed to complete one or both requests.");
+        console.error("Failed to add user to group.");
       }
     } catch (error) {
       setStatus("error");
-      console.error("Error processing requests:", error);
+      console.error("Error processing the request:", error);
     }
   };
 
