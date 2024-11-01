@@ -43,7 +43,7 @@ export async function createLane(groupId: any, title: any) {
           return { error: "Unauthorized" };
         }
     
-        // Await the getUserById() promise to resolve
+       
         const dbUser = await getUserById(user.id);
       const card = await db.cards.create({
         data: {
