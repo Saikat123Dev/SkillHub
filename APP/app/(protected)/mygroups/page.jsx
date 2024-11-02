@@ -47,12 +47,12 @@ const GroupDashboard = () => {
   const RoleIndicator = ({ role }) => (
     <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-sm ${getRoleColor(role)}`}>
       {role === 'ADMIN' ? (
-        <span className="font-medium flex justify-between">
+        <span className="font-medium flex justify-between py-1 px-1">
           <Crown size={16} />
           {role}
         </span>
       ) : (
-        <span className="font-medium">
+        <span className="font-medium flex justify-between py-1 px-1">
           <User size={16} />
           {role}
         </span>
@@ -62,7 +62,7 @@ const GroupDashboard = () => {
 
 
   const GroupCard = ({ group }) => (
-    <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg shadow-2xl p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-3xl font-bold text-gray-900">{group.group.grpname}</h3>
@@ -108,7 +108,7 @@ const GroupDashboard = () => {
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-slate-300 p-5 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-indigo-600" />

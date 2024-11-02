@@ -17,10 +17,10 @@ const KanbanBoard = ({params}) => {
   const [showNewCardForm, setShowNewCardForm] = useState({ visible: false, laneId: null })
   const [newCard, setNewCard] = useState({
     title: '',
-    description: '',
+    description: '',                                                                               
     label: '',
     assignee: null,
-    priority: null
+    priority: null,
   })
 
   useEffect(() => {

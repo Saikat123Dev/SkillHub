@@ -23,7 +23,7 @@ model User {
   //Date-Time
   group           Group[]
   groupMembership GroupMembership[]
-  cards           Cards[]
+  
 
   password        String
   primarySkill    String?
@@ -55,6 +55,8 @@ model User {
   FriendRequest FriendRequest[] @relation("Sender")
 
   receivedFriendRequests FriendRequest[] @relation("Receiver")
+
+  Cards Cards[]
 }
 
 model Group {
@@ -64,6 +66,8 @@ model Group {
   adminId String            @db.ObjectId
   members GroupMembership[]
   lanes   Lanes[]
+
+  calenders        Calendy[]
 
   admin User @relation(fields: [adminId], references: [id])
 }
@@ -77,9 +81,11 @@ model GroupMembership {
   user  User  @relation(fields: [userId], references: [id])
   group Group @relation(fields: [groupId], references: [id])
 
-  @@unique([userId])
+  // Add a composite unique constraint for userId and groupId
+  @@unique([userId, groupId])
   @@index([groupId])
 }
+
 
 enum GroupRole {
   MEMBER
@@ -105,6 +111,18 @@ model Lanes {
   title   String
   cards   Cards[]
   groupId String  @db.ObjectId
+  group   Group   @relation(fields: [groupId], references: [id])
+}
+
+model Calendy{
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+ start       DateTime
+  end         DateTime
+  priority    String   @default("medium") 
+  color       String   @default("bg-blue-500") 
+   groupId String  @db.ObjectId
   group   Group   @relation(fields: [groupId], references: [id])
 }
 

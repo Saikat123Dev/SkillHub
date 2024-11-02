@@ -2,9 +2,11 @@
 import React from 'react';
 import Link from 'next/link';
 
+
 const Layout = ({ params, children }) => {
   
-  const id = params?.id; // Get group ID from URL
+  const id = params?.id;
+  // const grp = await IndividualGroup(id); // Get group ID from URL
 
   return (
     <div className="h-screen flex flex-col">
