@@ -20,7 +20,7 @@ function HeroSection({ profileUserId }) {
   const session = useCurrentUser();
   const [groups, setGroups] = useState([]);
   const [group, setGroup] = useState("");
-
+  const [groupname , setGroupname] = useState("")
   useEffect(() => {
     const loadGroups = async () => {
       if (session?.id) {
@@ -56,6 +56,7 @@ function HeroSection({ profileUserId }) {
           message,
           purpose,
           skills,
+          groupname,
           groupUrl: group ? `http://localhost:3000/group/${group}` : "",
         }),
       });
@@ -245,7 +246,11 @@ function HeroSection({ profileUserId }) {
                           <select
                             id="group"
                             value={group}
-                            onChange={(e) => setGroup(e.target.value)}
+                            onChange={(e) => {
+                              const selectedGroup = groups.find(g => g.id === e.target.value);
+                              setGroupname(selectedGroup ? selectedGroup.grpname : "")
+                              setGroup(e.target.value)
+                            }}
                             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors duration-300 ease-in-out bg-white text-gray-900"
                           >
                             <option value="">No Group</option>

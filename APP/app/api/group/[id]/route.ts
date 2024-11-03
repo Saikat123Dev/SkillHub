@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
         role,
       },
     });
-    
+
+
     console.log("New member added:", newMember);
     return NextResponse.json(newMember, { status: 201 });
   } catch (error) {

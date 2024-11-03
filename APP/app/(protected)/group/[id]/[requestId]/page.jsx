@@ -1,3 +1,4 @@
+
 import { X, Plus } from 'lucide-react';
 import { IndividualGroup } from '@/actions/group';
 import { getUserById } from '@/data/user';
@@ -6,13 +7,7 @@ import { currentUser } from '@/lib/auth';
 import AcceptButton from '@/components/acceptButton';
 
 const WhatsAppGroup = async ({ params }) => {
-<<<<<<< HEAD:APP/app/(protected)/group/[id]/[requestId]/page.jsx
-  const { id, requestId } = params;
-=======
-  const {id} = params;
->>>>>>> f9373e389d6fce779fc385e8cfe5d3e733e4807d:APP/app/(protected)/group/[id]/page.jsx
-
-  // Fetch the current user
+  const {id,requestId} = params;
   const user = await currentUser();
   if (!user) {
     return <div>Unauthorized</div>;
@@ -24,7 +19,7 @@ const WhatsAppGroup = async ({ params }) => {
     return <div>Error: Cannot find group</div>;
   }
 
-  const currid = user.id;
+  const currid =user.id;
 
   // Fetch the admin data
   const admin = await getUserById(grp.adminId);
@@ -85,7 +80,7 @@ const WhatsAppGroup = async ({ params }) => {
 
         {currid !== grp.adminId ? (
           <div className="flex justify-between">
-            <AcceptButton groupId={grp.id} userId={currid} />
+            <AcceptButton groupId={grp.id} requestId={requestId} userId={currid} />
             <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded flex items-center">
               <X size={18} className="mr-2" />
               Decline
