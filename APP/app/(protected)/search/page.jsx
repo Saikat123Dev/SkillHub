@@ -7,30 +7,42 @@ import ScrollReveal from 'scrollreveal';
 
 function Page() {
   const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users');
+      
+        const queryParams = new URLSearchParams();
+
+        // Use `query` parameter for name search if provided
+        if (searchParams.has('query')) {
+          queryParams.append('name', searchParams.get('query'));
+        } else {
+          // Otherwise, use individual filters from URL
+          for (const [key, value] of searchParams.entries()) {
+            if (value.trim()) queryParams.append(key, value);
+          }
+        }
+
+        const response = await fetch(`/api/search?${queryParams.toString()}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
+
         const users = await response.json();
         console.log('Fetched users:', users); // Debug: Check all users fetched
-        setData(users);
-        setFilteredData(users); // Set initial display to all users
+        setData(users); // Set fetched data
       } catch (error) {
         console.error('Error fetching users:', error);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [searchParams]);
 
-  const updateFilters = (filters) => {
+  const handleFilterChange = (filters) => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value.trim() !== '') {
@@ -38,23 +50,7 @@ function Page() {
       }
     });
     router.push(params.toString() ? `?${params.toString()}` : '');
-
-    const filtered = data.filter((item) =>
-      Object.entries(filters).every(([key, value]) =>
-        !value || item[key]?.toLowerCase().includes(value.toLowerCase())
-      )
-    );
-    console.log('Filtered data:', filtered); // Debug: Check filtered users
-    setFilteredData(filtered.length ? filtered : data); // Default to all if no match
   };
-
-  useEffect(() => {
-    const currentFilters = {};
-    for (const [key, value] of searchParams.entries()) {
-      currentFilters[key] = value;
-    }
-    updateFilters(currentFilters);
-  }, [searchParams, data]);
 
   useEffect(() => {
     ScrollReveal().reveal('.reveal', {
@@ -64,17 +60,17 @@ function Page() {
       origin: 'bottom',
       reset: true,
     });
-  }, [filteredData]);
+  }, [data]);
 
   return (
     <>
       <p>Search Results</p>
       <h2 className="text-2xl font-bold mb-4 text-blue-600 reveal">SearchList</h2>
 
-      {filteredData.length === 0 ? (
+      {data.length === 0 ? (
         <p>No users found</p>
       ) : (
-        <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md reveal">
+        <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
           <thead>
             <tr className="bg-gray-200 text-gray-700">
               <th className="border border-gray-300 p-2">Stream</th>
@@ -87,8 +83,8 @@ function Page() {
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item, index) => (
-              <tr key={index} className="hover:bg-gray-100 transition duration-200 ease-in-out reveal">
+            {data.map((item, index) => (
+              <tr key={index} className="hover:bg-gray-100 transition duration-200 ease-in-out">
                 <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.dept}</td>
                 <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.name}</td>
                 <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.primarySkill}</td>
