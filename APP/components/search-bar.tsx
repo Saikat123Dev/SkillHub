@@ -32,7 +32,9 @@ function SearchBar() {
     });
     setAppliedFilters(filters);
   }, [searchParams]);
-
+  const handleInputFocus = () => {
+    router.push('/search');
+  };
   const updateURL = (newFilters: Record<string, string>, newQuery?: string) => {
     const queryParams = new URLSearchParams();
 
@@ -100,6 +102,7 @@ function SearchBar() {
           type="text"
           value={inputValue}
           onChange={handleInputChange}
+          onFocus={handleInputFocus} 
           placeholder={currentFilter ? `Enter ${currentFilter}...` : "Search usernames"}
           className="border border-gray-300 rounded-lg p-2 flex-grow focus:outline-none focus:ring focus:ring-blue-300 transition duration-200 ease-in-out hover:border-blue-500"
         />
