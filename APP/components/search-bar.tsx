@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname(); // Get the current path
   const [inputValue, setInputValue] = useState('');
   const [appliedFilters, setAppliedFilters] = useState<Record<string, string>>({});
   const [currentFilter, setCurrentFilter] = useState('');
@@ -32,9 +33,7 @@ function SearchBar() {
     });
     setAppliedFilters(filters);
   }, [searchParams]);
-  const handleInputFocus = () => {
-    router.push('/search');
-  };
+
   const updateURL = (newFilters: Record<string, string>, newQuery?: string) => {
     const queryParams = new URLSearchParams();
 
@@ -55,10 +54,8 @@ function SearchBar() {
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (currentFilter) {
-      // If a filter is selected, add it with the current input value
       handleAddFilter();
     } else {
-      // Otherwise, treat it as a regular search
       updateURL(appliedFilters, inputValue);
     }
   };
@@ -88,8 +85,13 @@ function SearchBar() {
     setInputValue(newValue);
 
     if (!currentFilter && newValue === '') {
-      // Only update URL immediately if we're not in filter mode and the input is cleared
       updateURL(appliedFilters, '');
+    }
+  };
+
+  const handleInputFocus = () => {
+    if (pathname !== '/search') { // Only navigate if not already on /search
+      router.push('/search');
     }
   };
 
@@ -102,7 +104,7 @@ function SearchBar() {
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          onFocus={handleInputFocus} 
+          onFocus={handleInputFocus}  // Navigate to /search on focus if not already there
           placeholder={currentFilter ? `Enter ${currentFilter}...` : "Search usernames"}
           className="border border-gray-300 rounded-lg p-2 flex-grow focus:outline-none focus:ring focus:ring-blue-300 transition duration-200 ease-in-out hover:border-blue-500"
         />
@@ -111,7 +113,7 @@ function SearchBar() {
           value={currentFilter}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
             setCurrentFilter(e.target.value);
-            setInputValue(''); // Clear input when filter changes
+            setInputValue('');
           }}
           className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring focus:ring-blue-300 transition duration-200 ease-in-out hover:border-blue-500"
         >
