@@ -148,6 +148,7 @@ model FriendRequest {
   mutualSkill        String?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+  groupname          String?
   groupUrl           String?
   sender             User                @relation("Sender", fields: [senderId], references: [id])
   receiver           User                @relation("Receiver", fields: [receiverId], references: [id])

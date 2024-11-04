@@ -5,6 +5,7 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import Link from 'next/link';
 
 type FriendRequest = {
+  groupname: string;
   id: string;
   senderId: string;
   receiverId: string;
@@ -12,7 +13,7 @@ type FriendRequest = {
   projectDescription: string;
   purpose: string;
   mutualSkill: string;
-  groupUrl:string;
+  groupUrl: string;
   createdAt: string;
   updatedAt: string;
   sender: {
@@ -20,7 +21,7 @@ type FriendRequest = {
 
 
 
-    
+
     id: string;
     name: string;
     email: string;
@@ -44,7 +45,7 @@ const FriendRequestsPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const session = useCurrentUser();
-  const receiverId =session?.id; // Get the logged-in user's session
+  const receiverId = session?.id; // Get the logged-in user's session
 
   const fetchFriendRequests = async () => {
     try {
@@ -59,11 +60,11 @@ const FriendRequestsPage = () => {
       }
 
       const data = await response.json();
-      console.log('Data:', data); 
+      console.log('Data:', data);
       if (Array.isArray(data)) {
         setFriendRequests(data);
       } else if (data.message) {
-        setFriendRequests([]);    setError(data.message);
+        setFriendRequests([]); setError(data.message);
       } else {
         throw new Error('Invalid data format');
       }
@@ -134,9 +135,8 @@ const FriendRequestsPage = () => {
             .map((request) => (
               <div
                 key={request.id}
-                className={`p-6 bg-white rounded-lg shadow-lg transition-transform duration-200 ${
-                  request.status === 'ACCEPTED' ? 'border-green-500' : request.status === 'REJECTED' ? 'border-red-500' : 'border-gray-300'
-                } hover:scale-105`}
+                className={`p-6 bg-white rounded-lg shadow-lg transition-transform duration-200 ${request.status === 'ACCEPTED' ? 'border-green-500' : request.status === 'REJECTED' ? 'border-red-500' : 'border-gray-300'
+                  } hover:scale-105`}
               >
                 <div className="flex items-center space-x-4">
                   {request.avatar ? (
@@ -166,29 +166,15 @@ const FriendRequestsPage = () => {
                   <p className="text-gray-700"><strong>Purpose:</strong> {request.purpose}</p>
                   <p className="text-gray-700"><strong>Mutual Skill:</strong> {request.mutualSkill}</p>
                   <div className="text-gray-700">
-    <strong>Group:</strong>
-    <Link href={`${request.groupUrl}/${request.id}`}>Group</Link>
-
-</div>
-
+                    <strong>Group:</strong>
+                  
+                    <p>{request.groupname}</p>
+                  </div>
+                    <p>
+                    <Link href={`${request.groupUrl}/${request.id}`}>View Group Details</Link>
+                    </p>
                 </div>
 
-                {request.status === 'PENDING' && (
-                  <div className="mt-4 flex space-x-3">
-                    <button
-                      onClick={() => acceptFriendRequest(request.id)}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition-colors"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => rejectFriendRequest(request.id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-colors"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                )}
               </div>
             ))}
         </div>

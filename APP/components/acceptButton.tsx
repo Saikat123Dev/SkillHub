@@ -1,40 +1,60 @@
-"use client"; // Marks this component as a Client Component
-
+"use client";
 import { Check } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify"; // Ensure react-toastify is installed and imported
 
 type AcceptButtonProps = {
+  requestId: string;
   groupId: string;
   userId: string;
 };
 
-export default function AcceptButton({ groupId, userId }: AcceptButtonProps) {
+export default function AcceptButton({ requestId, groupId, userId }: AcceptButtonProps) {
   const [status, setStatus] = useState("pending");
-  const router = useRouter(); 
-  
+  const router = useRouter();
+
   const handleAccept = async () => {
     try {
-      // Make a single request to add the user to the group
-      const addGroupResponse = await fetch(`/api/group/${groupId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, groupId }),
-      });
+      console.log("Starting handleAccept...");
 
-      // Check if the response was successful
-      if (addGroupResponse.ok) {
+      // Run both requests in parallel
+      const [acceptResponse, addGroupResponse] = await Promise.all([
+        fetch(`/api/connect/accept`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ requestId }),
+        }),
+        fetch(`/api/group/${groupId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, groupId }),
+        }),
+      ]);
+
+      console.log("Responses received", { acceptResponse, addGroupResponse });
+
+      // Check responses
+      if (acceptResponse.ok && addGroupResponse.ok) {
         setStatus("accepted");
-        // Redirect using useRouter
-        router.push(`/groupchat/${groupId}`); // Use groupId in the URL
-        console.log("User added to group successfully.");
+        toast.success("Request accepted, and user added to the group!");
+        router.push(`/groupchat/${groupId}/${requestId}`);
       } else {
-        setStatus("error");
-        console.error("Failed to add user to group.");
+        // Attempt to parse addGroupResponse for specific error details
+        const addGroupResult = await addGroupResponse.json().catch(() => ({}));
+
+        if (addGroupResult.code === "P2002") {
+          toast.info("User is already a member of this group.");
+          setStatus("already_member");
+        } else {
+          toast.error("Failed to add user to group.");
+          setStatus("error");
+        }
       }
     } catch (error) {
+      console.error("Error processing requests:", error);
       setStatus("error");
-      console.error("Error processing the request:", error);
+      toast.error("Error processing requests.");
     }
   };
 
@@ -42,7 +62,9 @@ export default function AcceptButton({ groupId, userId }: AcceptButtonProps) {
   if (status === "accepted") {
     return <p className="text-green-500 font-bold">Accepted</p>;
   }
-
+  if (status === "already_member") {
+    return <p className="text-blue-500 font-bold">Already a Member</p>;
+  }
   if (status === "error") {
     return <p className="text-red-500 font-bold">Error</p>;
   }
