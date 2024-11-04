@@ -40,7 +40,7 @@ export const creategroup = async (formData: { get: (arg0: string) => any }) => {
       },
       include: {
         members: true,
-      }
+      },
     });
 
     console.log("New group created:", new_grp);
@@ -127,7 +127,7 @@ export const Findgrouprole = async (groupid: any) => {
   }
 };
 
-export const findMyAllGroups=async()=>{
+export const findMyAllGroups = async () => {
   const user = await currentUser();
   console.log("currentuser", user);
 
@@ -142,10 +142,10 @@ export const findMyAllGroups=async()=>{
   }
   console.log("dbUser", dbUser);
 
-  try{
+  try {
     const groups = await db.groupMembership.findMany({
       where: {
-        userId: dbUser.id
+        userId: dbUser.id,
       },
       include: {
         group: {
@@ -156,30 +156,57 @@ export const findMyAllGroups=async()=>{
             admin: {
               select: {
                 name: true,
-                id: true
-              }
+                id: true,
+              },
             },
             members: {
               select: {
                 user: {
                   select: {
                     name: true,
-                    id: true
-                  }
+                    id: true,
+                  },
                 },
-                role: true
-              }
-            }
-          }
-        }
-      }
+                role: true,
+              },
+            },
+          },
+        },
+      },
     });
     return groups;
-    console.log('groups',groups);
-
-
-  }catch(error){
+    console.log("groups", groups);
+  } catch (error) {
     console.error("Error in findAllGroups function:", error);
     throw new Error("Failed to find all groups");
   }
-}
+};
+
+export const findMembers = async (groupId: any) => {
+  try {
+    const members = await db.group.findMany({
+      where: {
+        id: groupId,
+      },
+      include: {
+        members: {
+          select: {
+            role: true,
+            user: {
+              select: {
+                name: true,
+                id: true,
+                profilePic :true
+              },
+            },
+          },
+        },
+      },
+    });
+    return members;
+    console.log("members", members);
+  } catch (error) {
+    console.error("Error in findMembers function:", error);
+    throw new Error("Failed to find all groups");
+  }
+};
