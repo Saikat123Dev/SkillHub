@@ -6,6 +6,7 @@ import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import { useRouter } from 'next/navigation';
 import { creategroup } from '@/actions/group';
+import { useSession } from "next-auth/react";
 
 const StyledTextField = styled(TextField)({
   '& label': {
@@ -36,7 +37,8 @@ export default function BlogForm() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const ref = useRef();
   const router = useRouter();
-
+  const session = useSession();
+  const userId = session?.data.user.id
   const onSubmit = async (data) => {
     try {
       console.log('Submitted data:', data);
@@ -50,7 +52,7 @@ export default function BlogForm() {
       if (res && res.id) {
         console.log("Group created successfully with ID:", res.id);
         // Redirect to the newly created group's page
-        router.push(`/groupchat/${res.id}`);
+        router.push(`/groupchat/${res.id}/${userId}`);
       }
     } catch (error) {
       console.error(error.message);

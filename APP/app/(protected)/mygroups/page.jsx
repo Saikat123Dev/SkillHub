@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react'
 import { Users, ChevronRight, Loader2, UserCircle, Crown, User } from 'lucide-react'
 import { findMyAllGroups } from '@/actions/group'
 import Link from 'next/link'
+import { useSession } from "next-auth/react";
 
 const GroupDashboard = () => {
   const [groups, setGroups] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
-
+  const session = useSession();
+  const userId = session?.data.user.id
   // Utility Functions
   const getRoleColor = (role) => {
     switch (role.toLowerCase()) {
@@ -75,7 +77,7 @@ const GroupDashboard = () => {
           <Users className="h-5 w-5" />
           {group.group.members.length} members
         </span>
-        <Link className="flex items-center text-indigo-600 hover:text-indigo-700 font-semibold" href={`/groupchat/${group.group.id}`}>
+        <Link className="flex items-center text-indigo-600 hover:text-indigo-700 font-semibold" href={`/groupchat/${group.group.id}/${userId}`}>
           View Details
           <ChevronRight className="h-5 w-5 ml-1" />
         </Link>
