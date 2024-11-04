@@ -1,40 +1,60 @@
+<<<<<<< HEAD:APP/app/(protected)/group/[id]/page.jsx
+// WhatsAppGroupPage.tsx (Server Component)
+=======
 
 import { X, Plus } from 'lucide-react';
 import { IndividualGroup } from '@/actions/group';
 import { getUserById } from '@/data/user';
 import Link from 'next/link';
+>>>>>>> b318bc201fe20ecff922a0e4ab95e7ffcb90e23c:APP/app/(protected)/group/[id]/[requestId]/page.jsx
 import { currentUser } from '@/lib/auth';
-import AcceptButton from '@/components/acceptButton';
+import { findMembers, IndividualGroup } from '@/actions/group';
+import { getUserById } from '@/data/user';
+import WhatsAppGroupClient from '../../../../components/GroupPage';
 
+<<<<<<< HEAD:APP/app/(protected)/group/[id]/page.jsx
+const WhatsAppGroupPage = async ({ params }) => {
+  const { id } = params;
+  
+  // Fetch data on the server side
+=======
 const WhatsAppGroup = async ({ params }) => {
   const {id,requestId} = params;
+>>>>>>> b318bc201fe20ecff922a0e4ab95e7ffcb90e23c:APP/app/(protected)/group/[id]/[requestId]/page.jsx
   const user = await currentUser();
   if (!user) {
     return <div>Unauthorized</div>;
   }
 
-  // Fetch the group data
   const grp = await IndividualGroup(id);
+  console.log('grp',grp);
   if (!grp) {
     return <div>Error: Cannot find group</div>;
   }
 
+<<<<<<< HEAD:APP/app/(protected)/group/[id]/page.jsx
+  const members=await findMembers(id);
+  console.log(members[0].members);
+=======
   const currid =user.id;
+>>>>>>> b318bc201fe20ecff922a0e4ab95e7ffcb90e23c:APP/app/(protected)/group/[id]/[requestId]/page.jsx
 
-  // Fetch the admin data
   const admin = await getUserById(grp.adminId);
+  console.log('admin',admin);
   if (!admin) {
     return <div>Error: Cannot find Admin</div>;
   }
 
-  // Dummy data for group members (replace with actual data from your database)
-  const groupMembers = [
-    { name: 'Alice Smith', username: '@alicesmith', avatar: '/api/placeholder/32/32' },
-    { name: 'Bob Johnson', username: '@bobjohnson', avatar: '/api/placeholder/32/32' },
-    { name: 'Carol White', username: '@carolwhite', avatar: '/api/placeholder/32/32' },
-  ];
-
+  // Pass the fetched data to the client component
   return (
+<<<<<<< HEAD:APP/app/(protected)/group/[id]/page.jsx
+    <WhatsAppGroupClient 
+      group={grp}
+      admin={admin}
+      currentUser={user}
+      members={members[0].members}
+    />
+=======
     <div className="min-w-full mx-auto bg-gray-200 rounded-lg shadow-lg overflow-hidden">
       <div className="bg-green-600 text-white p-4">
         <h1 className="text-3xl font-extrabold">{grp.grpname}</h1>
@@ -99,7 +119,8 @@ const WhatsAppGroup = async ({ params }) => {
         )}
       </div>
     </div>
+>>>>>>> b318bc201fe20ecff922a0e4ab95e7ffcb90e23c:APP/app/(protected)/group/[id]/[requestId]/page.jsx
   );
 };
 
-export default WhatsAppGroup;
+export default WhatsAppGroupPage;
