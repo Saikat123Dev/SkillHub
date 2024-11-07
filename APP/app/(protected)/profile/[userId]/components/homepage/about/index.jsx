@@ -5,7 +5,7 @@ import Image from "next/image";
 import Education from '../../education/page';
 import Experience from '../../experience/page';
 
-function AboutSection() {
+function AboutSection({details}) {
 
   return (
     <div  className="relative z-50 border-t my-12 lg:my-24 border-[#25213b]">
@@ -30,33 +30,32 @@ function AboutSection() {
             Who I am?
           </p>
           <p className="text-gray-700 text-md lg:text-xl leading-relaxed mb-6">
-            {personalData.description}
+            {details && details.about?details.about:"Write about Yourself"}
           </p>
         </div>
         
         {/* Image Section */}
         <div className="flex justify-center order-1 lg:order-2">
-          <div className="relative">
-            <Image
-              src={personalData.profile}
-              width={280}
-              height={280}
-              alt="Abu Said"
-              className="rounded-lg transition-all duration-1000 grayscale hover:grayscale-0 hover:scale-105 shadow-md hover:shadow-xl cursor-pointer"
-            />
-            {/* Optional Decorative Circle */}
-            <div className="absolute -top-6 -left-6 w-32 h-32 bg-indigo-100 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
-          </div>
-        </div>
+  <div className="relative">
+    {details && details.profilePic ? (
+      <Image
+        src={details.profilePic}
+        width={280}
+        height={280}
+        alt="Abu Said"
+        className="rounded-lg transition-all duration-1000  hover:scale-105 shadow-md hover:shadow-xl cursor-pointer"
+      />
+    ) : (
+      <h1>Upload your Profile Picture</h1>
+    )}
+  </div>
+</div>
+
       </div>
       
-      {/* Education & Experience Sections */}
-      <div className="mt-12 lg:mt-20">
-        <Education />
-      </div>
-      <div className="mt-12 lg:mt-16">
-        <Experience />
-      </div>
+    
+     
+      
     </div>
     </div>
   );

@@ -102,7 +102,7 @@ const SettingsPage = () => {
         </header>
         <Card className="border mt-6 bg-gray-400 shadow-lg rounded-lg ">
           <div className="flex space-x-1">
-            <div className="w-full p-3 bg-gray-700 rounded-lg">
+            <div className=" p-3 bg-gray-700 rounded-lg">
               <h2 className="mb-4 text-white text-lg font-bold">
                 Edit Profile
               </h2>
@@ -255,7 +255,7 @@ const SettingsPage = () => {
                                       <Input
                                         {...field}
                                         type="text"
-                                        placeholder="akashGay"
+                                        placeholder="Enter your Unique UserName"
                                         disabled={isPending}
                                         className="input-field text-white bg-gray-700 border-gray-600 focus:border-yellow-400 focus:ring-yellow-400"
                                       />
@@ -267,34 +267,36 @@ const SettingsPage = () => {
                             </div>
 
                             <div>
-                              <FormField
-                                control={form.control}
-                                name="about"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-white font-semibold">
-                                      About
-                                    </FormLabel>
-                                    <FormControl>
-                                      <textarea
-                                        {...field}
-                                        placeholder="Tell us about yourself"
-                                        disabled={isPending}
-                                        className="input-field resize-none overflow-hidden w-full p-2 border rounded-md bg-gray-700 text-white focus:border-yellow-400 focus:ring-yellow-400"
-                                        rows={1}
-                                        onInput={(e) => {
-                                          const target =
-                                            e.target as HTMLTextAreaElement;
-                                          target.style.height = "auto";
-                                          target.style.height = `${target.scrollHeight}px`;
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="text-red-500 mt-1" />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
+  <FormField
+    control={form.control}
+    name="shortIntro"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel className="text-white font-semibold">
+          Short Introduction (2-3 Words)
+        </FormLabel>
+        <FormControl>
+          <textarea
+            {...field}
+            placeholder="e.g., Professional Software Developer"
+            disabled={isPending}
+            className="input-field resize-none overflow-hidden w-full p-2 border rounded-md bg-gray-700 text-white focus:border-yellow-400 focus:ring-yellow-400"
+            rows={1}
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = "auto";
+              target.style.height = `${target.scrollHeight}px`;
+            }}
+          />
+        </FormControl>
+        <FormMessage className="text-red-500 mt-1" />
+      </FormItem>
+    )}
+  />
+</div>
+
+
+                          
 
                             <div>
                               <FormField
@@ -339,7 +341,37 @@ const SettingsPage = () => {
                                 )}
                               />
                             </div>
+                            
                           </div>
+                          <div>
+                              <FormField
+                                control={form.control}
+                                name="about"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-white font-semibold">
+                                      About
+                                    </FormLabel>
+                                    <FormControl>
+                                      <textarea
+                                        {...field}
+                                        placeholder="Tell us about yourself"
+                                        disabled={isPending}
+                                        className="input-field resize-none overflow-hidden w-full p-2 border rounded-md bg-gray-700 text-white focus:border-yellow-400 focus:ring-yellow-400"
+                                        rows={1}
+                                        onInput={(e) => {
+                                          const target =
+                                            e.target as HTMLTextAreaElement;
+                                          target.style.height = "auto";
+                                          target.style.height = `${target.scrollHeight}px`;
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="text-red-500 mt-1" />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
                         </div>
 
                         <div className="p-6 bg-gray-800 rounded-lg shadow-md">
@@ -537,6 +569,30 @@ const SettingsPage = () => {
                                 )}
                               />
                             </div>
+                            <div className="mt-3">
+                          <FormField
+                              control={form.control}
+                              name="duration"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-white font-semibold mt-2">
+                                    Duration (Year)
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="text"
+                                      placeholder="e.g., 2021-2025"
+                                      disabled={isPending}
+                                      className="input-field text-white bg-gray-700 border-gray-600 focus:border-yellow-400 focus:ring-yellow-400"
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-red-500 mt-1" />
+                                </FormItem>
+                              )}
+                            />
+                            </div>
+                            
                           </div>
                         </div>
                         <div className="p-6 bg-gray-800 rounded-lg shadow-md">
