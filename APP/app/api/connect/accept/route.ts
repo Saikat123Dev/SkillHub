@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function POST(req: NextRequest) {
   try {
     const { requestId } = await req.json();
-
+    console.log(requestId)
     const existingRequest = await prisma.friendRequest.findUnique({
       where: { id: requestId },
     });

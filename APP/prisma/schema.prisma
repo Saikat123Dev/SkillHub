@@ -23,7 +23,6 @@ model User {
   //Date-Time
   group           Group[]
   groupMembership GroupMembership[]
-  
 
   password        String
   primarySkill    String?
@@ -67,7 +66,7 @@ model Group {
   members GroupMembership[]
   lanes   Lanes[]
 
-  calenders        Calendy[]
+  calenders Calendy[]
 
   admin User @relation(fields: [adminId], references: [id])
 }
@@ -85,7 +84,6 @@ model GroupMembership {
   @@unique([userId, groupId])
   @@index([groupId])
 }
-
 
 enum GroupRole {
   MEMBER
@@ -114,16 +112,16 @@ model Lanes {
   group   Group   @relation(fields: [groupId], references: [id])
 }
 
-model Calendy{
+model Calendy {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String
- start       DateTime
+  start       DateTime
   end         DateTime
-  priority    String   @default("medium") 
-  color       String   @default("bg-blue-500") 
-   groupId String  @db.ObjectId
-  group   Group   @relation(fields: [groupId], references: [id])
+  priority    String   @default("medium")
+  color       String   @default("bg-blue-500")
+  groupId     String   @db.ObjectId
+  group       Group    @relation(fields: [groupId], references: [id])
 }
 
 model Project {
@@ -153,7 +151,6 @@ model FriendRequest {
   sender             User                @relation("Sender", fields: [senderId], references: [id])
   receiver           User                @relation("Receiver", fields: [receiverId], references: [id])
 
-  @@unique([senderId, receiverId])
   @@index([senderId])
   @@index([receiverId])
 }

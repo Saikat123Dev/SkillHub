@@ -5,7 +5,7 @@ import { X, Plus } from "lucide-react";
 import Link from "next/link";
 import AcceptButton from "./acceptButton";
 
-const WhatsAppGroupClient = ({ admin, currentUser, members, group }) => {
+const WhatsAppGroupClient = ({ admin, currentUser, requestId, members, group }) => {
   return (
     <div className="min-w-full mx-auto bg-gray-200 rounded-lg shadow-lg overflow-hidden">
       <div className="bg-green-600 text-white p-4">
@@ -75,7 +75,7 @@ const WhatsAppGroupClient = ({ admin, currentUser, members, group }) => {
 
         {currentUser.id !== group.adminId ? (
           <div className="flex justify-between">
-            <AcceptButton groupId={group.id} userId={currentUser.id} />
+            <AcceptButton groupId={group.id} requestId={requestId} userId={currentUser.id} />
             <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded flex items-center">
               <X size={18} className="mr-2" />
               Decline
