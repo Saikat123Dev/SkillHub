@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { PlusCircle, X, Plus, Trash2, Lock } from "lucide-react";
-import { Findgrouprole, findMembers } from "../../../../../actions/group";
+import { Findgrouprole, findMembers } from "@/actions/group";
 import {
   createLane,
   deleteLane,
@@ -9,9 +9,9 @@ import {
   deleteCard,
   moveCard,
   getLanesByGroup,
-} from "../../../../../actions/tasks";
+} from "@/actions/tasks";
 
-const KanbanBoard = ({ params }) => {
+const KanbanBoard = ({ params }) => {  
   const groupId = params.id;
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

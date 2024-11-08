@@ -20,11 +20,7 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
             >
               Edit Profile
             </Link>
-            <button
-              className="p-2 w-full text-left text-white bg-gray-900 hover:bg-blue-900 transition-all duration-200 ease-in-out rounded-lg shadow-md"
-            >
-              Password Management
-            </button>
+           
             <Link
               href='/settings/projects'
               className="p-2 w-full text-left text-white bg-gray-900 hover:bg-blue-900 transition-all duration-200 ease-in-out rounded-lg shadow-md"

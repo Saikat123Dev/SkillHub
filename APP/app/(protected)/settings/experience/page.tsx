@@ -70,14 +70,14 @@ function page() {
       };
   return (
     <>
-     <div className="flex flex-col items-center justify-center min-h-screen w-full bg-gray-700">
+     <div className="flex flex-col items-center justify-center min-h-screen min-w-full bg-gray-700">
       <div className="min-w-full min-h-full p-3 bg-slate-500 rounded-lg ">
         <header className="flex items-center justify-between">
           <h1 className="text-2xl text-white font-bold">Setting</h1>
         </header>
       
 
-    <div className="w-4/4 p-4 bg-gray-700 rounded-lg">
+    <div className=" p-4 bg-gray-700 rounded-lg">
     <Form {...form}>
     <div className="p-8 bg-gray-800 rounded-lg shadow-lg">
     <h1 className="text-yellow-400 text-3xl font-bold underline mb-6">

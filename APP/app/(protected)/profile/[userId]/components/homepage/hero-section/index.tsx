@@ -11,7 +11,8 @@ import { useState, useEffect } from "react";
 import { useCurrentUser } from "../../../../../../../hooks/use-current-user";
 import { AllGroups } from "@/actions/group";
 
-function HeroSection({ profileUserId }) {
+
+function HeroSection({ details, profileUserId }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [purpose, setPurpose] = useState("collaboration");
@@ -20,7 +21,7 @@ function HeroSection({ profileUserId }) {
   const session = useCurrentUser();
   const [groups, setGroups] = useState([]);
   const [group, setGroup] = useState("");
-  const [groupname , setGroupname] = useState("")
+  const [groupname, setGroupname] = useState("");
   useEffect(() => {
     const loadGroups = async () => {
       if (session?.id) {
@@ -35,7 +36,7 @@ function HeroSection({ profileUserId }) {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const connectRequest = async (e: { preventDefault: () => void; }) => {
+  const connectRequest = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     const senderId = session?.id;
     if (!senderId) {
@@ -45,7 +46,6 @@ function HeroSection({ profileUserId }) {
       });
       return;
     }
-
     try {
       const response = await fetch("/api/connect/request", {
         method: "POST",
@@ -70,7 +70,9 @@ function HeroSection({ profileUserId }) {
         const errorData = await response.json();
         setNotification({
           type: "error",
-          message: `Failed to send request: ${errorData.message || "Unknown error"}`,
+          message: `Failed to send request: ${
+            errorData.message || "Unknown error"
+          }`,
         });
       }
     } catch (error) {
@@ -117,24 +119,27 @@ function HeroSection({ profileUserId }) {
         <div className="order-2 lg:order-1 flex flex-col items-start justify-center p-2 pb-20 md:pb-10 lg:pt-10">
           <h1 className="text-3xl font-bold leading-10 text-slate-050 md:font-extrabold lg:text-[2.6rem] lg:leading-[3.5rem]">
             Hello, <br />
-            This is <span className="text-black">{personalData.name}</span>
+            This is{" "}
+            <span className="text-black">
+  {details && details.username ? details.username : "username"}
+</span>
             {` , I'm a Professional `}
             <span className="text-[#16f2b3]">{personalData.designation}</span>.
           </h1>
 
           <div className="my-12 flex items-center gap-5">
-            {personalData.github && (
+            {details && details.github && (
               <Link
-                href={personalData.github}
+                href={ details.github }
                 target="_blank"
                 className="transition-all text-black hover:scale-125 duration-300"
               >
                 <BsGithub size={35} />
               </Link>
             )}
-            {personalData.linkedIn && (
+            {details && details.linkedin &&(
               <Link
-                href={personalData.linkedIn}
+                href={details.linkedin}
                 target="_blank"
                 className="transition-all text-blue-400 hover:scale-125 duration-300"
               >
@@ -150,9 +155,9 @@ function HeroSection({ profileUserId }) {
                 <SiLeetcode size={35} />
               </Link>
             )}
-            {personalData.twitter && (
+            {details && details.twitter && (
               <Link
-                href={personalData.twitter}
+                href={details.twitter}
                 target="_blank"
                 className="transition-all text-black hover:scale-125 duration-300"
               >
@@ -188,10 +193,17 @@ function HeroSection({ profileUserId }) {
               {/* Dropdown Portal */}
               {!isOwnProfile && isDropdownOpen && (
                 <div className="fixed inset-0 z-[100] overflow-y-auto">
-                  <div className="fixed inset-0 bg-black bg-opacity-25" onClick={handleDropdownToggle}></div>
+                  <div
+                    className="fixed inset-0 bg-black bg-opacity-25"
+                    onClick={handleDropdownToggle}
+                  ></div>
                   <div className="flex min-h-full items-center justify-center p-4">
                     <div className="relative w-full max-w-md transform rounded-2xl bg-white p-6 shadow-xl transition-all">
-                      <form id="connectionForm" className="space-y-4" onSubmit={connectRequest}>
+                      <form
+                        id="connectionForm"
+                        className="space-y-4"
+                        onSubmit={connectRequest}
+                      >
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-1">
                             Message
@@ -217,8 +229,12 @@ function HeroSection({ profileUserId }) {
                             onChange={(e) => setPurpose(e.target.value)}
                             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors duration-300 ease-in-out bg-white text-gray-900"
                           >
-                            <option value="collaboration">Open-Source Project</option>
-                            <option value="skill-sharing">Hackathon Team</option>
+                            <option value="collaboration">
+                              Open-Source Project
+                            </option>
+                            <option value="skill-sharing">
+                              Hackathon Team
+                            </option>
                             <option value="mentorship">Startup</option>
                             <option value="networking">Research</option>
                             <option value="discussion">Others</option>
@@ -247,9 +263,13 @@ function HeroSection({ profileUserId }) {
                             id="group"
                             value={group}
                             onChange={(e) => {
-                              const selectedGroup = groups.find(g => g.id === e.target.value);
-                              setGroupname(selectedGroup ? selectedGroup.grpname : "")
-                              setGroup(e.target.value)
+                              const selectedGroup = groups.find(
+                                (g) => g.id === e.target.value
+                              );
+                              setGroupname(
+                                selectedGroup ? selectedGroup.grpname : ""
+                              );
+                              setGroup(e.target.value);
                             }}
                             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors duration-300 ease-in-out bg-white text-gray-900"
                           >
@@ -298,22 +318,22 @@ function HeroSection({ profileUserId }) {
             </div>
           </div>
           <div className="overflow-hidden border-t-[2px] border-indigo-900 bg-slate-700 px-4 lg:px-8 py-4 lg:py-8">
-          <code className="font-mono text-xs md:text-sm lg:text-base">
+            <code className="font-mono text-xs md:text-sm lg:text-base">
               <div className="blink">
                 <span className="mr-2 text-pink-500">const</span>
                 <span className="mr-2 text-white">coder</span>
                 <span className="mr-2 text-pink-500">=</span>
-                <span className="text-gray-400">{'{'}</span>
+                <span className="text-gray-400">{"{"}</span>
               </div>
               <div>
                 <span className="ml-4 lg:ml-8 mr-2 text-white">name:</span>
-                <span className="text-gray-400">{''}</span>
+                <span className="text-gray-400">{""}</span>
                 <span className="text-amber-300">Abu Said</span>
-                <span className="text-gray-400">{','}</span>
+                <span className="text-gray-400">{","}</span>
               </div>
               <div className="ml-4 lg:ml-8 mr-2">
                 <span className=" text-white">skills:</span>
-                <span className="text-gray-400">{'['}</span>
+                <span className="text-gray-400">{"["}</span>
                 <span className="text-amber-300">React</span>
                 <span className="text-gray-400">{"', '"}</span>
                 <span className="text-amber-300">NextJS</span>
@@ -334,28 +354,38 @@ function HeroSection({ profileUserId }) {
                 <span className="text-gray-400">{"'],"}</span>
               </div>
               <div>
-                <span className="ml-4 lg:ml-8 mr-2 text-white">hardWorker:</span>
+                <span className="ml-4 lg:ml-8 mr-2 text-white">
+                  hardWorker:
+                </span>
                 <span className="text-orange-400">true</span>
                 <span className="text-gray-400">,</span>
               </div>
               <div>
-                <span className="ml-4 lg:ml-8 mr-2 text-white">quickLearner:</span>
+                <span className="ml-4 lg:ml-8 mr-2 text-white">
+                  quickLearner:
+                </span>
                 <span className="text-orange-400">true</span>
                 <span className="text-gray-400">,</span>
               </div>
               <div>
-                <span className="ml-4 lg:ml-8 mr-2 text-white">problemSolver:</span>
+                <span className="ml-4 lg:ml-8 mr-2 text-white">
+                  problemSolver:
+                </span>
                 <span className="text-orange-400">true</span>
                 <span className="text-gray-400">,</span>
               </div>
               <div>
-                <span className="ml-4 lg:ml-8 mr-2 text-green-400">hireable:</span>
+                <span className="ml-4 lg:ml-8 mr-2 text-green-400">
+                  hireable:
+                </span>
                 <span className="text-orange-400">function</span>
-                <span className="text-gray-400">{'() {'}</span>
+                <span className="text-gray-400">{"() {"}</span>
               </div>
               <div>
-                <span className="ml-8 lg:ml-16 mr-2 text-orange-400">return</span>
-                <span className="text-gray-400">{'('}</span>
+                <span className="ml-8 lg:ml-16 mr-2 text-orange-400">
+                  return
+                </span>
+                <span className="text-gray-400">{"("}</span>
               </div>
               <div>
                 <span className="ml-12 lg:ml-24 text-cyan-400">this.</span>
@@ -373,9 +403,15 @@ function HeroSection({ profileUserId }) {
                 <span className="mr-2 text-amber-300">&gt;=</span>
                 <span className="text-orange-400">5</span>
               </div>
-              <div><span className="ml-8 lg:ml-16 mr-2 text-gray-400">{');'}</span></div>
-              <div><span className="ml-4 lg:ml-8 text-gray-400">{'};'}</span></div>
-              <div><span className="text-gray-400">{'};'}</span></div>
+              <div>
+                <span className="ml-8 lg:ml-16 mr-2 text-gray-400">{");"}</span>
+              </div>
+              <div>
+                <span className="ml-4 lg:ml-8 text-gray-400">{"};"}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">{"};"}</span>
+              </div>
             </code>
           </div>
         </div>

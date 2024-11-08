@@ -1,7 +1,6 @@
 'use server';
 import { db } from "@/lib/db";
-import { currentUser } from "@/lib/auth";
-import { getUserById } from "@/data/user";
+
 
 export const createCalendy = async (
   groupId: string, 

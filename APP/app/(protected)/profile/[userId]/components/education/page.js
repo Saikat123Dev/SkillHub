@@ -1,10 +1,10 @@
 // @flow strict
 import Image from "next/image";
 import AnimationLottie from "../helper/animation-lottie";
-import lottieFile from '/public/lottie/study.json';
-import { FaSchool, FaUniversity } from 'react-icons/fa';
+import lottieFile from "/public/lottie/study.json";
+import { FaSchool, FaUniversity } from "react-icons/fa";
 
-function Education() {
+function Education({ details }) {
   return (
     <>
       <div className="relative z-50 border-t my-12 lg:my-24 border-gray-700">
@@ -13,7 +13,7 @@ function Education() {
           alt="Hero"
           width={1800}
           height={900}
-          className="absolute top-0 -z-0"  // Increased opacity for subtle effect
+          className="absolute top-0 -z-0" // Increased opacity for subtle effect
         />
         <div className="flex justify-center">
           <div className="w-3/4">
@@ -58,10 +58,18 @@ function Education() {
                   </div>
                   <div className="text-center">
                     <p className="text-xl text-gray-200 font-bold uppercase">
-                      Sainik School Purulia
+                      {details && details.class10
+                        ? details.class10
+                        : "Enter your School's Name"}
                     </p>
                     <p className="text-md text-gray-100 mt-2">
-                      Achieved a score of <span className="text-indigo-400 font-bold">89.99%</span>
+                      Achieved a score of{" "}
+                      <span className="text-indigo-400 font-bold">
+                        {details && details.percentage_10
+                          ? details.percentage_10
+                          : "Enter your percentage marks"}
+                      </span>{" "}
+                      in the board exams.
                     </p>
                   </div>
                 </div>
@@ -76,10 +84,15 @@ function Education() {
                   </div>
                   <div className="text-center">
                     <p className="text-xl text-gray-200 font-bold uppercase">
-                      Holy Garden Model School
+                    {details && details.class12
+                        ? details.class12
+                        : "Enter your School's Name"}
                     </p>
                     <p className="text-md text-gray-200 mt-2">
-                      Achieved a score of <span className="text-indigo-400 font-bold">89.99%</span>
+                      Achieved a score of{" "}
+                      <span className="text-indigo-400 font-bold"> {details && details.percentage_12
+                          ? details.percentage_12
+                          : "Enter your percentage marks"}</span>
                     </p>
                   </div>
                 </div>
@@ -94,16 +107,34 @@ function Education() {
                   </div>
                   <div className="text-center">
                     <p className="text-xl text-gray-200 font-bold uppercase">
-                      Jalpaiguri Government Engineering College
+                    {details && details.college
+                        ? details.college
+                        : "Enter your College's Name"}
                     </p>
                     <p className="text-md text-gray-200">
-                      Year: <span className="text-indigo-400 font-bold">2021-2025</span>
+                      Current Year:{" "}
+                      <span className="text-indigo-400 font-bold">
+                       {details && details.currentYear?
+                       details.currentYear:"Enter your Current Year"
+}
+
+                      </span>
                     </p>
                     <p className="text-md text-gray-200">
-                      Department: <span className="text-indigo-400 font-bold">Computer Science</span>
+                      Department:{" "}
+                      <span className="text-indigo-400 font-bold">
+                      {details && details.dept?
+                       details.dept:"Enter your Current department"
+}
+                      </span>
                     </p>
                     <p className="text-md text-gray-200">
-                      Field of Study: <span className="text-indigo-400 font-bold">B.Tech</span>
+                      Field of Study:{" "}
+                      <span className="text-indigo-400 font-bold">
+                      {details && details.domain?
+                       details.domain:"Enter your Current Domain"
+}
+                        </span>
                     </p>
                   </div>
                 </div>
