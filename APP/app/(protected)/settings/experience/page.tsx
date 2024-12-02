@@ -1,15 +1,9 @@
-
 "use client";
 import * as z from "zod";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition, useState } from "react";
-import { FormError } from "@/components/form-error";
-import { Button } from "@/components/ui/button";
-import { FormSuccess } from "@/components/form-success";
-
-import { SettingsSchema } from "@/schemas";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   Form,
@@ -20,190 +14,272 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-
 import { Input } from "@/components/ui/input";
-import { useCurrentUser } from "@/hooks/use-current-user";
+import { Button } from "@/components/ui/button";
+import { 
+  Plus, 
+  Trash2, 
+  Save, 
+  Briefcase, 
+  Calendar, 
+  MapPin 
+} from "lucide-react";
 
+// Define a schema for experience (you'll need to create this)
+const ExperienceSchema = z.object({
+  experiences: z.array(z.object({
+    company: z.string().min(1, "Company name is required"),
+    role: z.string().min(1, "Role is required"),
+    location: z.string().optional(),
+    duration: z.string().min(1, "Duration is required"),
+    description: z.string().optional()
+  }))
+});
 
-function page() {
-    const user = useCurrentUser();
-    const [experience, setexperience] = useState([{}]);
-    const [isPending] = useTransition();
-    const [error, setError] = useState<string | undefined>();
-    const [success, setSuccess] = useState<string | undefined>();
+function ExperienceSettingsPage() {
+  const [experiences, setExperiences] = useState([{}]);
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+  const [success, setSuccess] = useState<string | undefined>();
 
-    const form = useForm<z.infer<typeof SettingsSchema>>({
-        resolver: zodResolver(SettingsSchema),
-        defaultValues: {
-          password: undefined,
-          newPassword: undefined,
-          name: user?.name || undefined,
-          email: user?.email || undefined,
-          primarySkill: user?.primarySkill || undefined,
-          secondarySkills: user?.secondarySkills || undefined,
-          country: user?.country || undefined,
-          location: user?.location || undefined,
-          projects: user?.projects || undefined,
-          profilePic: user?.profilePic || undefined,
-          linkedin: user?.linkedin || undefined,
-          github: user?.github || undefined,
-          twitter: user?.twitter || undefined,
-          gender: user?.gender || undefined,
-          class10: user?.schl10th || undefined,
-          percentage_10: user?.percentage_10 || undefined,
-          class12: user?.class12 || undefined,
-          percentage_12: user?.percentage_12 || undefined,
-        },
-      });
-    
+  const addExperience = () => {
+    setExperiences([...experiences, {}]);
+  };
 
+  const removeExperience = (index: number) => {
+    if (experiences.length > 1) {
+      const newExperiences = experiences.filter((_, i) => i !== index);
+      setExperiences(newExperiences);
+    }
+  };
 
-    const addExperience = () => {
-        setexperience([...experience, {}]);
-      };
-    
-      const removeExperience = (index: number) => {
-        if (experience.length > 1) {
-          const newexperience = experience.filter((_, i) => i !== index);
-          setexperience(newexperience);
-        }
-      };
+  const form = useForm<z.infer<typeof ExperienceSchema>>({
+    resolver: zodResolver(ExperienceSchema),
+    defaultValues: {
+      experiences: experiences
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof ExperienceSchema>) => {
+    setIsPending(true);
+    // Placeholder for actual submit logic
+    setTimeout(() => {
+      setSuccess("Experiences updated successfully!");
+      setIsPending(false);
+    }, 1000);
+  };
+
   return (
-    <>
-     <div className="flex flex-col items-center justify-center min-h-screen min-w-full bg-gray-700">
-      <div className="min-w-full min-h-full p-3 bg-slate-500 rounded-lg ">
-        <header className="flex items-center justify-between">
-          <h1 className="text-2xl text-white font-bold">Setting</h1>
-        </header>
-      
-
-    <div className=" p-4 bg-gray-700 rounded-lg">
-    <Form {...form}>
-    <div className="p-8 bg-gray-800 rounded-lg shadow-lg">
-    <h1 className="text-yellow-400 text-3xl font-bold underline mb-6">
-      Experience(If any)
-    </h1>
-    {experience.map((_, index) => (
-      <div key={index} className="flex flex-col mb-4">
-        <div className="grid grid-cols-1 gap-8">
-          <div className="experience-entry space-y-4 mb-8">
-            <FormField
-              control={form.control}
-              name={`experience.${index}.company`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white font-semibold">
-                    Name of the Company
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="text"
-                      placeholder="Enter name of the company"
-                   
-                      className="input-field text-white bg-gray-700 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500 mt-1" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name={`experience.${index}.duration`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white font-semibold">
-                    Duration
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="text"
-                      placeholder="Enter Duration you've worked for"
-                     
-                      className="input-field text-white bg-gray-700 border-gray-700 focus:border-yellow-400 focus:ring-yellow-400"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500 mt-1" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name={`experience.${index}.role`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white font-semibold">
-                    Role
-                  </FormLabel>
-                  <FormControl>
-                    <textarea
-                      {...field}
-                      placeholder="Describe the  role in details"
-                      
-                      className="input-field resize-none overflow-hidden w-full p-2 border rounded-md bg-gray-700 text-white focus:border-yellow-400 focus:ring-yellow-400"
-                      rows={3}
-                      onInput={(e) => {
-                        const target =
-                          e.target as HTMLTextAreaElement;
-                        target.style.height = "auto";
-                        target.style.height = `${target.scrollHeight}px`;
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500 mt-1" />
-                </FormItem>
-              )}
-            />
-
-            <div className="mt-4 flex justify-between">
-              {experience.length > 1 && (
-                <div className="flex justify-between mt-4">
-                  <button
-                    type="button"
-                    className=" bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-700 transition duration-300"
-                    onClick={() =>
-                      removeExperience(index)
-                    }
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={addExperience}
-                className="bg-yellow-400 text-gray-900 font-bold py-2 px-4 rounded-md hover:bg-yellow-700 transition duration-300"
-              >
-                Add More
-              </button>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-6">
+      <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+        <div className="p-10">
+          <header className="mb-10 flex items-center justify-between border-b border-gray-200 pb-6">
+            <div className="flex items-center space-x-5">
+              <div className="bg-indigo-100 p-3 rounded-xl">
+                <Briefcase className="w-8 h-8 text-indigo-600" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-gray-800">Professional Experience</h1>
+                <p className="text-gray-500 mt-2">Showcase your career journey and achievements</p>
+              </div>
             </div>
-          </div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button 
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={isPending}
+                className="flex items-center gap-3 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors px-6 py-3 rounded-xl shadow-lg"
+              >
+                <Save className="w-5 h-5" />
+                Save Experiences
+              </Button>
+            </motion.div>
+          </header>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <AnimatePresence>
+                {experiences.map((_, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="bg-white border border-gray-200 rounded-2xl p-8 mb-8 shadow-md relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Company Name */}
+                      <FormField
+                        control={form.control}
+                        name={`experiences.${index}.company`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
+                              <Briefcase className="w-5 h-5 text-indigo-500" />
+                              Company
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Enter company name"
+                                className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl"
+                              />
+                            </FormControl>
+                            <FormMessage className="text-red-500 text-sm" />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Role */}
+                      <FormField
+                        control={form.control}
+                        name={`experiences.${index}.role`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
+                              <MapPin className="w-5 h-5 text-indigo-500" />
+                              Role
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Your job title"
+                                className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl"
+                              />
+                            </FormControl>
+                            <FormMessage className="text-red-500 text-sm" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                      {/* Location */}
+                      <FormField
+                        control={form.control}
+                        name={`experiences.${index}.location`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
+                              <MapPin className="w-5 h-5 text-indigo-500" />
+                              Location
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="City, Country"
+                                className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl"
+                              />
+                            </FormControl>
+                            <FormMessage className="text-red-500 text-sm" />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Duration */}
+                      <FormField
+                        control={form.control}
+                        name={`experiences.${index}.duration`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
+                              <Calendar className="w-5 h-5 text-indigo-500" />
+                              Duration
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="e.g., Jan 2020 - Present"
+                                className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl"
+                              />
+                            </FormControl>
+                            <FormMessage className="text-red-500 text-sm" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <FormField
+                      control={form.control}
+                      name={`experiences.${index}.description`}
+                      render={({ field }) => (
+                        <FormItem className="mt-6">
+                          <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
+                            <Briefcase className="w-5 h-5 text-indigo-500" />
+                            Job Description
+                          </FormLabel>
+                          <FormControl>
+                            <textarea
+                              {...field}
+                              placeholder="Describe your key responsibilities, achievements, and impact"
+                              className="w-full border border-gray-300 rounded-xl p-4 text-gray-800 min-h-[150px] focus:border-indigo-500 focus:ring-indigo-500"
+                            />
+                          </FormControl>
+                          <FormMessage className="text-red-500 text-sm" />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                      {experiences.length > 1 && (
+                        <motion.button
+                          type="button"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => removeExperience(index)}
+                          className="flex items-center gap-2 text-red-600 hover:text-red-700 transition-colors"
+                        >
+                          <Trash2 className="w-5 h-5" /> Remove Experience
+                        </motion.button>
+                      )}
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={addExperience}
+                        className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors"
+                      >
+                        <Plus className="w-5 h-5" /> Add Another Experience
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </form>
+          </Form>
+
+          {/* Error and Success Messages */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mt-6 text-red-500"
+              >
+                {error}
+              </motion.div>
+            )}
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mt-6 text-green-500"
+              >
+                {success}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    ))}
-  </div>
-  </Form>
-  <FormError message={error} />
-                    <FormSuccess message={success} />
-                    <div className="flex justify-end mt-3">
-                      <Button
-                        disabled={isPending}
-                        type="submit"
-                        className="button"
-                      >
-                        Save
-                      </Button>
-                    </div>
-  </div>
-  </div>
-  </div>
-  </>
-  )
+    </div>
+  );
 }
 
-export default page
+export default ExperienceSettingsPage;

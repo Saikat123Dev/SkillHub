@@ -20,7 +20,7 @@ export default function Widget() {
       <div className="relative h-screen bg-cover bg-center" style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
        
         <nav className="fixed top-0 left-0 w-full flex justify-between items-center p-4 md:p-6 z-20 ">
-          <div className="text-white text-xl md:text-2xl font-bold">Skill Connect</div>
+          <div className="text-white text-xl md:text-2xl font-bold">TeamMadeEasy</div>
           <div className="flex items-center space-x-4 md:space-x-6 text-white">
             {/* Navigation links */}
             <Link href="/profile" className="nav-link relative inline-block px-2 py-1 font-bold">Profile</Link>
@@ -269,7 +269,7 @@ export default function Widget() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-6 ">
             {/* Column 1 */}
             <div className="md:col-span-2">
-              <h2 className="text-2xl font-bold text-white dark:text-white">SkillConnect</h2>
+              <h2 className="text-2xl font-bold text-white dark:text-white">TeamMadeEasy</h2>
               <p className="mt-2 mb-2 text-zinc-400 dark:text-zinc-300">
                 Connect, Collaborate, Grow Together
               </p>
@@ -335,7 +335,7 @@ export default function Widget() {
             {/* Column 5: Contact details */}
             <div>
               <h3 className="text-lg font-bold text-white dark:text-white">Contact us</h3>
-              <p className="mt-2 text-zinc-500 dark:text-zinc-300">support@skillconnect.com</p>
+              <p className="mt-2 text-zinc-500 dark:text-zinc-300">support@teammadeeasy.com</p>
               <p className="text-zinc-500 dark:text-zinc-300">123-456-7890</p>
 
 
@@ -361,7 +361,7 @@ export default function Widget() {
 
             </div>
             <div className="text-left text-zinc-400 dark:text-zinc-300 ">
-              © 2024 SkillConnect, we love our users!
+              © 2024 TeamMadeEasy, we love our users!
             </div>
 
           </div>

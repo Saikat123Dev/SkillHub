@@ -17,8 +17,8 @@ export default function Sidebar({ children }) {
 
   return (
     <aside
-      className={`min-h-screen bg-gray-900 shadow-md transition-all duration-300 ${
-        expanded ? "w-64" : "w-20"
+      className={`min-h-screen bg-gray-900 shadow-lg transition-all duration-500 ease-in-out ${
+        expanded ? "w-72" : "w-20"
       }`}
     >
       <nav className="min-h-full flex flex-col bg-gray-800 border-r border-gray-700">
@@ -26,14 +26,14 @@ export default function Sidebar({ children }) {
         <div className="p-4 flex justify-between items-center border-b border-gray-700">
           <span
             className={`text-xl font-bold text-yellow-500 transition-opacity duration-300 ${
-              expanded ? "opacity-100" : "opacity-0"
+              expanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
             }`}
           >
             Logo
           </span>
           <button
             onClick={() => setExpanded((curr) => !curr)}
-            className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
+            className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors duration-300"
           >
             {expanded ? <ChevronFirst size={20} /> : <ChevronLast size={20} />}
           </button>
@@ -42,26 +42,27 @@ export default function Sidebar({ children }) {
         <SidebarContext.Provider
           value={{ expanded, activeItem, handleItemClick }}
         >
-          <ul className="flex-1 px-3 py-2 space-y-2">{children}</ul>
+          <ul className="flex-1 px-3 py-4 space-y-2">{children}</ul>
         </SidebarContext.Provider>
 
+        {/* Sidebar Footer */}
         <div className="border-t border-gray-700 p-4 flex items-center">
           <div className="w-10 h-10 bg-gray-600 rounded-full">
             <UserButton />
           </div>
           <div
-            className={`flex items-center ml-3 overflow-hidden transition-all duration-300 ${
+            className={`flex items-center ml-3 overflow-hidden transition-all duration-500 ${
               expanded ? "w-auto" : "w-0"
             }`}
           >
             <div
-              className={`leading-4 transition-opacity duration-300 ${
+              className={`leading-4 transition-opacity duration-500 ${
                 expanded ? "opacity-100" : "opacity-0"
               }`}
             >
               <span className="text-xs text-gray-400">
                 {/* Placeholder for user information */}
-                
+                User Info
               </span>
             </div>
             {expanded && (
@@ -81,11 +82,13 @@ export function SidebarItem({ icon, text, alert, href, itemKey }) {
 
   const content = (
     <div className="flex items-center">
-      {icon}
+      <span className={`text-gray-400 ${isActive && "text-white"}`}>
+        {icon}
+      </span>
       <span
-        className={`ml-2 transition-all duration-300 ${
+        className={`ml-3 transition-all duration-300 ${
           expanded ? "opacity-100" : "opacity-0"
-        } ${expanded ? "w-auto" : "w-0"} whitespace-nowrap`}
+        } ${expanded ? "w-auto" : "w-0"} whitespace-nowrap text-sm font-medium`}
       >
         {text}
       </span>
@@ -94,9 +97,9 @@ export function SidebarItem({ icon, text, alert, href, itemKey }) {
 
   return (
     <li
-      className={`relative flex items-center py-2 px-3 my-1 rounded-md cursor-pointer transition-colors group ${
+      className={`relative flex items-center py-3 px-4 my-1 rounded-lg cursor-pointer transition-all duration-300 group ${
         isActive
-          ? "bg-indigo-700 text-white"
+          ? "bg-indigo-700 text-white shadow-md"
           : "text-gray-300 hover:bg-gray-700 hover:text-white"
       }`}
       onClick={() => handleItemClick(itemKey)}
@@ -111,14 +114,16 @@ export function SidebarItem({ icon, text, alert, href, itemKey }) {
 
       {alert && (
         <div
-          className={`absolute right-2 w-2 h-2 rounded-full bg-red-500 ${
-            expanded ? "" : "top-2"
+          className={`absolute right-3 w-2 h-2 rounded-full bg-red-500 transition-transform ${
+            expanded ? "scale-100" : "scale-0"
           }`}
         ></div>
       )}
+
+      {/* Tooltip for collapsed state */}
       {!expanded && (
         <div
-          className={`absolute left-full ml-3 rounded-md px-2 py-1 bg-gray-800 text-white text-sm invisible opacity-0 transform -translate-x-2 group-hover:visible group-hover:opacity-100`}
+          className={`absolute left-full ml-3 rounded-md px-2 py-1 bg-gray-800 text-white text-xs shadow-lg invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300`}
         >
           {text}
         </div>
