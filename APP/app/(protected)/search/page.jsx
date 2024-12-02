@@ -3,17 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import ScrollReveal from 'scrollreveal';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ChevronRight, Loader2 } from 'lucide-react';
 
-function Page() {
+function SearchResultsPage() {
   const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
     const fetchUsers = async () => {
+      setIsLoading(true);
       try {
-      
         const queryParams = new URLSearchParams();
 
         // Use `query` parameter for name search if provided
@@ -32,93 +34,126 @@ function Page() {
         }
 
         const users = await response.json();
-        console.log('Fetched users:', users); // Debug: Check all users fetched
-        setData(users); // Set fetched data
+        setData(users);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error fetching users:', error);
+        setIsLoading(false);
       }
     };
 
     fetchUsers();
   }, [searchParams]);
 
-  const handleFilterChange = (filters) => {
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value && value.trim() !== '') {
-        params.set(key, value);
-      }
-    });
-    router.push(params.toString() ? `?${params.toString()}` : '');
-  };
+  // Loader Component
+  const Loader = () => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ 
+          repeat: Infinity, 
+          duration: 1, 
+          ease: "linear" 
+        }}
+      >
+        <Loader2 className="w-16 h-16 text-gray-800 animate-spin" />
+      </motion.div>
+    </div>
+  );
 
-  useEffect(() => {
-    ScrollReveal().reveal('.reveal', {
-      duration: 1000,
-      distance: '50px',
-      easing: 'ease-in-out',
-      origin: 'bottom',
-      reset: true,
-    });
-  }, [data]);
+  // Empty State Component
+  const EmptyState = () => (
+    <motion.div 
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg"
+    >
+      <Search className="w-16 h-16 text-gray-400 mb-4" />
+      <h2 className="text-2xl font-semibold text-gray-700 mb-2">No Matching Profiles Found</h2>
+      <p className="text-gray-500 text-center">Refine Your Search Criteria for Better Results</p>
+    </motion.div>
+  );
 
   return (
-    <>
-      <p>Search Results</p>
-      <h2 className="text-2xl font-bold mb-4 text-blue-600 reveal">SearchList</h2>
+    <div className="min-h-screen bg-gray-50 p-6 md:p-12">
+      {isLoading && <Loader />}
+      
+      <div className="max-w-7xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white shadow-xl rounded-2xl overflow-hidden"
+        >
+          <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-700">
+            <h1 className="text-3xl font-bold text-white">Professional Network Search</h1>
+          </div>
 
-      {data.length === 0 ? (
-        <p>No users found</p>
-      ) : (
-        <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-          <thead>
-            <tr className="bg-gray-200 text-gray-700">
-              <th className="border border-gray-300 p-2">Stream</th>
-              <th className="border border-gray-300 p-2">Username</th>
-              <th className="border border-gray-300 p-2">Primary Skillset</th>
-              <th className="border border-gray-300 p-2">Institution Name</th>
-              <th className="border border-gray-300 p-2">Country</th>
-              <th className="border border-gray-300 p-2">Profession</th>
-              <th className="border border-gray-300 p-2">View Profile</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, index) => (
-              <tr key={index} className="hover:bg-gray-100 transition duration-200 ease-in-out">
-                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.dept}</td>
-                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.name}</td>
-                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.primarySkill}</td>
-                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.college}</td>
-                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.country}</td>
-                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">{item.profession}</td>
-                <td className="border border-gray-300 p-4 text-center bg-white text-gray-800">
-                  <Link href={`/profile/${item.id}`}>
-                    <div className="w-10 h-10 bg-black rounded-full flex justify-center items-center hover:bg-gray-800 transition duration-300 cursor-pointer">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="white"
-                        className="w-6 h-6"
+          {!isLoading && data.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="w-full overflow-x-auto">
+              <table className="w-full table-fixed">
+                <thead className="bg-gray-100 border-b border-gray-200">
+                  <tr>
+                    {[
+                      { key: 'dept', label: 'Academic Stream' },
+                      { key: 'name', label: 'Professional Name' },
+                      { key: 'primarySkill', label: 'Core Expertise' },
+                      { key: 'college', label: 'Educational Institution' },
+                      { key: 'country', label: 'Geographic Location' },
+                      { key: 'profession', label: 'Professional Domain' },
+                      { key: 'profile', label: 'Profile Details' }
+                    ].map((header) => (
+                      <th 
+                        key={header.key} 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/7"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </div>
-                    +
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </>
+                        {header.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((item, index) => (
+                    <motion.tr 
+                      key={item.id || index}
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ 
+                        delay: index * 0.1, 
+                        duration: 0.5 
+                      }}
+                      className="hover:bg-gray-50 transition-colors duration-200 border-b"
+                    >
+                      <td className="px-4 py-3 text-sm text-gray-700 truncate">{item.dept}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 truncate">{item.name}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 truncate">{item.primarySkill}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 truncate">{item.college}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 truncate">{item.country}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 truncate">{item.profession}</td>
+                      <td className="px-4 py-3">
+                        <Link href={`/profile/${item.id}`}>
+                          <motion.div 
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </motion.div>
+                        </Link>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    </div>
   );
 }
 
-export default Page;
+export default SearchResultsPage;
