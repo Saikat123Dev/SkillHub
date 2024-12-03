@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss"
 
 import { withUt } from "uploadthing/tw";
- 
+
 const defaultTheme = require("tailwindcss/defaultTheme");
 const svgToDataUri = require("mini-svg-data-uri");
 const colors = require("tailwindcss/colors");
@@ -13,7 +13,7 @@ const config = {
   darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx,jsx}',
     './app/**/*.{ts,tsx,jsx}',
     './src/**/*.{ts,tsx}',
 	],
@@ -33,12 +33,12 @@ const config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        
+
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
-        
+
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -84,7 +84,7 @@ const config = {
           to: { height: "0" },
         },
       },
-    
+
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
@@ -93,7 +93,8 @@ const config = {
 
 
       },
-  
+
+
     },
   },
   withUt:({
@@ -125,7 +126,7 @@ const config = {
       );
     },
    ],
-    
+
 } satisfies Config
 
 function addVariablesForColors({ addBase, theme }: any) {
@@ -133,11 +134,11 @@ function addVariablesForColors({ addBase, theme }: any) {
   let newVars = Object.fromEntries(
     Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
   );
- 
+
   addBase({
     ":root": newVars,
   });
-  
+
 }
 
 

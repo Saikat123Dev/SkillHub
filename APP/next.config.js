@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {};
 
 module.exports = {
   ...nextConfig,
@@ -13,6 +13,11 @@ module.exports = {
       {
         protocol: 'https',
         hostname: 'utfs.io',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'assets.aceternity.com', // Added this entry
         pathname: '/**',
       },
     ],

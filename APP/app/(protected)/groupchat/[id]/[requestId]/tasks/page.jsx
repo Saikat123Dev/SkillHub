@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { PlusCircle, X, Plus, Trash2, Lock } from "lucide-react";
-import { Findgrouprole, findMembers } from "@/actions/group";
 import {
   createLane,
   deleteLane,
@@ -11,12 +10,12 @@ import {
   getLanesByGroup,
 } from "@/actions/tasks";
 
-const KanbanBoard = ({ params }) => {  
+const KanbanBoard = ({ params }) => {
   const groupId = params.id;
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [lanes, setLanes] = useState([]);
-  const [NewLaneTitle, setNewLaneTitle] = useState(" ");
+  const [NewLaneTitle, setNewLaneTitle] = useState("");
   const [showNewLaneForm, setShowNewLaneForm] = useState(false);
   const [draggedCard, setDraggedCard] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
@@ -35,15 +34,12 @@ const KanbanBoard = ({ params }) => {
   useEffect(() => {
     const initialize = async () => {
       try {
-        // Check admin status
         const { isAdmin } = await Findgrouprole(groupId);
         setIsAdmin(isAdmin === true);
         const Members = await findMembers(groupId);
         const teamMembers = Members[0].members;
-        console.log(teamMembers);
         setTeamMembers(teamMembers);
 
-        // Fetch lanes and cards
         const { success, lanes: fetchedLanes } = await getLanesByGroup(groupId);
         if (success) {
           const formattedLanes = fetchedLanes.map((lane) => ({
@@ -66,9 +62,9 @@ const KanbanBoard = ({ params }) => {
   }, [groupId]);
 
   const priorities = [
-    { id: "high", label: "High", color: "bg-red-100 text-red-800" },
-    { id: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800" },
-    { id: "low", label: "Low", color: "bg-green-100 text-green-800" },
+    { id: "high", label: "High", color: "bg-red-500 text-red-50" },
+    { id: "medium", label: "Medium", color: "bg-yellow-500 text-yellow-50" },
+    { id: "low", label: "Low", color: "bg-green-500 text-green-50" },
   ];
 
   const handleDragStart = (card, sourceLaneId) => {
@@ -107,12 +103,13 @@ const KanbanBoard = ({ params }) => {
     }
     setDraggedCard(null);
   };
+
   const handleNewCardSubmit = async (laneId) => {
     if (
-      !isAdmin ||
-      !newCard.title.trim() ||
-      !newCard.assignee ||
-      !newCard.priority
+        !isAdmin ||
+        !newCard.title.trim() ||
+        !newCard.assignee ||
+        !newCard.priority
     )
       return;
 
@@ -199,259 +196,163 @@ const KanbanBoard = ({ params }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
-      </div>
+        <div className="min-h-screen flex items-center justify-center bg-navy-50">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-navy-600"></div>
+        </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-700 via-indigo-800 to-gray-900 text-white p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Kanban Board</h1>
-          {!isAdmin && (
-            <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-lg">
-              <Lock size={16} />
-              <span className="text-sm">Read-only mode</span>
-            </div>
-          )}
-          {isAdmin && (
-            <button
-              onClick={() => setShowNewLaneForm(true)}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all"
-            >
-              <Plus size={20} />
-              <span>Add Lane</span>
-            </button>
-          )}
-        </div>
-
-        <div className="flex gap-6 overflow-x-auto pb-8">
-          {lanes.map((lane) => (
-            <div
-              key={lane.id}
-              className={`flex-shrink-0 w-80 bg-white/10 backdrop-blur-lg rounded-xl p-4 ${
-                isAdmin ? "cursor-pointer" : "cursor-default"
-              }`}
-              onDragOver={handleDragOver}
-              onDrop={() => handleDrop(lane.id)}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-bold text-lg">
-                  {lane.title} ({lane.cards.length})
-                </h2>
-                {isAdmin && (
-                  <button
-                    onClick={() => handleDeleteLane(lane.id)}
-                    className="text-white/60 hover:text-red-400 transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </div>
-              <div className="space-y-4">
-                {lane.cards.map((card) => (
-                  <div
-                    key={card.id}
-                    className={`flex-shrink-0 w-72 py-5 bg-white/10 backdrop-blur-lg rounded-xl p-4 ${
-                      isAdmin ? "cursor-pointer" : "cursor-default"
-                    }`}
-                    draggable
-                    onDragStart={() => handleDragStart(card, lane.id)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-semibold">{card.title}</h3>
-                      {isAdmin && (
-                        <button
-                          onClick={() => handleDeleteCard(card.id, lane.id)}
-                          className="text-white/60 hover:text-red-400"
-                        >
-                          <X size={16} />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-sm text-white/70 mt-2">
-                      {card.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {card.assignee && (
-                        <span className="inline-block bg-white/10 text-white text-xs px-2 py-1 rounded">
-                          {card.assignee.name}
-                        </span>
-                      )}
-                      {card.priority && (
-                        <span
-                          className={`inline-block ${card.priority.color} text-xs px-2 py-1 rounded`}
-                        >
-                          {card.priority.label}
-                        </span>
-                      )}
-                      {card.label && (
-                        <span className="inline-block bg-blue-100/10 text-white text-xs px-2 py-1 rounded">
-                          {card.label}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {showNewCardForm.visible && showNewCardForm.laneId === lane.id ? (
-                <div className="bg-white/5 backdrop-blur-lg p-4 rounded-lg border border-white/10">
-                  <input
-                    type="text"
-                    placeholder="Card Title"
-                    className="w-full mb-2 p-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50"
-                    value={newCard.title}
-                    onChange={(e) =>
-                      setNewCard({ ...newCard, title: e.target.value })
-                    }
-                  />
-                  <textarea
-                    placeholder="Description"
-                    className="w-full mb-2 p-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50"
-                    value={newCard.description}
-                    onChange={(e) =>
-                      setNewCard({ ...newCard, description: e.target.value })
-                    }
-                  />
-                  <select
-                    className="w-full mb-2 p-2 bg-gray-800 border border-white/20 rounded text-white appearance-none hover:bg-gray-700 transition-colors"
-                    value={newCard.assignee?.user.id || ""}
-                    onChange={(e) => {
-                      const selectedId = e.target.value;
-                      const selectedMember = teamMembers.find(
-                        (member) => member.user.id === selectedId
-                      );
-                      setNewCard((prev) => ({
-                        ...prev,
-                        assignee: selectedMember || null,
-                      }));
-                    }}
-                    style={{
-                      background: `rgba(31, 41, 55, 0.8) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center`,
-                      backgroundSize: "16px",
-                      paddingRight: "2.5rem",
-                    }}
-                  >
-                    <option value="" className="bg-gray-800 text-white">
-                      Select Assignee
-                    </option>
-                    {teamMembers.map((member) => (
-                      <option
-                        key={member.user.id}
-                        value={member.user.id}
-                        className="bg-gray-800 text-white"
-                      >
-                        {member.user.name}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="w-full mb-2 p-2 bg-gray-800 border border-white/20 rounded text-white appearance-none hover:bg-gray-700 transition-colors"
-                    value={newCard.priority?.id || ""}
-                    onChange={(e) => {
-                      const priority = priorities.find(
-                        (p) => p.id === e.target.value
-                      );
-                      setNewCard({ ...newCard, priority });
-                    }}
-                    style={{
-                      background: `rgba(31, 41, 55, 0.8) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center`,
-                      backgroundSize: "16px",
-                      paddingRight: "2.5rem",
-                    }}
-                  >
-                    <option value="" className="bg-gray-800 text-white">
-                      Select Priority
-                    </option>
-                    {priorities.map((priority) => (
-                      <option
-                        key={priority.id}
-                        value={priority.id}
-                        className="bg-gray-800 text-white"
-                      >
-                        {priority.label}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Time Estimate"
-                    className="w-full mb-2 p-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50"
-                    value={newCard.label}
-                    onChange={(e) =>
-                      setNewCard({ ...newCard, label: e.target.value })
-                    }
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleNewCardSubmit(lane.id)}
-                      className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded transition-all flex-1"
-                    >
-                      Add
-                    </button>
-                    <button
-                      onClick={() =>
-                        setShowNewCardForm({ visible: false, laneId: null })
-                      }
-                      className="bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded transition-all flex-1"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+      <div className="min-h-screen bg-white text-navy-800 p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-navy-800">Kanban Board</h1>
+            {!isAdmin && (
+                <div className="flex items-center gap-2 bg-blue-100 px-3 py-1 rounded-lg">
+                  <Lock size={16} className="text-navy-600" />
+                  <span className="text-sm text-navy-600">Read-only mode</span>
                 </div>
-              ) : (
-                <>
-                  {isAdmin ? (
-                    <button
-                      onClick={() =>
-                        setShowNewCardForm({ visible: true, laneId: lane.id })
-                      }
-                      className="flex items-center gap-1 text-white/60 hover:text-white/90 transition-colors w-full justify-center py-2"
-                    >
-                      <PlusCircle size={16} />
-                      <span>Add Card</span>
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-1 text-white/40 justify-center py-2">
-                      <Lock size={16} />
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          ))}
+            )}
+            {isAdmin && (
+                <button
+                    onClick={() => setShowNewLaneForm(true)}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all"
+                >
+                  <Plus size={20} />
+                  <span>Add Lane</span>
+                </button>
+            )}
+          </div>
 
-          {isAdmin && showNewLaneForm && (
-            <div className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-lg rounded-xl p-4">
-              <input
-                type="text"
-                placeholder="Lane Title"
-                className="w-full mb-2 p-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50"
-                value={NewLaneTitle}
-                onChange={(e) => setNewLaneTitle(e.target.value)}
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={handleAddLane}
-                  className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded transition-all flex-1"
+          <div className="flex gap-6 overflow-x-auto pb-8">
+            {lanes.map((lane) => (
+                <div
+                    key={lane.id}
+                    className={`flex-shrink-0 w-80 bg-navy-50 rounded-xl p-4 border border-navy-100 ${
+                        isAdmin ? "cursor-pointer" : "cursor-default"
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(lane.id)}
                 >
-                  Add Lane
-                </button>
-                <button
-                  onClick={() => setShowNewLaneForm(false)}
-                  className="bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded transition-all flex-1"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="font-bold text-lg text-navy-800">
+                      {lane.title} ({lane.cards.length})
+                    </h2>
+                    {isAdmin && (
+                        <button
+                            onClick={() => handleDeleteLane(lane.id)}
+                            className="text-navy-600 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                    )}
+                  </div>
+                  <div className="space-y-4">
+                    {lane.cards.map((card) => (
+                        <div
+                            key={card.id}
+                            className={`flex-shrink-0 w-72 py-5 bg-white border border-navy-100 rounded-xl p-4 shadow-sm ${
+                                isAdmin ? "cursor-pointer" : "cursor-default"
+                            }`}
+                            draggable
+                            onDragStart={() => handleDragStart(card, lane.id)}
+                        >
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-semibold text-navy-800">{card.title}</h3>
+                            {isAdmin && (
+                                <button
+                                    onClick={() => handleDeleteCard(card.id, lane.id)}
+                                    className="text-navy-500 hover:text-red-500"
+                                >
+                                  <X size={16} />
+                                </button>
+                            )}
+                          </div>
+                          <p className="text-sm text-navy-600 mt-2">{card.description}</p>
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {card.assignee && (
+                                <span className="inline-block bg-blue-100 text-navy-800 text-xs px-2 py-1 rounded">
+                    {card.assignee.name}
+                  </span>
+                            )}
+                            {card.priority && (
+                                <span
+                                    className={`inline-block ${card.priority.color} text-xs px-2 py-1 rounded`}
+                                >
+                    {card.priority.label}
+                  </span>
+                            )}
+                            {card.label && (
+                                <span className="inline-block bg-blue-100 text-navy-800 text-xs px-2 py-1 rounded">
+                    {card.label}
+                  </span>
+                            )}
+                          </div>
+                        </div>
+                    ))}
+                  </div>
+
+                  {showNewCardForm.visible && showNewCardForm.laneId === lane.id ? (
+                      <div className="bg-white border border-navy-100 p-4 rounded-lg shadow-sm">
+                        <input
+                            type="text"
+                            placeholder="Card Title"
+                            className="w-full mb-2 p-2 bg-navy-50 border border-navy-100 rounded text-navy-800 placeholder-navy-500"
+                            value={newCard.title}
+                            onChange={(e) =>
+                                setNewCard({ ...newCard, title: e.target.value })
+                            }
+                        />
+                        <textarea
+                            placeholder="Description"
+                            className="w-full mb-2 p-2 bg-navy-50 border border-navy-100 rounded text-navy-800 placeholder-navy-500"
+                            value={newCard.description}
+                            onChange={(e) =>
+                                setNewCard({ ...newCard, description: e.target.value })
+                            }
+                        />
+                        {/* Select Inputs */}
+                        <div className="flex gap-2">
+                          <button
+                              onClick={() => handleNewCardSubmit(lane.id)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-all flex-1"
+                          >
+                            Add
+                          </button>
+                          <button
+                              onClick={() =>
+                                  setShowNewCardForm({ visible: false, laneId: null })
+                              }
+                              className="bg-navy-100 hover:bg-navy-200 text-navy-800 px-4 py-2 rounded transition-all flex-1"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                  ) : (
+                      <>
+                        {isAdmin ? (
+                            <button
+                                onClick={() =>
+                                    setShowNewCardForm({ visible: true, laneId: lane.id })
+                                }
+                                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors w-full justify-center py-2"
+                            >
+                              <PlusCircle size={16} />
+                              <span>Add Card</span>
+                            </button>
+                        ) : (
+                            <div className="flex items-center gap-1 text-navy-400 justify-center py-2">
+                              <Lock size={16} />
+                            </div>
+                        )}
+                      </>
+                  )}
+                </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
   );
 };
 

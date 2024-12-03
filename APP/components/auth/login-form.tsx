@@ -3,7 +3,7 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
-import { useSearchParams, useRouter } from "next/navigation"; // Import useRouter
+import { useSearchParams, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 
@@ -54,7 +54,8 @@ export const LoginForm = () => {
 
           if (data?.success) {
             form.reset();
-            setSuccess(data.success);
+
+              setSuccess(data.success);
             if (data.redirect) {
               // Redirect to the specified URL after successful login
               router.push(data.redirect);
