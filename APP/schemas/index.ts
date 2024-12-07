@@ -32,8 +32,8 @@ export const SettingsSchema = z
     
     username: z.string().optional(),
     
-    primarySkill:z.string().optional(),
-    secondarySkills: z.string().optional(),
+   Roles: z.array(z.string()).optional(), // Updated to array of strings
+    Skills: z.array(z.string()).optional(), // Updated to array of strings
     country: z.string().optional(),
     projects:z.array(project).optional(),
     experience: z.array(experience).optional(),

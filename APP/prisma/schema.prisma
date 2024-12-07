@@ -25,9 +25,9 @@ model User {
   groupMembership GroupMembership[]
 
   password        String
-  primarySkill    String?
+ Roles   String[]
   gender          UserGender?
-  secondarySkills String?
+Skills            String[]
   country         String?
   about           String?
   location        String?
