@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { useSession } from "next-auth/react";
 import { SettingsSchema } from "@/schemas";
 
 import {
@@ -31,36 +31,64 @@ import {
   Video, 
   Users 
 } from "lucide-react";
+import { settings } from "@/actions/settings";
 
 function ProjectSettingsPage() {
   const user = useCurrentUser();
-  const [projects, setProjects] = useState([{}]);
+  const { data: session, update } = useSession();
+  const [projects, setProjects] = useState([{ id: Date.now() }]);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
 
-  const addProject = () => {
-    setProjects([...projects, {}]);
-  };
-
-  const removeProject = (index: number) => {
-    if (projects.length > 1) {
-      const newProjects = projects.filter((_, i) => i !== index);
-      setProjects(newProjects);
-    }
-  };
-
-  const form = useForm<z.infer<typeof SettingsSchema>>({
+  const form = useForm({
     resolver: zodResolver(SettingsSchema),
     defaultValues: {
       projects: user?.projects || undefined,
     },
   });
 
-  const onSubmit = (values: z.infer<typeof SettingsSchema>) => {
+  const addProject = () => {
+    setProjects([...projects, { id: Date.now() }]);
+    // Reset form values for the new project
+    form.reset({
+      ...form.getValues(),
+      title: "",
+      techstack: "",
+      about: "",
+      demovideo: "",
+      liveLink: "",
+      collaborator: ""
+    });
+  };
+
+  const removeProject = (index: number) => {
+    if (projects.length > 1) {
+      const newProjects = projects.filter((_, i) => i !== index);
+      setProjects(newProjects);
+      
+      // Reset form values after removing a project
+      const currentValues = form.getValues();
+      const updatedProjects = { ...currentValues };
+      delete updatedProjects[`projects.${index}`];
+      form.reset(updatedProjects);
+    }
+  };
+
+  const onSubmit = async (values) => {
     startTransition(() => {
-      // Placeholder for actual submit logic
-      setSuccess("Projects updated successfully!");
+      settings(values)
+        .then((data) => {
+          if (data.error) {
+            setError(data.error);
+            setSuccess(undefined);
+          } else if (data.success) {
+            setSuccess(data.success);
+            setError(undefined);
+            update();
+          }
+        })
+        .catch(() => setError("Something went wrong!"));
     });
   };
 
@@ -78,27 +106,14 @@ function ProjectSettingsPage() {
                 <p className="text-gray-500 mt-2">Showcase and manage your professional projects</p>
               </div>
             </div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button 
-                onClick={() => form.handleSubmit(onSubmit)()}
-                disabled={isPending}
-                className="flex items-center gap-3 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors px-6 py-3 rounded-xl shadow-lg"
-              >
-                <Save className="w-5 h-5" />
-                Save Portfolio
-              </Button>
-            </motion.div>
           </header>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <AnimatePresence>
-                {projects.map((_, index) => (
+                {projects.map((project, index) => (
                   <motion.div
-                    key={index}
+                    key={project.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
@@ -107,10 +122,9 @@ function ProjectSettingsPage() {
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Project Title */}
                       <FormField
                         control={form.control}
-                        name={`projects.${index}.title`}
+                        name="title"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -129,10 +143,9 @@ function ProjectSettingsPage() {
                         )}
                       />
 
-                      {/* Technologies Used */}
                       <FormField
                         control={form.control}
-                        name={`projects.${index}.techStack`}
+                        name="techstack"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -152,10 +165,9 @@ function ProjectSettingsPage() {
                       />
                     </div>
 
-                    {/* Project Description */}
                     <FormField
                       control={form.control}
-                      name={`projects.${index}.about`}
+                      name="about"
                       render={({ field }) => (
                         <FormItem className="mt-6">
                           <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -175,10 +187,9 @@ function ProjectSettingsPage() {
                     />
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                      {/* Demo Video Link */}
                       <FormField
                         control={form.control}
-                        name={`projects.${index}.demovideo`}
+                        name="demovideo"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -198,10 +209,9 @@ function ProjectSettingsPage() {
                         )}
                       />
 
-                      {/* Live Project Link */}
                       <FormField
                         control={form.control}
-                        name={`projects.${index}.liveLink`}
+                        name="livelink"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -221,10 +231,9 @@ function ProjectSettingsPage() {
                         )}
                       />
 
-                      {/* Collaborator Link */}
                       <FormField
                         control={form.control}
-                        name={`projects.${index}.collaborator`}
+                        name="collaborator"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -270,10 +279,17 @@ function ProjectSettingsPage() {
                   </motion.div>
                 ))}
               </AnimatePresence>
+              <Button 
+                type="submit"
+                disabled={isPending}
+                className="flex items-center gap-3 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors px-6 py-3 rounded-xl shadow-lg"
+              >
+                <Save className="w-5 h-5" />
+                Save All Projects
+              </Button>
             </form>
           </Form>
 
-          {/* Error and Success Messages */}
           <AnimatePresence>
             {error && (
               <motion.div
@@ -302,4 +318,4 @@ function ProjectSettingsPage() {
   );
 }
 
-export default ProjectSettingsPage;
+export default ProjectSettingsPage

@@ -63,8 +63,8 @@ export const settings = async (
     email: values.email,
     username:values.username,
     password: values.password,
-    primarySkill: values.primarySkill,
-    secondarySkills: values.secondarySkills,
+    Roles: Array.isArray(values.Roles) ? values.Roles : [],// Ensure it's an array
+    Skills: Array.isArray(values.Skills) ? values.Skills : [], // Ensure it's an array
     country: values.country,
     location: values.location,
     about: values.about,
