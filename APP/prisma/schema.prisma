@@ -34,6 +34,7 @@ Skills            String[]
   linkedin        String?
   github          String?
   twitter         String?
+  leetcode        String?
   class10         String?
   percentage_10   String?
   class12         String?
@@ -41,6 +42,8 @@ Skills            String[]
   college         String?
   currentYear     String?
   dept            String?
+   shortIntro     String?
+   duration       String?
   domain          String?
   posts           Post[]
   projects        Project[]

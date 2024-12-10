@@ -45,6 +45,7 @@ export const SettingsSchema = z
     birthday: z.string().optional(),
     linkedin: z.string().url({ message: "Invalid URL format" }).optional(),
     github  :  z.string().url({ message: "Invalid URL format" }).optional(),
+    leetcode  :  z.string().url({ message: "Invalid URL format" }).optional(),
           
     twitter:z.string().url({ message: "Invalid URL format" }).optional(),
             
@@ -55,7 +56,9 @@ export const SettingsSchema = z
     college   : z.string().optional(),   
     currentYear : z.string().optional(), 
     dept   : z.string().optional(),      
-    domain : z.string().optional()      
+    duration  : z.string().optional(),      
+    domain : z.string().optional(),      
+    shortIntro : z.string().optional()      
   })
   .refine(
     (data) => {

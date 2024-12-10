@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +8,7 @@ import { useSession } from "next-auth/react";
 import { SettingsSchema } from "@/schemas";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { settings } from "@/actions/settings";
+import { settings, getSettings } from "@/actions/settings";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { roles } from "@/utils/data/roles";
@@ -59,30 +60,79 @@ const SettingsPage = () => {
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
+  const initialValues = {
+    password: undefined,
+    newPassword: undefined,
+    name: user?.name || undefined,
+    email: user?.email || undefined,
+    Roles: user?.Roles || undefined,
+    about:user?.about ||undefined,
+    Skills: user?.Skills || undefined,
+    country: user?.country || undefined,
+    location: user?.location || undefined,
+    profilePic: user?.profilePic || undefined,
+    linkedin: user?.linkedin || undefined,
+    github: user?.github || undefined,
+    twitter: user?.twitter || undefined,
+    gender: user?.gender || undefined,
+    class10: user?.schl10th || undefined,
+    percentage_10: user?.percentage_10 || undefined,
+    class12: user?.class12 || undefined,
+    percentage_12: user?.percentage_12 || undefined,
+    shortIntro:user?.shortIntro || undefined,
+    leetcode:user?.leetcode || undefined,
+    duration:user?.duration || undefined
+
+  };
 
   const form = useForm<z.infer<typeof SettingsSchema>>({
     resolver: zodResolver(SettingsSchema),
-    defaultValues: {
-      password: undefined,
-      newPassword: undefined,
-      name: user?.name || undefined,
-      email: user?.email || undefined,
-      Roles: user?.Roles || undefined,
-      Skills: user?.Skills || undefined,
-      country: user?.country || undefined,
-      location: user?.location || undefined,
-      projects: user?.projects || undefined,
-      profilePic: user?.profilePic || undefined,
-      linkedin: user?.linkedin || undefined,
-      github: user?.github || undefined,
-      twitter: user?.twitter || undefined,
-      gender: user?.gender || undefined,
-      class10: user?.schl10th || undefined,
-      percentage_10: user?.percentage_10 || undefined,
-      class12: user?.class12 || undefined,
-      percentage_12: user?.percentage_12 || undefined,
-    },
+    defaultValues: initialValues,
   });
+
+  useEffect(() => {
+    const getDetails = async () => {
+      try {
+        const data = await getSettings();
+        console.log(data);
+        
+      
+        if (data) {
+          data.getsettingdetails.name && form.setValue('name', data.getsettingdetails.name);
+          data.getsettingdetails.pssword && form.setValue('password', data.getsettingdetails.password);
+          data.getsettingdetails.email && form.setValue('email', data.getsettingdetails.email);
+          data.getsettingdetails.Roles && form.setValue('Roles', data.getsettingdetails.Roles);
+          data.getsettingdetails.Skills && form.setValue('Skills', data.getsettingdetails.Skills);
+          data.getsettingdetails.country && form.setValue('country', data.getsettingdetails.country);
+          data.getsettingdetails.gender && form.setValue('gender', data.getsettingdetails.gender);
+          data.getsettingdetails.location && form.setValue('location', data.getsettingdetails.location);
+          data.getsettingdetails.profilePic && form.setValue('profilePic', data.getsettingdetails.profilePic);
+          data.getsettingdetails.linkedin && form.setValue('linkedin', data.getsettingdetails.linkedin);
+          data.getsettingdetails.github && form.setValue('github', data.getsettingdetails.github);
+          data.getsettingdetails.twitter && form.setValue('twitter', data.getsettingdetails.twitter);
+          data.getsettingdetails.class10 && form.setValue('class10', data.getsettingdetails.class10);
+          data.getsettingdetails.percentage_10 && form.setValue('percentage_10', data.getsettingdetails.percentage_10);
+          data.getsettingdetails.class12 && form.setValue('class12', data.getsettingdetails.class12);
+          data.getsettingdetails.percentage_12 && form.setValue('percentage_12', data.getsettingdetails.percentage_12);
+          data.getsettingdetails.college && form.setValue('college', data.getsettingdetails.college);
+          data.getsettingdetails.currentYear&& form.setValue('currentYear', data.getsettingdetails.currentYear);
+          data.getsettingdetails.dept && form.setValue('dept', data.getsettingdetails.dept);
+          data.getsettingdetails.domain && form.setValue('domain', data.getsettingdetails.domain);
+          data.getsettingdetails.username && form.setValue('username', data.getsettingdetails.username);
+          data.getsettingdetails.about && form.setValue('about', data.getsettingdetails.about)
+          data.getsettingdetails.shortIntro && form.setValue('shortIntro', data.getsettingdetails.shortIntro)
+          data.getsettingdetails.duration && form.setValue('duration', data.getsettingdetails.duration)
+          data.getsettingdetails.leetcode && form.setValue('leetcode', data.getsettingdetails.leetcode)
+        }
+  
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        setError('Failed to load user settings');
+      }
+    };
+  
+    getDetails();
+  }, [form]); // Add form as dependency
 
   const onSubmit = async (values: z.infer<typeof SettingsSchema>) => {
     startTransition(() => {
@@ -95,6 +145,7 @@ const SettingsPage = () => {
             setSuccess(data.success);
             setError(undefined);
             update();
+            form.reset(initialValues);
           }
         })
         .catch(() => setError("Something went wrong!"));
@@ -352,7 +403,6 @@ const SettingsPage = () => {
                             <textarea
                               {...field}
                               placeholder="e.g., Professional Software Developer"
-                              disabled={isPending}
                               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                               rows={1}
                               onInput={(e) => {
@@ -626,7 +676,7 @@ const SettingsPage = () => {
                         <FormItem className="space-y-1">
                           <FormLabel className="text-gray-600 font-medium">
                             {" "}
-                          Roles
+                            Roles
                           </FormLabel>
                           <div className="space-y-4">
                             <Select
@@ -642,7 +692,10 @@ const SettingsPage = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 {roles.map((role: any) => (
-                                  <SelectItem key={role.value} value={role.value}>
+                                  <SelectItem
+                                    key={role.value}
+                                    value={role.value}
+                                  >
                                     {role.label}
                                   </SelectItem>
                                 ))}
@@ -785,26 +838,7 @@ const SettingsPage = () => {
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name="github"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-gray-600 font-medium">
-                            GitHub Profile
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="url"
-                              className="w-full p-3 border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 rounded-lg"
-                              placeholder="e.g., https://www.github.com/username"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-sm text-red-500" />
-                        </FormItem>
-                      )}
-                    />
+                  
                     <FormField
                       control={form.control}
                       name="github"

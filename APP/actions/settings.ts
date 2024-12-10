@@ -1,4 +1,4 @@
-"use server"
+"use server";
 import { Prisma } from "@prisma/client";
 import * as z from "zod";
 import bcrypt from "bcryptjs";
@@ -10,19 +10,15 @@ import { currentUser } from "@/lib/auth";
 import { generateVerificationToken } from "@/lib/tokens";
 // import { sendVerificationEmail } from "@/lib/mail";
 
-export const settings = async (
-  values: z.infer<typeof SettingsSchema>
-) => {
-  
+export const settings = async (values: z.infer<typeof SettingsSchema>) => {
   const user = await currentUser();
-  
+
   if (!user) {
     return { error: "Unauthorized" };
   }
-  
 
   const dbUser = await getUserById(user.id);
-  
+
   if (!dbUser) {
     return { error: "Unauthorized" };
   }
@@ -47,7 +43,10 @@ export const settings = async (
   }
 
   if (values.password && values.newPassword && dbUser.password) {
-    const passwordsMatch = await bcrypt.compare(values.password, dbUser.password);
+    const passwordsMatch = await bcrypt.compare(
+      values.password,
+      dbUser.password
+    );
 
     if (!passwordsMatch) {
       return { error: "Incorrect password!" };
@@ -58,13 +57,13 @@ export const settings = async (
     values.newPassword = undefined;
   }
 
-  const updateData:any= {
+  const updateData: any = {
     name: values.name,
     email: values.email,
-    username:values.username,
+    username: values.username,
     password: values.password,
-    Roles: Array.isArray(values.Roles) ? values.Roles : [],// Ensure it's an array
-    Skills: Array.isArray(values.Skills) ? values.Skills : [], // Ensure it's an array
+    Roles: Array.isArray(values.Roles) ? values.Roles : [], 
+    Skills: Array.isArray(values.Skills) ? values.Skills : [],
     country: values.country,
     location: values.location,
     about: values.about,
@@ -80,14 +79,17 @@ export const settings = async (
     college: values.college,
     currentYear: values.currentYear,
     dept: values.dept,
-    domain: values.domain
+    shortIntro:values.shortIntro,
+    leetcode :values.leetcode,
+    duration :values.duration,
+    
+    domain: values.domain,
   };
 
   // Debugging logs
   console.log("Update Data:", updateData);
 
   try {
-   
     const updatedUser = await db.user.update({
       where: { id: dbUser.id },
       data: updateData,
@@ -97,13 +99,41 @@ export const settings = async (
       user: {
         name: updatedUser.name,
         email: updatedUser.email,
-      }
+      },
     });
 
     return { success: "Settings Updated!" };
-
   } catch (error) {
     console.error("Update failed:", error);
     return { error: "Failed to update settings." };
   }
+};
+
+export const getSettings = async () => {
+  const user = await currentUser();
+
+  if (!user) {
+    return { error: "Unauthorized" };
+  }
+
+  const Userid= await getUserById(user.id);
+
+  if (!Userid) {
+    return { error: "Unauthorized" };
+  }
+  try{
+
+  const getsettingdetails = await db.user.findUnique({
+    where: {
+      id: Userid.id,
+    },
+  });
+  return {success:true,getsettingdetails}
+  console.log('settingsdata',getsettingdetails);
+
+}catch(error){
+  console.error("Get settings data failed:", error);
+  return { error: "Failed to get settings." };
+
+}
 };
