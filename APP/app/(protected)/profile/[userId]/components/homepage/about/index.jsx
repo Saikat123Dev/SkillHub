@@ -2,7 +2,7 @@ import Image from "next/image";
 
 function AboutSection({ details }) {
   return (
-    <div className="relative">
+    <div className="relative w-full">
       {/* Background Image with adjusted positioning */}
       <div className="absolute inset-0 -z-10">
         <Image
@@ -10,7 +10,7 @@ function AboutSection({ details }) {
           alt="Hero"
           width={1572}
           height={795}
-          className="w-full object-cover"
+          className="w-full h-full object-cover"
         />
       </div>
 
@@ -20,22 +20,24 @@ function AboutSection({ details }) {
           <div id="about" className="my-12 lg:my-20 relative">
             {/* Decorative "About Me" Text for larger screens */}
             <div className="hidden lg:flex flex-col items-center absolute top-16 -right-8">
-              <span className="border-2 border-indigo-500 text-black rotate-90 p-2 px-6 text-3xl rounded-lg shadow-lg hover:shadow-xl hover:bg-indigo-500 hover:text-white transition-colors duration-300 ease-in-out">
+              <span className="border-2 border-indigo-500 text-black rotate-90 p-2 px-6 text-3xl rounded-lg shadow-lg hover:shadow-xl hover:bg-indigo-500 hover:text-white transition-colors duration-300 ease-in-out truncate max-w-[200px]">
                 About Me
               </span>
             </div>
 
             {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 max-w-[100%] items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 max-w-full items-center">
               {/* Text Section */}
-              <div className="order-2 lg:order-1">
-                <h2 className="font-bold mb-4 text-indigo-600 text-3xl uppercase tracking-wide">
+              <div className="order-2 lg:order-1 max-w-full">
+                <h2 className="font-bold mb-4 text-indigo-600 text-3xl uppercase tracking-wide truncate">
                   Who I Am
                 </h2>
-                <p className="text-gray-700 text-md lg:text-xl leading-relaxed mb-6">
-                  {details?.about ?? 
-                    "Write about yourself. Let people know what makes you unique."}
-                </p>
+                <div className="overflow-hidden">
+                  <p className="text-gray-700 text-md lg:text-xl leading-relaxed mb-6 break-words">
+                    {details?.about ?? 
+                      "Write about yourself. Let people know what makes you unique."}
+                  </p>
+                </div>
               </div>
 
               {/* Profile Picture Section */}
@@ -52,8 +54,8 @@ function AboutSection({ details }) {
                       />
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center w-72 h-72 bg-gray-200 rounded-lg shadow-inner">
-                      <span className="text-gray-500 text-lg">
+                    <div className="flex items-center justify-center w-56 h-56 bg-gray-200 rounded-lg shadow-inner">
+                      <span className="text-gray-500 text-lg text-center px-4">
                         Upload Your Profile Picture
                       </span>
                     </div>
