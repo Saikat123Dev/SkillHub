@@ -1,115 +1,111 @@
 export const roles= [
       {
         "label": "Frontend Developer",
-        "value": "frontend"
+        "value": "Frontend Developer"
       },
       {
         "label": "Backend Developer",
-        "value": "backend"
+        "value": "Backend Developer"
       },
       {
         "label": "Full Stack Developer",
-        "value": "fullstack"
+        "value": "Full Stack Developer"
       },
       {
         "label": "AI Engineer",
-        "value": "ai"
+        "value": "AI Engineer"
       },
       {
         "label": "Machine Learning Engineer",
-        "value": "ml"
+        "value": "Machine Learning Engineer"
       },
       {
         "label": "Data Scientist",
-        "value": "data_scientist"
+        "value": "Data Scientist"
       },
       {
         "label": "Data Engineer",
-        "value": "data_engineer"
+        "value": "Data Engineer"
       },
       {
         "label": "DevOps Engineer",
-        "value": "devops"
-      },
-      {
-        "label": "Cloud Engineer",
-        "value": "cloud"
+        "value": "DevOps Engineer"
       },
       {
         "label": "Mobile App Developer",
-        "value": "mobile"
+        "value": "Mobile App Developer"
       },
       {
         "label": "Game Developer",
-        "value": "game_dev"
+        "value": "Game Developer"
       },
       {
         "label": "Embedded Systems Engineer",
-        "value": "embedded"
+        "value": "Embedded Systems Engineer"
       },
       {
         "label": "Robotics Engineer",
-        "value": "robotics"
+        "value": "Robotics Engineer"
       },
       {
         "label": "Cybersecurity Engineer",
-        "value": "cybersecurity"
+        "value": "Cybersecurity Engineer"
       },
       {
         "label": "Blockchain Developer",
-        "value": "blockchain"
+        "value":"Blockchain Developer"
       },
       {
         "label": "UI/UX Designer",
-        "value": "ui_ux"
+        "value": "UI/UX Designer"
       },
       {
         "label": "Quality Assurance Engineer",
-        "value": "qa"
+        "value": "Quality Assurance Engineer"
       },
       {
         "label": "Site Reliability Engineer",
-        "value": "sre"
+        "value": "Site Reliability Enginee"
       },
       {
         "label": "AR/VR Developer",
-        "value": "ar_vr"
+        "value": "AR/VR Developer"
       },
       {
         "label": "Big Data Engineer",
-        "value": "big_data"
+        "value": "Big Data Engineer"
       },
       {
         "label": "IoT Engineer",
-        "value": "iot"
+        "value": "IoT Engineer"
       },
       {
         "label": "Natural Language Processing Engineer",
-        "value": "nlp"
+        "value": "Natural Language Processing Engineer"
       },
       {
         "label": "Software Developer",
-        "value": "software_dev"
+        "value": "software Deveiloper"
       },
       {
         "label": "Network Engineer",
-        "value": "network"
+        "value": "Network Engineer"
       },
       {
         "label": "System Engineer",
-        "value": "system"
+        "value": "System Engineer"
       },
       {
         "label": "Database Administrator",
-        "value": "database_admin"
+        "value": "Database Administrator"
       },
       {
         "label": "Product Manager",
-        "value": "product_manager"
+        "value": "Product manager"
       },
       {
         "label": "Test Automation Engineer",
-        "value": "test_automation"
+        "value": "Test Automation Engineer"
       }
     ]
   

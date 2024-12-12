@@ -123,8 +123,8 @@ function HeroSection({ details, profileUserId }) {
             <span className="text-black">
   {details && details.username ? details.username : "username"}
 </span>
-            {` , I'm a Professional `}
-            <span className="text-[#16f2b3]">{personalData.designation}</span>.
+            {` , I'm a `}
+            <span className="text-[#16f2b3]">{details && details.shortIntro?details.shortIntro:"Write your Short Introduction"}</span>.
           </h1>
 
           <div className="my-12 flex items-center gap-5">

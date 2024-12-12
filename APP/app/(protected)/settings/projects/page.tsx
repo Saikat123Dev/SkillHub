@@ -1,26 +1,10 @@
 "use client";
 import * as z from "zod";
-import { useForm } from "react-hook-form";
+import { useForm,useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { SettingsSchema } from "@/schemas";
-
-import {
-  Form,
-  FormField,
-  FormControl,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-
-import { Input } from "@/components/ui/input";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import { FormError } from "@/components/form-error";
-import { Button } from "@/components/ui/button";
-import { FormSuccess } from "@/components/form-success";
 import { 
   Plus, 
   Trash2, 
@@ -31,53 +15,85 @@ import {
   Video, 
   Users 
 } from "lucide-react";
+
+import {
+  Form,
+  FormField,
+  FormControl,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { FormError } from "@/components/form-error";
+import { FormSuccess } from "@/components/form-success";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { settings } from "@/actions/settings";
+import { addProjects } from "@/actions/projects";
+
+// Updated Schema to handle multiple projects
+const ProjectSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  techstack: z.string().min(1, "Technologies are required"),
+  about: z.string().min(1, "Description is required"),
+  demovideo: z.string().url().optional().or(z.literal("")),
+  livelink: z.string().url().optional().or(z.literal("")),
+  collaborator: z.string().optional().or(z.literal(""))
+});
+
+const SettingsSchema = z.object({
+  projects: z.array(ProjectSchema)
+});
 
 function ProjectSettingsPage() {
   const user = useCurrentUser();
-  const { data: session, update } = useSession();
-  const [projects, setProjects] = useState([{ id: Date.now() }]);
+  const { update } = useSession();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
 
-  const form = useForm({
+  // Initialize form with user's existing projects or an empty project
+  const form = useForm<z.infer<typeof SettingsSchema>>({
     resolver: zodResolver(SettingsSchema),
     defaultValues: {
-      projects: user?.projects || undefined,
-    },
+      projects: user?.projects?.length ? user.projects : [{
+        title: "",
+        techstack: "",
+        about: "",
+        demovideo: "",
+        livelink: "",
+        collaborator: ""
+      }]
+    }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    name: "projects",
+    control: form.control
   });
 
   const addProject = () => {
-    setProjects([...projects, { id: Date.now() }]);
-    // Reset form values for the new project
-    form.reset({
-      ...form.getValues(),
+    append({
       title: "",
       techstack: "",
       about: "",
       demovideo: "",
-      liveLink: "",
+      livelink: "",
       collaborator: ""
     });
   };
 
   const removeProject = (index: number) => {
-    if (projects.length > 1) {
-      const newProjects = projects.filter((_, i) => i !== index);
-      setProjects(newProjects);
-      
-      // Reset form values after removing a project
-      const currentValues = form.getValues();
-      const updatedProjects = { ...currentValues };
-      delete updatedProjects[`projects.${index}`];
-      form.reset(updatedProjects);
+    if (fields.length > 1) {
+      remove(index);
     }
   };
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: z.infer<typeof SettingsSchema>) => {
+    console.log(values);
     startTransition(() => {
-      settings(values)
+      addProjects(values)
         .then((data) => {
           if (data.error) {
             setError(data.error);
@@ -111,9 +127,9 @@ function ProjectSettingsPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <AnimatePresence>
-                {projects.map((project, index) => (
+                {fields.map((field, index) => (
                   <motion.div
-                    key={project.id}
+                    key={field.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
@@ -124,7 +140,7 @@ function ProjectSettingsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
-                        name="title"
+                        name={`projects.${index}.title`}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -145,7 +161,7 @@ function ProjectSettingsPage() {
 
                       <FormField
                         control={form.control}
-                        name="techstack"
+                        name={`projects.${index}.techstack`}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -167,7 +183,7 @@ function ProjectSettingsPage() {
 
                     <FormField
                       control={form.control}
-                      name="about"
+                      name={`projects.${index}.about`}
                       render={({ field }) => (
                         <FormItem className="mt-6">
                           <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -177,7 +193,7 @@ function ProjectSettingsPage() {
                           <FormControl>
                             <textarea
                               {...field}
-                              placeholder="Provide a comprehensive overview of your project, its purpose, and key features"
+                              placeholder="Provide a comprehensive overview of your project"
                               className="w-full border border-gray-300 rounded-xl p-4 text-gray-800 min-h-[150px] focus:border-indigo-500 focus:ring-indigo-500"
                             />
                           </FormControl>
@@ -189,7 +205,7 @@ function ProjectSettingsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                       <FormField
                         control={form.control}
-                        name="demovideo"
+                        name={`projects.${index}.demovideo`}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -211,7 +227,7 @@ function ProjectSettingsPage() {
 
                       <FormField
                         control={form.control}
-                        name="livelink"
+                        name={`projects.${index}.livelink`}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -233,7 +249,7 @@ function ProjectSettingsPage() {
 
                       <FormField
                         control={form.control}
-                        name="collaborator"
+                        name={`projects.${index}.collaborator`}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-gray-700 font-semibold flex items-center gap-2">
@@ -243,7 +259,6 @@ function ProjectSettingsPage() {
                             <FormControl>
                               <Input
                                 {...field}
-                                type="url"
                                 placeholder="GitHub or profile link"
                                 className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl"
                               />
@@ -255,7 +270,7 @@ function ProjectSettingsPage() {
                     </div>
 
                     <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-                      {projects.length > 1 && (
+                      {fields.length > 1 && (
                         <motion.button
                           type="button"
                           whileHover={{ scale: 1.05 }}
@@ -279,6 +294,7 @@ function ProjectSettingsPage() {
                   </motion.div>
                 ))}
               </AnimatePresence>
+              
               <Button 
                 type="submit"
                 disabled={isPending}
@@ -318,4 +334,4 @@ function ProjectSettingsPage() {
   );
 }
 
-export default ProjectSettingsPage
+export default ProjectSettingsPage;
