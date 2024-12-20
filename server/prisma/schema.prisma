@@ -57,7 +57,7 @@ model User {
 
   Cards Cards[]
 
-  Message Message[] @relation("UserMessages")
+  // Message Message[] @relation("UserMessages")
 }
 
 model Group {
@@ -69,7 +69,7 @@ model Group {
   lanes   Lanes[]
 
   calenders Calendy[]
-  messages  Message[] @relation("GroupMessages")
+  // messages  Message[] @relation("GroupMessages")
 
   admin User @relation(fields: [adminId], references: [id])
 }
@@ -299,13 +299,8 @@ model CommentVote {
 }
 
 model Message {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  content  String
-  senderId String @db.ObjectId
-  groupId  String @db.ObjectId
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  content String
 
-  sender User  @relation("UserMessages", fields: [senderId], references: [id])
-  group  Group @relation("GroupMessages", fields: [groupId], references: [id])
-
-  createdAt DateTime @default(now())
+  groupId String? @db.ObjectId
 }

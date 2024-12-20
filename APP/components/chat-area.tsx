@@ -1,31 +1,68 @@
 "use client";
 
-import { ScrollArea } from "./ui/scroll-area";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
 import {
-    Send,
-    Smile,
+    Copy,
+    Edit2,
+    Laugh,
     MoreVertical,
     Reply,
-    Edit2,
-    Trash2,
-    Copy,
+    Send,
     Share2,
-    Laugh
+    Smile,
+    Trash2
 } from "lucide-react";
-import { Avatar } from "./ui/avatar";
-import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
-
+import { useEffect, useRef, useState } from "react";
+import io from "socket.io-client";
+import { Avatar } from "./ui/avatar";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 // Dynamically import the emoji picker
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
+
+interface Message {
+    id: number;
+    sender: string;
+    content: string;
+    time: string;
+    isOwn?: boolean;
+}
 
 export function ChatArea() {
     const [message, setMessage] = useState("");
     const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
     const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
     const [hoveredMessageId, setHoveredMessageId] = useState<number | null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const socketRef = useRef<Socket | null>(null);
+    const [lastMessageId, setLastMessageId] = useState(0);
+
+    // Initialize Socket.IO connection
+    useEffect(() => {
+        // Connect to the WebSocket server
+        socketRef.current = io('http://localhost:8001'); // Adjust URL as needed
+
+        // Listen for incoming messages
+        socketRef.current.on('message', (messageData: string) => {
+            const parsedMessage = JSON.parse(messageData);
+            const newMessage: Message = {
+                id: lastMessageId + 1,
+                sender: parsedMessage.message.sender || 'Unknown',
+                content: parsedMessage.message.content,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                isOwn: false
+            };
+            setLastMessageId(prev => prev + 1);
+            setMessages(prev => [...prev, newMessage]);
+        });
+
+        // Cleanup on unmount
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+        };
+    }, [lastMessageId]);
 
     // Ref for dropdown container
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -41,7 +78,6 @@ export function ChatArea() {
             }
         }
 
-        // Add event listener when a dropdown is open
         if (selectedMessageId !== null) {
             document.addEventListener('mousedown', handleClickOutside);
             return () => {
@@ -55,40 +91,29 @@ export function ChatArea() {
     };
 
     const handleSend = () => {
-        if (message.trim()) {
-            alert(`Message sent: ${message}`);
+        if (message.trim() && socketRef.current) {
+            const newMessage = {
+                content: message.trim(),
+                sender: 'You',
+                timestamp: new Date().toISOString()
+            };
+
+            // Emit the message to the WebSocket server
+            socketRef.current.emit('event:message', newMessage);
+
+            // Add message to local state
+            const localMessage: Message = {
+                id: lastMessageId + 1,
+                sender: 'You',
+                content: message.trim(),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                isOwn: true
+            };
+            setLastMessageId(prev => prev + 1);
+            setMessages(prev => [...prev, localMessage]);
             setMessage("");
         }
     };
-
-    // Dummy message data
-    const messages = [
-        {
-            id: 1,
-            sender: "Kate Johnson",
-            content: "Recently I saw properties in a great location that I did not pay attention to before 😊",
-            time: "11:24 AM",
-        },
-        {
-            id: 2,
-            sender: "Evan Scott",
-            content: "Ooo, why don't you say something more",
-            time: "11:26 AM",
-        },
-        {
-            id: 3,
-            sender: "You",
-            content: "She creates an atmosphere of mystery 😌",
-            time: "11:28 AM",
-            isOwn: true,
-        },
-        {
-            id: 4,
-            sender: "Kate Johnson",
-            content: "Looking forward to our next meetup!",
-            time: "11:30 AM",
-        },
-    ];
 
     const MessageActions = [
         {
@@ -173,7 +198,6 @@ export function ChatArea() {
                                         <p>{message.content}</p>
                                         <p className="text-xs mt-1 opacity-70">{message.time}</p>
 
-                                        {/* Message Actions Dropdown */}
                                         {hoveredMessageId === message.id && (
                                             <Button
                                                 size="icon"
@@ -188,7 +212,6 @@ export function ChatArea() {
                                         )}
                                     </div>
 
-                                    {/* Dropdown Menu */}
                                     {selectedMessageId === message.id && (
                                         <div
                                             ref={dropdownRef}
@@ -237,6 +260,11 @@ export function ChatArea() {
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Write your message..."
                         className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-gray-500 dark:placeholder-gray-400 px-4 py-2"
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSend();
+                            }
+                        }}
                     />
                     <Button
                         size="icon"
