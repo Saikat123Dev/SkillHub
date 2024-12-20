@@ -14,7 +14,6 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
 
   const handleNavigation = () => {
     setIsLoading(true);
-    // Reset loading state after animation
     setTimeout(() => setIsLoading(false), 500);
   };
 
@@ -52,7 +51,7 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
             hover:scale-105 origin-left
             ${!isExpanded && 'scale-90 opacity-80'}
           `}>
-            <UserPage />
+            {isExpanded && <UserPage />}
           </div>
         </div>
 
@@ -70,24 +69,25 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
               onClick={handleNavigation}
             >
               <div className={`
-                flex items-center p-3 rounded-xl text-gray-700 
+                flex items-center justify-center p-3 rounded-xl text-gray-700 
                 bg-transparent hover:bg-blue-50 
                 transition-all duration-300 ease-in-out 
                 transform hover:translate-x-2
                 ${isLoading ? 'opacity-50 pointer-events-none' : ''}
+                ${!isExpanded && 'px-1'}
               `}>
                 <item.icon 
                   className={`
-                    w-5 h-5 mr-3 text-blue-600
                     transition-all duration-300
                     ${item.rotate ? 'group-hover:rotate-90' : 'group-hover:scale-110'}
-                    ${!isExpanded && 'mr-0'}
+                    ${!isExpanded ? 'w-10 h-10' : 'w-6 h-6 mr-3'}
+                    text-blue-600
                   `}
                 />
                 <span className={`
                   font-medium transition-all duration-300
                   group-hover:text-blue-600
-                  ${!isExpanded ? 'opacity-0 w-0' : 'opacity-100'}
+                  ${!isExpanded ? 'hidden' : 'block'}
                   overflow-hidden whitespace-nowrap
                 `}>
                   {item.label}

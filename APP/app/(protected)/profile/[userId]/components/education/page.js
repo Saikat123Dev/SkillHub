@@ -1,114 +1,98 @@
-import Image from "next/image";
-import AnimationLottie from "../helper/animation-lottie";
-import lottieFile from "/public/lottie/study.json";
-import { FaSchool, FaUniversity } from "react-icons/fa";
+'use client'
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Motion, School, GraduationCap } from "lucide-react";
 
-function Education({ details }) {
+const Education = ({ details }) => {
+  const educationData = [
+    {
+      level: "Secondary Education",
+      icon: <School className="h-8 w-8" />,
+      type: "Class 10th",
+      institution: details?.class10 || "Enter your School's Name",
+      score: details?.percentage_10 || "Enter your percentage marks",
+      badge: "Secondary"
+    },
+    {
+      level: "Higher Secondary",
+      icon: <School className="h-8 w-8" />,
+      type: "Class 12th",
+      institution: details?.class12 || "Enter your School's Name",
+      score: details?.percentage_12  || "Enter your percentage marks",
+      badge: "Higher Secondary"
+    },
+    {
+      level: "University Education",
+      icon: <GraduationCap className="h-8 w-8" />,
+      type: "College",
+      institution: details?.college || "Enter your College's Name",
+      additionalInfo: [
+        { label: "Current Year", value: details?.currentYear || "Enter your Current Year" },
+        { label: "Department", value: details?.dept || "Enter your Department" },
+        { label: "Field of Study", value: details?.domain || "Enter your Domain" }
+      ],
+      badge: "Undergraduate"
+    }
+  ];
+
   return (
-    <div className="relative z-50 border-t my-12 lg:my-24 border-gray-300  to-gray-900 text-gray-100">
-      {/* Background Section SVG */}
-      <Image
-        src="/section.svg"
-        alt="Background Design"
-        width={1800}
-        height={900}
-        className="absolute top-0 left-0 -z-10 opacity-20"
-      />
-
-      {/* Title Section */}
-      <div className="flex justify-center items-center py-8">
-        <div className="flex items-center gap-4">
-          <span className="w-12 lg:w-20 h-[2px] bg-indigo-600"></span>
-          <div className="flex items-center gap-3">
-            <FaUniversity size={40} className="text-indigo-500" />
-            <h2 className="text-3xl lg:text-4xl font-semibold text-gray-600">
-              Education
-            </h2>
+    <div className="w-full py-12 border-t border-[#25213b] bg-gradient-to-b from-gray-50 to-white">
+      <div className="container mx-auto px-4 ">
+        {/* Header Section */}
+        <div className="flex flex-col items-center mb-12">
+          <div className="flex items-center gap-3 mb-4">
+           
+            <h2 className="text-3xl font-bold text-gray-900">Educational Journey</h2>
           </div>
-          <span className="w-12 lg:w-20 h-[2px] bg-indigo-600"></span>
-        </div>
-      </div>
-
-      {/* Content Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-6 lg:px-20">
-        {/* Lottie Animation */}
-        <div className="flex justify-center items-center">
-          <div className="w-full lg:w-3/4 rounded-xl overflow-hidden shadow-lg">
-            <AnimationLottie animationPath={lottieFile} />
-          </div>
+          <div className="h-1 w-20 bg-indigo-600 rounded-full" />
         </div>
 
-        {/* Education Cards */}
-        <div className="space-y-10">
-          {/* Class 10th Card */}
-          <div className="p-6 rounded-lg shadow-lg bg-gray-800 border border-indigo-600 hover:shadow-2xl transition-transform transform hover:scale-105">
-            <div className="flex items-center gap-3 mb-4">
-              <FaSchool size={32} className="text-indigo-400" />
-              <h3 className="text-2xl font-semibold">Class 10th</h3>
-            </div>
-            <p className="text-lg">
-              <strong>School:</strong>{" "}
-              {details?.class10 || "Enter your School's Name"}
-            </p>
-            <p className="text-lg">
-              <strong>Score:</strong>{" "}
-              <span className="text-indigo-400">
-                {details?.percentage_10 || "Enter your percentage marks"}
-              </span>
-            </p>
-          </div>
-
-          {/* Class 12th Card */}
-          <div className="p-6 rounded-lg shadow-lg mt-3 bg-gray-800 border border-indigo-600 hover:shadow-2xl transition-transform transform hover:scale-105">
-            <div className="flex items-center gap-3 mb-4">
-              <FaSchool size={32} className="text-indigo-400" />
-              <h3 className="text-2xl font-semibold">Class 12th</h3>
-            </div>
-            <p className="text-lg">
-              <strong>School:</strong>{" "}
-              {details?.class12 || "Enter your School's Name"}
-            </p>
-            <p className="text-lg">
-              <strong>Score:</strong>{" "}
-              <span className="text-indigo-400">
-                {details?.percentage_12 || "Enter your percentage marks"}
-              </span>
-            </p>
-          </div>
-
-          {/* College Card */}
-          <div className="p-6 rounded-lg mt-4 shadow-lg bg-gray-800 border border-indigo-600 hover:shadow-2xl transition-transform transform hover:scale-105">
-            <div className="flex items-center gap-3 mb-4">
-              <FaUniversity size={32} className="text-indigo-400" />
-              <h3 className="text-2xl font-semibold">College Details</h3>
-            </div>
-            <p className="text-lg">
-              <strong>College:</strong>{" "}
-              {details?.college || "Enter your College's Name"}
-            </p>
-            <p className="text-lg">
-              <strong>Current Year:</strong>{" "}
-              <span className="text-indigo-400">
-                {details?.currentYear || "Enter your Current Year"}
-              </span>
-            </p>
-            <p className="text-lg">
-              <strong>Department:</strong>{" "}
-              <span className="text-indigo-400">
-                {details?.dept || "Enter your Current Department"}
-              </span>
-            </p>
-            <p className="text-lg">
-              <strong>Field of Study:</strong>{" "}
-              <span className="text-indigo-400">
-                {details?.domain || "Enter your Current Domain"}
-              </span>
-            </p>
-          </div>
+        {/* Education Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {educationData.map((item, index) => (
+            <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-indigo-100">
+              <CardHeader className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="text-indigo-600 group-hover:scale-110 transition-transform duration-300">
+                    {item.icon}
+                  </div>
+                  <Badge variant="secondary" className="bg-indigo-50 text-indigo-700">
+                    {item.badge}
+                  </Badge>
+                </div>
+                <CardTitle className="text-2xl font-semibold text-gray-900">
+                  {item.level}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-base font-medium text-gray-600">{item.type}</p>
+                  <p className="text-lg font-semibold text-gray-900">{item.institution}</p>
+                  {item.score && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">Score:</span>
+                      <span className="font-medium text-indigo-600">{item.score}</span>
+                    </div>
+                  )}
+                  {item.additionalInfo && (
+                    <div className="space-y-2 mt-4 pt-4 border-t border-gray-100">
+                      {item.additionalInfo.map((info, infoIndex) => (
+                        <div key={infoIndex} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">{info.label}:</span>
+                          <span className="text-sm font-medium text-gray-900">{info.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Education;
