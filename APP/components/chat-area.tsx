@@ -1,0 +1,252 @@
+"use client";
+
+import { ScrollArea } from "./ui/scroll-area";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import {
+    Send,
+    Smile,
+    MoreVertical,
+    Reply,
+    Edit2,
+    Trash2,
+    Copy,
+    Share2,
+    Laugh
+} from "lucide-react";
+import { Avatar } from "./ui/avatar";
+import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
+
+// Dynamically import the emoji picker
+const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
+
+export function ChatArea() {
+    const [message, setMessage] = useState("");
+    const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
+    const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
+    const [hoveredMessageId, setHoveredMessageId] = useState<number | null>(null);
+
+    // Ref for dropdown container
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Effect to handle clicks outside the dropdown
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node)
+            ) {
+                setSelectedMessageId(null);
+            }
+        }
+
+        // Add event listener when a dropdown is open
+        if (selectedMessageId !== null) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }
+    }, [selectedMessageId]);
+
+    const handleEmojiClick = (emoji: { emoji: string }) => {
+        setMessage((prev) => prev + emoji.emoji);
+    };
+
+    const handleSend = () => {
+        if (message.trim()) {
+            alert(`Message sent: ${message}`);
+            setMessage("");
+        }
+    };
+
+    // Dummy message data
+    const messages = [
+        {
+            id: 1,
+            sender: "Kate Johnson",
+            content: "Recently I saw properties in a great location that I did not pay attention to before 😊",
+            time: "11:24 AM",
+        },
+        {
+            id: 2,
+            sender: "Evan Scott",
+            content: "Ooo, why don't you say something more",
+            time: "11:26 AM",
+        },
+        {
+            id: 3,
+            sender: "You",
+            content: "She creates an atmosphere of mystery 😌",
+            time: "11:28 AM",
+            isOwn: true,
+        },
+        {
+            id: 4,
+            sender: "Kate Johnson",
+            content: "Looking forward to our next meetup!",
+            time: "11:30 AM",
+        },
+    ];
+
+    const MessageActions = [
+        {
+            icon: Reply,
+            label: "Reply",
+            action: () => console.log("Reply")
+        },
+        {
+            icon: Edit2,
+            label: "Edit",
+            action: () => console.log("Edit")
+        },
+        {
+            icon: Trash2,
+            label: "Delete",
+            action: () => console.log("Delete")
+        },
+        {
+            icon: Copy,
+            label: "Copy",
+            action: () => console.log("Copy")
+        },
+        {
+            icon: Share2,
+            label: "Forward",
+            action: () => console.log("Forward")
+        },
+        {
+            icon: Laugh,
+            label: "React",
+            action: () => console.log("React")
+        }
+    ];
+
+    return (
+        <div className="flex flex-col h-screen">
+            {/* Header Section */}
+            <div className="border-b p-4">
+                <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                        <img src="https://i.pravatar.cc/150?u=group" alt="Group" />
+                    </Avatar>
+                    <div>
+                        <h3 className="font-semibold">Real estate deals</h3>
+                        <p className="text-sm text-muted-foreground">10 members</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Scrollable Chat Area */}
+            <div className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-4">
+                    {messages.map((message) => (
+                        <div
+                            key={message.id}
+                            className={`flex group relative ${message.isOwn ? "justify-end" : "justify-start"}`}
+                            onMouseEnter={() => setHoveredMessageId(message.id)}
+                            onMouseLeave={() => setHoveredMessageId(null)}
+                        >
+                            <div
+                                className={`flex gap-3 max-w-[70%] relative ${message.isOwn ? "flex-row-reverse" : ""}`}
+                            >
+                                {!message.isOwn && (
+                                    <Avatar className="h-8 w-8">
+                                        <img
+                                            src={`https://i.pravatar.cc/150?u=${message.sender}`}
+                                            alt={message.sender}
+                                        />
+                                    </Avatar>
+                                )}
+                                <div className="relative">
+                                    {!message.isOwn && (
+                                        <p className="text-sm text-muted-foreground mb-1">{message.sender}</p>
+                                    )}
+                                    <div
+                                        className={`rounded-lg p-3 relative ${
+                                            message.isOwn
+                                                ? "bg-primary text-primary-foreground"
+                                                : "bg-secondary"
+                                        }`}
+                                    >
+                                        <p>{message.content}</p>
+                                        <p className="text-xs mt-1 opacity-70">{message.time}</p>
+
+                                        {/* Message Actions Dropdown */}
+                                        {hoveredMessageId === message.id && (
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="absolute -top-2 -right-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full"
+                                                onClick={() => setSelectedMessageId(
+                                                    selectedMessageId === message.id ? null : message.id
+                                                )}
+                                            >
+                                                <MoreVertical className="h-4 w-4 text-gray-500" />
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    {/* Dropdown Menu */}
+                                    {selectedMessageId === message.id && (
+                                        <div
+                                            ref={dropdownRef}
+                                            className="absolute z-50 top-full mt-2 right-0 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+                                        >
+                                            <div className="p-1">
+                                                {MessageActions.map((action) => (
+                                                    <Button
+                                                        key={action.label}
+                                                        variant="ghost"
+                                                        className="w-full justify-start px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                                                        onClick={action.action}
+                                                    >
+                                                        <action.icon className="mr-2 h-4 w-4 text-gray-500" />
+                                                        {action.label}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Emoji Picker & Input Area */}
+            <div className="border-t border-gray-300 dark:border-gray-700 p-4 bg-white dark:bg-gray-900 relative">
+                {isEmojiPickerVisible && (
+                    <div className="absolute bottom-16 left-0 z-50">
+                        <EmojiPicker onEmojiClick={handleEmojiClick} />
+                    </div>
+                )}
+                <div className="flex gap-2 items-center">
+                    <Button
+                        size="icon"
+                        variant="outline"
+                        className="rounded-lg p-2"
+                        onClick={() => setIsEmojiPickerVisible((prev) => !prev)}
+                    >
+                        <Smile className="h-5 w-5 text-gray-500 dark:text-gray-200" />
+                    </Button>
+                    <Input
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Write your message..."
+                        className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-gray-500 dark:placeholder-gray-400 px-4 py-2"
+                    />
+                    <Button
+                        size="icon"
+                        className="rounded-lg bg-blue-500 hover:bg-blue-600 text-white p-3 transition-all duration-200 shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                        onClick={handleSend}
+                    >
+                        <Send className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
