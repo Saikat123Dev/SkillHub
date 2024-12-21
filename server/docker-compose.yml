@@ -2,7 +2,7 @@ version: '3.8'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
+    container_name: zookeeper_service
     ports:
       - "2181:2181"
     environment:
@@ -10,7 +10,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka
+    container_name: kafka_service
     ports:
       - "9092:9092"
     environment:
@@ -22,8 +22,7 @@ services:
 
   redis:
     image: redis:latest
-
-    container_name: redis_100
+    container_name: redis_service
     ports:
       - "6379:6379"
     volumes:

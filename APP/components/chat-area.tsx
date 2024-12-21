@@ -1,23 +1,23 @@
-"use client";
-
 import {
-    Copy,
-    Edit2,
-    Laugh,
-    MoreVertical,
-    Reply,
-    Send,
-    Share2,
-    Smile,
-    Trash2
+  Copy,
+  Edit2,
+  Laugh,
+  MoreVertical,
+  Reply,
+  Send,
+  Share2,
+  Smile,
+  Trash2
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { Avatar } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-// Dynamically import the emoji picker
+
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
 interface Message {
@@ -26,9 +26,13 @@ interface Message {
     content: string;
     time: string;
     isOwn?: boolean;
+    userId?: string;
+    groupId?: string;
 }
 
-export function ChatArea() {
+export function ChatArea({ id, requestId }: { id: string, requestId: string }) {
+  const session = useSession();
+const username = session.data?.user.name
     const [message, setMessage] = useState("");
     const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
     const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
@@ -37,26 +41,45 @@ export function ChatArea() {
     const socketRef = useRef<Socket | null>(null);
     const [lastMessageId, setLastMessageId] = useState(0);
 
-    // Initialize Socket.IO connection
+    // Fetch initial messages
     useEffect(() => {
-        // Connect to the WebSocket server
-        socketRef.current = io('http://localhost:8001'); // Adjust URL as needed
+        const fetchMessages = async () => {
+            const response = await fetch(`/api/message?id=${id}&requestId=${requestId}`);
+            const data = await response.json();
+            const initialMessages = data.map((message: any) => ({
+                id: message.id,
+                sender: message.sender,
+                content: message.content,
+                time: message.time,
+                isOwn: message.userId === requestId,
+                userId: message.userId,
+                groupId: message.groupId
+            }));
+            setMessages(initialMessages);
+            setLastMessageId(data.length ? data[data.length - 1].id : 0); // Set the last message ID
+        };
 
-        // Listen for incoming messages
-        socketRef.current.on('message', (messageData: string) => {
+        fetchMessages();
+    }, [id, requestId]);
+
+    useEffect(() => {
+        socketRef.current = io('http://localhost:8001');
+        socketRef.current.on('message', (messageData: any) => {
             const parsedMessage = JSON.parse(messageData);
+            const parsedMessage2 = JSON.parse(parsedMessage.message);
             const newMessage: Message = {
                 id: lastMessageId + 1,
-                sender: parsedMessage.message.sender || 'Unknown',
-                content: parsedMessage.message.content,
+                sender: parsedMessage2.sender || 'Unknown',
+                content: parsedMessage2.content,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                isOwn: false
+                isOwn: false,
+                userId: parsedMessage2.userId,
+                groupId: parsedMessage2.groupId
             };
             setLastMessageId(prev => prev + 1);
             setMessages(prev => [...prev, newMessage]);
         });
 
-        // Cleanup on unmount
         return () => {
             if (socketRef.current) {
                 socketRef.current.disconnect();
@@ -64,10 +87,7 @@ export function ChatArea() {
         };
     }, [lastMessageId]);
 
-    // Ref for dropdown container
     const dropdownRef = useRef<HTMLDivElement>(null);
-
-    // Effect to handle clicks outside the dropdown
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (
@@ -92,23 +112,30 @@ export function ChatArea() {
 
     const handleSend = () => {
         if (message.trim() && socketRef.current) {
+            const timestamp = new Date();
             const newMessage = {
                 content: message.trim(),
                 sender: 'You',
-                timestamp: new Date().toISOString()
+                userId: requestId,
+                groupId: id,
+                timestamp: timestamp.toISOString(),
+                time: timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
-            // Emit the message to the WebSocket server
-            socketRef.current.emit('event:message', newMessage);
+            // Emit the complete message object to the socket server
+            socketRef.current.emit('event:message', JSON.stringify(newMessage));
 
             // Add message to local state
             const localMessage: Message = {
                 id: lastMessageId + 1,
                 sender: 'You',
                 content: message.trim(),
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                userId: requestId,
+                groupId: id,
+                time: timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 isOwn: true
             };
+
             setLastMessageId(prev => prev + 1);
             setMessages(prev => [...prev, localMessage]);
             setMessage("");
@@ -183,7 +210,9 @@ export function ChatArea() {
                                             alt={message.sender}
                                         />
                                     </Avatar>
+
                                 )}
+                                 <p>{username}</p>
                                 <div className="relative">
                                     {!message.isOwn && (
                                         <p className="text-sm text-muted-foreground mb-1">{message.sender}</p>

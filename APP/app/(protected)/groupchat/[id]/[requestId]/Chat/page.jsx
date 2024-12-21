@@ -1,4 +1,4 @@
-// "use client";
+ "use client";
 // import React, { useState, useEffect, useRef } from "react";
 // import io from "socket.io-client";
 // import { Send } from "lucide-react";
@@ -177,12 +177,13 @@
 // export default ChatRoom;
 // @ts-ignore
 
-import {ChatLayout} from "@/components/chat-layout";
+import { ChatLayout } from "@/components/chat-layout";
 
-export default function ChatRoom() {
+export default function ChatRoom({params}) {
+  const {id, requestId} = params
   return (
       <div>
-        <ChatLayout/>
+        <ChatLayout id={id} requestId={requestId} />
 
       </div>
   );

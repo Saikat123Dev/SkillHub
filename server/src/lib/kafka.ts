@@ -2,7 +2,7 @@ import { Kafka, Producer } from "kafkajs";
 import prismaClient from "./prisma";
 
 const kafka = new Kafka({
-    clientId:"kafkajs",
+    clientId:"kafka_service",
     brokers: ['localhost:9092']
 });
 
@@ -41,34 +41,45 @@ export async function produceMessage(message: string): Promise<boolean> {
 
 
 export async function startMessageConsumer() {
-    console.log("Consumer is starting...");
-    const consumer = kafka.consumer({ groupId: "default-group" });
+  console.log("Consumer is starting...");
+  const consumer = kafka.consumer({ groupId: "default-group" });
 
-    try {
-        await consumer.connect();
-        await consumer.subscribe({ topic: "MESSAGES", fromBeginning: true });
+  try {
+      await consumer.connect();
+      await consumer.subscribe({ topic: "MESSAGES", fromBeginning: true });
 
-        await consumer.run({
-            eachMessage: async ({ message }) => {
-                if (!message.value) return;
+      await consumer.run({
+          eachMessage: async ({ message }) => {
+              if (!message.value) return;
 
-                const messageText = message.value.toString();
-                console.log(`Received Message: ${messageText}`);
+              const messageText = message.value.toString();
+              console.log("Received message:", messageText);
 
-                try {
-                    await prismaClient.message.create({
-                        data: { content: messageText },
-                    });
-                    console.log("Message saved to database");
-                } catch (err) {
-                    console.error("Failed to save message:", err);
-                }
-            },
-        });
-        console.log("Consumer is running...");
-    } catch (error) {
-        console.error("Failed to start consumer:", error);
-    }
+              try {
+                  // Parse the outer JSON string
+                  const parsedMessage = JSON.parse(messageText);
+                  // Now, parse the inner message string
+                  const msg = JSON.parse(parsedMessage.message);
+
+                  // Save to the database
+                  const data = await prismaClient.message.create({
+                      data: {
+                          content: msg.content, // This is the actual content
+                          userId: msg.userId,
+                          groupId: msg.groupId
+                      },
+                  });
+
+                  console.log("Message saved to database", data);
+              } catch (err) {
+                  console.error("Failed to parse or save message:", err);
+              }
+          },
+      });
+      console.log("Consumer is running...");
+  } catch (error) {
+      console.error("Failed to start consumer:", error);
+  }
 }
 
 export default kafka;

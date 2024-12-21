@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "main": "server",
   "type": "commonjs",
-  "scripts": {
-    "start": "ts-node ./server.ts",
-    "dev": "nodemon  --exec ts-node --loader ts-node/esm ./server.ts",
-    "build": "tsc"
-  }
+ "scripts": {
+  "start": "ts-node ./server.ts",
+  "dev": "nodemon --watch './**/*.ts' --exec 'ts-node' ./server.ts",
+  "build": "tsc"
+}
 ,
   "keywords": [],
   "author": "",
