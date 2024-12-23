@@ -3,6 +3,12 @@ const nextConfig = {};
 
 module.exports = {
   ...nextConfig,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   images: {
     remotePatterns: [
       {

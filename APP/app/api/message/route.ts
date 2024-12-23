@@ -8,7 +8,6 @@ export async function GET(request: NextRequest) {
 
   const user = await db.message.findMany({
     where: {
-      userId:requestId,
       groupId:id
     },
   });

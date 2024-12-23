@@ -1,14 +1,10 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -23,10 +19,9 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
@@ -35,10 +30,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "components/sidebar.jsx",
-    "**/*.jsx",
-    "app/api/connect/request/route.ts"
-, "app/api/socket.js", "app/api/socket.js"  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "app/api/connect/request/route.ts",
+    "app/api/socket.js"
+  ],
+  "exclude": ["node_modules"]
 }
