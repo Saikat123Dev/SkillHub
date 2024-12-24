@@ -1,10 +1,5 @@
 
 'use client'
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
-import CardWrapper from "./card-wrapper";
 import {
   Form,
   FormControl,
@@ -13,10 +8,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
 import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import CardWrapper from "./card-wrapper";
 
 const RegisterForm = () => {
   const [error, setError] = useState("");
@@ -24,7 +24,7 @@ const RegisterForm = () => {
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  
+
   const form = useForm({
     defaultValues: {
       name: "",
@@ -34,7 +34,7 @@ const RegisterForm = () => {
     },
   });
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values:any) => {
     setError("");
     setSuccess("");
 
@@ -76,7 +76,7 @@ const RegisterForm = () => {
                   <Input
                     {...field}
                     disabled={isPending}
-                  
+
                     placeholder="John Doe"
                   />
                 </FormControl>
@@ -98,7 +98,7 @@ const RegisterForm = () => {
                     {...field}
                     type="email"
                     disabled={isPending}
-                  
+
                     placeholder="john@example.com"
                   />
                 </FormControl>
@@ -120,7 +120,7 @@ const RegisterForm = () => {
                     {...field}
                     type="date"
                     disabled={isPending}
-                   
+
                   />
                 </FormControl>
                 <FormMessage className="text-xs lg:text-sm" />
@@ -142,7 +142,7 @@ const RegisterForm = () => {
                       {...field}
                       type={showPassword ? "text" : "password"}
                       disabled={isPending}
-                   
+
                       placeholder="••••••••"
                     />
                     <button

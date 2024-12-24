@@ -1,10 +1,11 @@
 'use client'
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Motion, School, GraduationCap } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GraduationCap, School } from "lucide-react";
+import React from 'react';
 
-const Education = ({ details }) => {
+// Define the type for the details prop
+const Education = ({ details}) => {
   const educationData = [
     {
       level: "Secondary Education",
@@ -38,17 +39,14 @@ const Education = ({ details }) => {
 
   return (
     <div className="w-full py-12 border-t border-[#25213b] bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-4 ">
-        {/* Header Section */}
+      <div className="container mx-auto px-4">
         <div className="flex flex-col items-center mb-12">
           <div className="flex items-center gap-3 mb-4">
-           
             <h2 className="text-3xl font-bold text-gray-900">Educational Journey</h2>
           </div>
           <div className="h-1 w-20 bg-indigo-600 rounded-full" />
         </div>
 
-        {/* Education Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {educationData.map((item, index) => (
             <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-indigo-100">

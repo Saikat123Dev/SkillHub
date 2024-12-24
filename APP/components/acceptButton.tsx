@@ -18,7 +18,6 @@ export default function AcceptButton({ requestId, groupId, userId }: AcceptButto
     try {
       console.log("Starting handleAccept...");
 
-      // Run both requests in parallel
       const [acceptResponse, addGroupResponse] = await Promise.all([
         fetch(`/api/connect/accept`, {
           method: "POST",

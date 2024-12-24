@@ -1,27 +1,26 @@
 "use server";
 
-import * as z from "zod";
-import bcrypt from "bcryptjs";
+import { getUserByEmail } from "@/data/user";
 import { db } from "@/lib/db";
 import { RegisterSchema } from "@/schemas";
-import { getUserByEmail } from "@/data/user";
+import bcrypt from "bcryptjs";
+import * as z from "zod";
 
-import { generateVerificationToken } from "@/lib/tokens";
 import { createClient } from "redis";
 
-let client;
+let client:any;
 
 async function getRedisClient() {
   if (!client || !client.isOpen) {
     client = createClient();
-    client.on('error', (err) => console.error('Redis Client Error', err));
+    client.on('error', (err:Error) => console.error('Redis Client Error', err));
     await client.connect();
   }
   return client;
 }
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
- 
+
   const redisClient = await getRedisClient();
 
   const validatedFields = RegisterSchema.safeParse(values);
@@ -32,7 +31,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
   const { email, password, name, birthday } = validatedFields.data;
 
- 
+
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
     return { error: "Email already in use!" };
@@ -44,7 +43,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
      const redisSetPromise = redisClient.set(
       `user:register:${email}`,
       JSON.stringify({ name, email }),
-      { EX: 900 } 
+      { EX: 900 }
     );
 
 
@@ -57,7 +56,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
       },
     });
 
-   
+
     await Promise.all([redisSetPromise, dbCreatePromise]);
 
     return { success: "Registration completed" };
