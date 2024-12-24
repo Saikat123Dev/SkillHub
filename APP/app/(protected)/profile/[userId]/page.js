@@ -12,8 +12,6 @@ import Skills from "./components/homepage/skills";
 import Education from "../[userId]/components/education/page";
 import Experience from "../[userId]/components/experience/page";
 
-import Navbar from "./components/navbar";
-
 const inter = Inter({ subsets: ["latin"] });
 
 const HomePage = ({ params }) => {
@@ -48,12 +46,12 @@ const HomePage = ({ params }) => {
   return (
     <div className="flex flex-col  ">
       <ToastContainer />
-      <Navbar name={userProfile?.name} userId={userId} />
+      {/* <Navbar name={userProfile?.name} userId={userId} /> */}
       <div className="flex-grow">
         <HeroSection details={userProfile} profileUserId={userId} />
         <AboutSection details={userProfile} />
-        <Education details={userProfile}/>
-        <Skills userId={userId}/>
+        <Education details={userProfile} />
+        <Skills userId={userId} />
         <Experience />
         <ScrollToTop />
       </div>

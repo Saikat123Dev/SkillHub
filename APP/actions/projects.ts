@@ -65,3 +65,22 @@ export const addProjects = async (values: z.infer<typeof SettingsSchema>) => {
     return { error: "Something went wrong! Please try again." };
   }
 };
+
+export const getProjects=async(userId:any)=>{
+  try {
+   
+    const getProjects=await db.project.findMany(
+      {
+        where:{
+          authorId:userId
+        }
+      }
+    )
+    return { success: true,getProjects };
+
+
+  }catch(error){
+    console.error("Error fetching projects:", error);
+    return { error: "Something went wrong! Please try again." };
+  }
+}

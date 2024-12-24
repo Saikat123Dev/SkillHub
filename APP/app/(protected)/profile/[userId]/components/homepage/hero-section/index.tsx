@@ -1,7 +1,6 @@
 "use client";
 
-import { personalData } from "@/utils/data/personal-data";
-import Image from "next/image";
+
 import Link from "next/link";
 import { BsGithub, BsLinkedin } from "react-icons/bs";
 import { FaTwitterSquare } from "react-icons/fa";
@@ -93,16 +92,7 @@ function HeroSection({ details, profileUserId }) {
   const isOwnProfile = profileUserId === session?.id;
 
   return (
-    <section className="relative flex flex-col items-center justify-between py-4 lg:py-12">
-      <Image
-        src="/hero.svg"
-        alt="Hero"
-        width={1572}
-        height={795}
-        className="absolute -top-[98px] -z-10"
-      />
-
-      {/* Notification */}
+    <section className="relative flex flex-col items-center justify-between py-4 lg:py-12 border-t border-[#25213b]  bg-gradient-to-b from-blue-50 to-white">
       {notification && (
         <div
           className={`fixed top-5 right-5 px-4 py-3 rounded-lg shadow-lg transition duration-300 ease-in-out z-[100] ${
@@ -146,9 +136,9 @@ function HeroSection({ details, profileUserId }) {
                 <BsLinkedin size={35} />
               </Link>
             )}
-            {personalData.leetcode && (
+            {details && details.leetcode && (
               <Link
-                href={personalData.leetcode}
+                href={details.leetcode}
                 target="_blank"
                 className="transition-all text-yellow-400 hover:scale-125 duration-300"
               >
@@ -168,27 +158,32 @@ function HeroSection({ details, profileUserId }) {
 
           <div className="flex ml-32 items-center gap-3">
             <div className="relative">
-              <div className="inline-flex">
-                {isOwnProfile ? (
-                  <Link href="/settings">
-                    <button className="px-3 text-xs md:px-8 py-3 md:py-4 bg-gradient-to-r to-pink-500 from-violet-600 rounded-full border-none text-center md:text-sm font-medium uppercase tracking-wider text-white no-underline transition-all duration-200 ease-out md:font-semibold">
-                      EDIT PROFILE
-                    </button>
-                  </Link>
-                ) : (
-                  <div className="inline-flex rounded-full bg-gradient-to-r from-violet-600 to-pink-500 p-[1px]">
-                    <button
-                      onClick={handleDropdownToggle}
-                      className="flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-pink-500 px-3 md:px-8 py-3 md:py-4"
-                    >
-                      <span className="text-xs md:text-sm font-medium uppercase tracking-wider text-white">
-                        CONNECT
-                      </span>
-                      <RiContactsFill size={16} className="text-white" />
-                    </button>
-                  </div>
-                )}
-              </div>
+            <div className="flex items-center gap-6">
+      <button
+        onClick={() => window.location.href = `/profile/${profileUserId}/projects`}
+        className="px-6 py-2.5 rounded-lg bg-violet-100 border-2 border-violet-600 text-violet-600 font-medium hover:bg-violet-50 transition duration-200 shadow-sm"
+      >
+        View Projects
+      </button>
+
+      {isOwnProfile ? (
+        <button
+          onClick={() => window.location.href = '/settings'}
+          className="px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-500 rounded-lg text-white font-semibold shadow-lg hover:opacity-90 transition duration-200"
+        >
+          Edit Profile
+        </button>
+      ) : (
+        <button
+          onClick={handleDropdownToggle}
+          className="group flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-500 rounded-lg text-white font-semibold shadow-lg hover:opacity-90 transition duration-200"
+        >
+          Connect
+          <RiContactsFill className="w-5 h-5" />
+        </button>
+      )}
+    </div>
+
 
               {/* Dropdown Portal */}
               {!isOwnProfile && isDropdownOpen && (
