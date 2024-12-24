@@ -2,17 +2,9 @@ import Image from "next/image";
 
 function AboutSection({ details }) {
   return (
-    <div className="relative w-full">
+    <div className="relative w-full border-t border-[#25213b]  bg-gradient-to-b from-blue-50 to-white">
       {/* Background Image with adjusted positioning */}
-      <div className="absolute inset-0 -z-10">
-        <Image
-          src="/hero.svg"
-          alt="Hero"
-          width={1572}
-          height={795}
-          className="w-full h-full object-cover"
-        />
-      </div>
+     
 
       {/* Main Content Container */}
       <div className="relative z-10">
@@ -24,8 +16,6 @@ function AboutSection({ details }) {
                 About Me
               </span>
             </div>
-
-            {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 max-w-full items-center">
               {/* Text Section */}
               <div className="order-2 lg:order-1 max-w-full">

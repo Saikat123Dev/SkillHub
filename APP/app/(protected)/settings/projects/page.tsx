@@ -1,8 +1,8 @@
 "use client";
 import * as z from "zod";
-import { useForm,useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition, useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { 
@@ -29,10 +29,9 @@ import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { settings } from "@/actions/settings";
-import { addProjects } from "@/actions/projects";
 
-// Updated Schema to handle multiple projects
+import { addProjects, getProjects } from "@/actions/projects";
+
 const ProjectSchema = z.object({
   title: z.string().min(1, "Title is required"),
   techstack: z.string().min(1, "Technologies are required"),
@@ -52,12 +51,13 @@ function ProjectSettingsPage() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
+  const [fetchedProjects, setFetchedProjects] = useState([]);
 
-  // Initialize form with user's existing projects or an empty project
+  // Initialize form with empty values
   const form = useForm<z.infer<typeof SettingsSchema>>({
     resolver: zodResolver(SettingsSchema),
     defaultValues: {
-      projects: user?.projects?.length ? user.projects : [{
+      projects: [{
         title: "",
         techstack: "",
         about: "",
@@ -68,10 +68,13 @@ function ProjectSettingsPage() {
     }
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     name: "projects",
     control: form.control
   });
+
+  
+ 
 
   const addProject = () => {
     append({
@@ -91,7 +94,6 @@ function ProjectSettingsPage() {
   };
 
   const onSubmit = async (values: z.infer<typeof SettingsSchema>) => {
-    console.log(values);
     startTransition(() => {
       addProjects(values)
         .then((data) => {
@@ -108,6 +110,7 @@ function ProjectSettingsPage() {
     });
   };
 
+  // Rest of the component remains the same...
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-6">
       <div className="w-full max-w-7xl bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">

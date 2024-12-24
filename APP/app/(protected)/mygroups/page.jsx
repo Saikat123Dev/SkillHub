@@ -50,7 +50,7 @@ const GroupDashboard = () => {
 
   const RoleIndicator = ({ role }) => (
       <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${getRoleColor(role)}`}>
-        {role === 'ADMIN' ? (
+        {role === 'ADMIN' ? (                                              
             <span className="font-medium flex items-center gap-2">
           <BadgeInfo size={16} className="text-navy-600" />
               {role}
