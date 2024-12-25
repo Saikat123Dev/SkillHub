@@ -4,7 +4,6 @@
 import Link from "next/link";
 import { BsGithub, BsLinkedin } from "react-icons/bs";
 import { FaTwitterSquare } from "react-icons/fa";
-import { RiContactsFill } from "react-icons/ri";
 import { SiLeetcode } from "react-icons/si";
 import { useState, useEffect } from "react";
 import { useCurrentUser } from "../../../../../../../hooks/use-current-user";
@@ -179,7 +178,7 @@ function HeroSection({ details, profileUserId }) {
           className="group flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-500 rounded-lg text-white font-semibold shadow-lg hover:opacity-90 transition duration-200"
         >
           Connect
-          <RiContactsFill className="w-5 h-5" />
+        
         </button>
       )}
     </div>

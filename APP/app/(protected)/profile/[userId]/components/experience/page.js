@@ -1,20 +1,13 @@
 // @flow strict
-import Image from "next/image";
-import AnimationLottie from "../helper/animation-lottie";
-import lottieFile from '/public/lottie/study.json';
+
+
+
 import { FaGraduationCap } from 'react-icons/fa';
 
 function Experience() {
   return (
     <>
       <div className="relative z-50 border-t my-12 lg:my-24 border-gray-700">
-        <Image
-          src="/section.svg"
-          alt="Hero"
-          width={1800}
-          height={900}
-          className="absolute top-0 -z-0"  // Increased opacity for subtle effect
-        />
         <div className="flex justify-center">
           <div className="w-3/4">
             <div className="h-[2px] bg-gradient-to-r from-transparent via-indigo-400 to-transparent w-full" />
@@ -38,12 +31,7 @@ function Experience() {
         {/* Main Content */}
         <div className="py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-            {/* Lottie Animation */}
-            <div className="flex justify-center items-start">
-              <div className="w-full lg:w-3/4 h-full lg:h-3/4 rounded-xl overflow-hidden shadow-lg">
-                <AnimationLottie animationPath={lottieFile} />
-              </div>
-            </div>
+           
 
             {/* Education Cards */}
             <div>
