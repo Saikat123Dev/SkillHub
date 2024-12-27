@@ -1,32 +1,26 @@
+import EmojiPicker from "emoji-picker-react";
 import {
-  Copy,
-  Edit2,
-  Laugh,
-  MoreVertical,
-  Reply,
   Send,
-  Share2,
-  Smile,
-  Trash2,
+  Smile
 } from "lucide-react";
+import { io } from "socket.io-client";
+
 import { useSession } from "next-auth/react";
-import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
 import { Avatar } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-
-const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
-
 interface Message {
-  id: string; // Ensure the id is a unique string
+  id: string;
   sender: string;
-  content: string;
+  content?: string; // Optional for file sharing
   time: string;
   isOwn?: boolean;
   userId?: string;
   groupId?: string;
+  fileName?: string;
+  fileData?: string;
+  fileUrl?: string; // For streamed files
 }
 
 export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
@@ -36,15 +30,12 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
   const username = session.data?.user.name;
   const [message, setMessage] = useState("");
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
-  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
-    null
-  );
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch initial messages
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -58,7 +49,7 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
           sender: message.sender,
           content: message.content,
           time: message.time,
-          isOwn: message.userId === currentUserId, // Determines ownership
+          isOwn: message.userId === currentUserId,
           userId: message.userId,
           groupId: message.groupId,
         }));
@@ -71,17 +62,20 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
     fetchMessages();
   }, [id, requestId, currentUserId]);
 
-  // Initialize socket connection
   useEffect(() => {
     socketRef.current = io("http://localhost:8001");
+
+    // Listen for regular messages
     socketRef.current.on("message", (messageData: any) => {
       const parsedMessage = JSON.parse(messageData);
       const parsedMessageContent = JSON.parse(parsedMessage.message);
 
       const newMessage: Message = {
-        id: parsedMessageContent.id, // Use the ID sent from the server
+        id: parsedMessageContent.id,
         sender: parsedMessageContent.sender || "Unknown",
         content: parsedMessageContent.content,
+        fileName: parsedMessageContent.fileName,
+        fileData: parsedMessageContent.fileData,
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -91,7 +85,6 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
         groupId: parsedMessageContent.groupId,
       };
 
-      // Prevent adding duplicate messages
       setMessages((prev) =>
         prev.some((msg) => msg.id === newMessage.id) ? prev : [...prev, newMessage]
       );
@@ -130,7 +123,7 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
   const handleSend = () => {
     if (message.trim() && socketRef.current) {
       const timestamp = new Date();
-      const messageId = `${Date.now()}-${currentUserId}`; // Unique ID for the message
+      const messageId = `${Date.now()}-${currentUserId}`;
 
       const newMessage = {
         id: messageId,
@@ -138,14 +131,11 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
         sender: "You",
         userId: currentUserId,
         groupId: id,
-        timestamp: timestamp.toISOString(),
         time: timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
 
-      // Emit message to socket server
       socketRef.current.emit("event:message", JSON.stringify(newMessage));
 
-      // Add message to local state
       const localMessage: Message = {
         id: messageId,
         sender: "You",
@@ -161,14 +151,39 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
     }
   };
 
-  const MessageActions = [
-    { icon: Reply, label: "Reply", action: () => console.log("Reply") },
-    { icon: Edit2, label: "Edit", action: () => console.log("Edit") },
-    { icon: Trash2, label: "Delete", action: () => console.log("Delete") },
-    { icon: Copy, label: "Copy", action: () => console.log("Copy") },
-    { icon: Share2, label: "Forward", action: () => console.log("Forward") },
-    { icon: Laugh, label: "React", action: () => console.log("React") },
-  ];
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !socketRef.current) return;
+
+    const maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxFileSize) {
+      alert("File size exceeds 10MB. Please upload a smaller file.");
+    } else {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const fileData = reader.result as string; // File content as base64 string
+        const timestamp = new Date();
+        const messageId = `${Date.now()}-${currentUserId}`;
+
+        const newMessage = {
+          id: messageId,
+          sender: "You",
+          userId: currentUserId,
+          groupId: id,
+          time: timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          fileName: file.name,
+          fileData, // Base64 string
+        };
+
+        socketRef.current.emit("event:message", JSON.stringify(newMessage));
+
+        setMessages((prev) => [...prev, { ...newMessage, isOwn: true }]);
+      };
+
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -195,8 +210,6 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
             <div
               key={message.id}
               className={`flex group relative ${message.isOwn ? "justify-end" : "justify-start"}`}
-              onMouseEnter={() => setHoveredMessageId(message.id)}
-              onMouseLeave={() => setHoveredMessageId(null)}
             >
               <div
                 className={`flex gap-3 max-w-[70%] relative ${message.isOwn ? "flex-row-reverse" : ""}`}
@@ -214,51 +227,27 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
                     <p className="text-sm text-muted-foreground mb-1">{message.sender}</p>
                   )}
                   <div
-                    className={`rounded-lg p-3 relative ${
+                    className={`rounded-lg p-3 ${
                       message.isOwn
                         ? "bg-primary text-primary-foreground"
                         : "bg-secondary"
                     }`}
                   >
-                    <p>{message.content}</p>
-                    <p className="text-xs mt-1 opacity-70">{message.time}</p>
-
-                    {hoveredMessageId === message.id && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="absolute -top-2 -right-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full"
-                        onClick={() =>
-                          setSelectedMessageId(
-                            selectedMessageId === message.id ? null : message.id
-                          )
-                        }
-                      >
-                        <MoreVertical className="h-4 w-4 text-gray-500" />
-                      </Button>
-                    )}
-                  </div>
-
-                  {selectedMessageId === message.id && (
-                    <div
-                      ref={dropdownRef}
-                      className="absolute z-50 top-full mt-2 right-0 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
-                    >
-                      <div className="p-1">
-                        {MessageActions.map((action) => (
-                          <Button
-                            key={action.label}
-                            variant="ghost"
-                            className="w-full justify-start px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                            onClick={action.action}
-                          >
-                            <action.icon className="mr-2 h-4 w-4 text-gray-500" />
-                            {action.label}
-                          </Button>
-                        ))}
+                    {message.content && <p>{message.content}</p>}
+                    {message.fileName && (
+                      <div>
+                        <p className="text-sm font-bold">File: {message.fileName}</p>
+                        <a
+                          href={message.fileData}
+                          download={message.fileName}
+                          className="text-blue-500 hover:underline"
+                        >
+                          Download
+                        </a>
                       </div>
-                    </div>
-                  )}
+                    )}
+                    <p className="text-xs mt-1 opacity-70">{message.time}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -266,8 +255,8 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
         </div>
       </div>
 
-      {/* Emoji Picker & Input Area */}
-      <div className="border-t border-gray-300 dark:border-gray-700 p-4 bg-white dark:bg-gray-900 relative">
+      {/* Input Area */}
+      <div className="border-t p-4 relative">
         {isEmojiPickerVisible && (
           <div className="absolute bottom-16 left-0 z-50">
             <EmojiPicker onEmojiClick={handleEmojiClick} />
@@ -280,22 +269,30 @@ export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
             className="rounded-lg p-2"
             onClick={() => setIsEmojiPickerVisible((prev) => !prev)}
           >
-            <Smile className="h-5 w-5 text-gray-500 dark:text-gray-200" />
+            <Smile className="h-5 w-5 text-gray-500" />
           </Button>
           <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Write your message..."
-            className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-gray-500 dark:placeholder-gray-400 px-4 py-2"
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                handleSend();
-              }
-            }}
+            className="flex-1 rounded-lg"
+          />
+          <input
+            type="file"
+            id="file-upload"
+            style={{ display: "none" }}
+            onChange={handleFileUpload}
           />
           <Button
             size="icon"
-            className="rounded-lg bg-blue-500 hover:bg-blue-600 text-white p-3 transition-all duration-200 shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            className="rounded-lg p-3"
+            onClick={() => document.getElementById("file-upload")?.click()}
+          >
+            📎
+          </Button>
+          <Button
+            size="icon"
+            className="rounded-lg bg-blue-500 text-white p-3"
             onClick={handleSend}
           >
             <Send className="h-4 w-4" />

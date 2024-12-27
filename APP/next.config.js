@@ -1,31 +1,34 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
+const path = require("path");
 
-module.exports = {
-  ...nextConfig,
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   eslint: {
+    // Allows production builds to complete even if there are ESLint errors
     ignoreDuringBuilds: true,
   },
   typescript: {
+    // Allows production builds to complete even if there are TypeScript errors
     ignoreBuildErrors: true,
   },
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'media.dev.to',
-        pathname: '/**',
+        protocol: "http",
+        hostname: "media.dev.to",
+        pathname: "/**",
       },
       {
-        protocol: 'https',
-        hostname: 'utfs.io',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "utfs.io",
+        pathname: "/**",
       },
       {
-        protocol: 'https',
-        hostname: 'assets.aceternity.com', // Added this entry
-        pathname: '/**',
+        protocol: "https",
+        hostname: "assets.aceternity.com",
+        pathname: "/**",
       },
     ],
-  },
+  }
 };
+
+module.exports = nextConfig;

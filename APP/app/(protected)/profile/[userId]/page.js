@@ -1,18 +1,17 @@
 "use client"; // This line marks the component as a client component
 
-import { useState, useEffect } from "react";
-import { Inter } from "next/font/google";
+import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import Education from "../[userId]/components/education/page";
+import Experience from "../[userId]/components/experience/page";
 import ScrollToTop from "./components/helper/scroll-to-top";
 import AboutSection from "./components/homepage/about";
 import HeroSection from "./components/homepage/hero-section";
 import Skills from "./components/homepage/skills";
-import Education from "../[userId]/components/education/page";
-import Experience from "../[userId]/components/experience/page";
 
-const inter = Inter({ subsets: ["latin"] });
+
 
 const HomePage = ({ params }) => {
   const [userProfile, setUserProfile] = useState(null);

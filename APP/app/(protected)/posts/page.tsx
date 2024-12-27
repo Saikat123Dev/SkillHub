@@ -1,6 +1,5 @@
 "use client"
-import { Editor } from '@/components/Editor'
-import React from 'react'
+import { Editor } from '../../../components/Editor'
 
 const post = () => {
   return (

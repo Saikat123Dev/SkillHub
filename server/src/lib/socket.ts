@@ -16,6 +16,7 @@ class SocketService {
                 allowedHeaders: ["*"],
                 origin: "*",
             },
+            maxHttpBufferSize: 10 * 1024 * 1024,
         });
         sub.subscribe("MESSAGES");
     }

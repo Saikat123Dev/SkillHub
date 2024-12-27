@@ -1,9 +1,9 @@
 "use server";
-import { db } from "@/lib/db";
-import { currentUser } from "@/lib/auth";
 import { getUserById } from "@/data/user";
+import { currentUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 
-export const creategroup = async (formData: { get: (arg0: string) => any }) => {
+export const Creategroup = async (formData: { get: (arg0: string) => any }) => {
   try {
     const grpname = formData.get("Name");
     const grpbio = formData.get("description");

@@ -1,17 +1,16 @@
 "use client";
-import React, { useState, useEffect } from "react";
 import {
+  AlertCircle,
   ChevronLeft,
   ChevronRight,
-  Plus,
-  X,
-  Calendar as CalendarIcon,
   Clock,
-  AlertCircle,
   Info,
+  Plus,
+  X
 } from "lucide-react";
-import { Findgrouprole } from "@/actions/group";
-import { createCalendy, getEvents } from "@/actions/calendy";
+import { useEffect, useState } from "react";
+import { Findgrouprole } from "../../../../../.././actions/group";
+import { createCalendy, getEvents } from "../../../../../../actions/calendy";
 
 const Calendar = ({ params }) => {
   const groupId = params.id;

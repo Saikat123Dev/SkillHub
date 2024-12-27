@@ -1,24 +1,24 @@
-"use client"; 
+"use client";
 
-import React from "react";
-import { Button } from "@/components/ui/moving-border"; 
-import Image from "next/image"; 
-import Link from 'next/link'; 
-import Article from '@/images/Article.png'; 
-import communicate from '@/images/Communicate.png'; 
-import Badge from '@/images/Profile Badges_ 2b31e583-03f4-47bd-b406-5eba2bf79072.png'; 
-import Global from '@/images/Global Connecti 770a56d2-46ae-435d-abb7-3c33115e9ba8.png'; 
-import Skill from '@/images/Skill.png'; 
-import connect from '@/images/Connect.png'; 
-import { BackgroundGradient } from "@/components/ui/background-gradient"; 
 import { SparklesPreview } from "@/components/sparkleBackground";
+import { BackgroundGradient } from "@/components/ui/background-gradient";
+import { Button } from "@/components/ui/moving-border";
+import Article from '@/images/Article.png';
+import communicate from '@/images/Communicate.png';
+import connect from '@/images/Connect.png';
+import Global from '@/images/Global Connecti 770a56d2-46ae-435d-abb7-3c33115e9ba8.png';
+import Badge from '@/images/Profile Badges_ 2b31e583-03f4-47bd-b406-5eba2bf79072.png';
+import Skill from '@/images/Skill.png';
+import Image from "next/image";
+import Link from 'next/link';
 
 export default function Widget() {
+  console.log("env load",process.env.NEXTAUTH_URL)
   return (
     <div className="min-h-full">
       {/* Header section */}
       <div className="relative h-screen bg-cover bg-center" style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
-       
+
         <nav className="fixed top-0 left-0 w-full flex justify-between items-center p-4 md:p-6 z-20 ">
           <div className="text-white text-xl md:text-2xl font-bold">TeamMadeEasy</div>
           <div className="flex items-center space-x-4 md:space-x-6 text-white">
@@ -136,7 +136,7 @@ export default function Widget() {
         </div>
 
 
-        
+
              <div className="animate mx-auto p-8" style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
   <div className="flex flex-col md:flex-row justify-between items-center mb-16"  >
     <h2 className="mt-20 md:mt-0 text-4xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-8 md:mb-0">
@@ -250,14 +250,14 @@ export default function Widget() {
     </div>
   </div>
 
- 
+
 </div>
 
 
-     
+
 
         {/* Footer section */}
-      
+
         <div className="bg-white dark:bg-zinc-800   py-9 px-4" style={{
           backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wall paper-background_58702-8632.jpg')",
           backgroundSize: "cover",

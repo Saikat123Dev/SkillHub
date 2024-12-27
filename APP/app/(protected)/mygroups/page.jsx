@@ -1,17 +1,17 @@
 'use client'
-import React, { useState, useEffect } from 'react'
 import {
-  StickyNote,
+  BadgeInfo,
+  BookUser,
+  FolderKanban,
   LayoutGrid,
   RefreshCcw,
-  UserCheck,
-  BadgeInfo,
-  FolderKanban,
-  BookUser
+  StickyNote,
+  UserCheck
 } from 'lucide-react'
-import { findMyAllGroups } from '@/actions/group'
+import { useSession } from "next-auth/react"
 import Link from 'next/link'
-import { useSession } from "next-auth/react";
+import { useEffect, useState } from 'react'
+import { findMyAllGroups } from '../../../actions/group'
 
 const GroupDashboard = () => {
   const [groups, setGroups] = useState([])
@@ -50,7 +50,7 @@ const GroupDashboard = () => {
 
   const RoleIndicator = ({ role }) => (
       <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${getRoleColor(role)}`}>
-        {role === 'ADMIN' ? (                                              
+        {role === 'ADMIN' ? (
             <span className="font-medium flex items-center gap-2">
           <BadgeInfo size={16} className="text-navy-600" />
               {role}

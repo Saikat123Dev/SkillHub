@@ -106,7 +106,7 @@
 //   const onEmojiClick = (emojiObject) => {
 //     setInputMessage((prevMessage) => prevMessage + emojiObject.emoji);
 //   };
-//
+//@/components/user-info
 //   const toggleEmojiPicker = () => {
 //     setShowEmojiPicker(!showEmojiPicker);
 //   };
@@ -177,7 +177,7 @@
 // export default ChatRoom;
 // @ts-ignore
 
-import { ChatLayout } from "@/components/chat-layout";
+import { ChatLayout } from "../../../../../../components/chat-layout";
 
 export default function ChatRoom({params}) {
   const {id, requestId} = params

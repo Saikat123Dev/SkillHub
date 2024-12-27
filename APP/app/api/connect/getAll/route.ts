@@ -1,6 +1,6 @@
-
-import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { PrismaClient } from '@prisma/client';
+import { NextRequest, NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     console.log(searchParams)
-    const receiverId = searchParams.get('receiverId'); 
+    const receiverId = searchParams.get('receiverId');
     if (!receiverId) {
       return NextResponse.json({ message: 'Receiver ID is required' }, { status: 400 });
     }
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const sentRequests = await prisma.friendRequest.findMany({
       where: { receiverId: receiverId }, // Ensure we filter by the receiverId
       include: {
-        sender: { 
+        sender: {
           select: {
             id: true,
             name: true,

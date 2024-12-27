@@ -1,8 +1,8 @@
 // @flow strict
 
-import { personalData } from "@/utils/data/personal-data";
+import { personalData } from "../../../../../utils/data/personal-data";
+
 import BlogCard from "./[slug]/blog-card";
-import Navbar from "../components/navbar";
 // import '../css/card.scss';
 // import '../css/globals.scss';
 import ScrollToTop from "../components/helper/scroll-to-top";
@@ -22,7 +22,7 @@ async function page() {
 
   return (
     <>
-    <Navbar/>
+
     <div className="py-8">
       <div className="flex justify-center my-5 lg:py-8">
         <div className="flex  items-center">
@@ -44,7 +44,7 @@ async function page() {
       </div>
     </div>
     <ScrollToTop/>
-   
+
     </>
   );
 };
