@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import Education from "../[userId]/components/education/page";
+import { Education } from "../[userId]/components/education/page";
 import Experience from "../[userId]/components/experience/page";
 import ScrollToTop from "./components/helper/scroll-to-top";
 import AboutSection from "./components/homepage/about";
