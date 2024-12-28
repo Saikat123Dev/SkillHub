@@ -3,8 +3,7 @@ import { GraduationCap, School } from "lucide-react";
 import { Badge } from "../../../../../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../../../components/ui/card";
 
-// Define the type for the details prop
-const Education = ({ details}) => {
+export const Education = (details) => {
   const educationData = [
     {
       level: "Secondary Education",
@@ -91,5 +90,3 @@ const Education = ({ details}) => {
     </div>
   );
 };
-
-export default Education;

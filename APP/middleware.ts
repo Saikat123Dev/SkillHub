@@ -22,7 +22,7 @@ export default auth((req):any => {
   const isLoginRoute = nextUrl.pathname.startsWith('/auth/login')
   // const isnewroute=nextUrl.pathname.startsWith('/settings');
 
-   
+
   if (isApiAuthRoute || isUploadRoute || isFetch || isLoginRoute) {
     return null;
   }
@@ -58,5 +58,3 @@ export default auth((req):any => {
 export const config = {
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 }
-
-
