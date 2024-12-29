@@ -6,8 +6,23 @@ services:
       context: ./
       dockerfile: Dockerfile
     volumes:
-        - .:/app
-        - /app/node_modules
-        - /app/.next
+      - .:/app
+      - /app/node_modules
+      - /app/.next
     ports:
       - "3000:3000"
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 8001
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "8001:6379"
+    volumes:
+      - redis-data:/data
+volumes:
+  redis-data:

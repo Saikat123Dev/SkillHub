@@ -1,32 +1,74 @@
+import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db'; // Adjust based on your project setup
 
+const PAGE_SIZE = 20;
 export async function GET(req: NextRequest) {
-  // Extract query parameters
   const { searchParams } = new URL(req.url);
 
-  // Construct dynamic filters based on optional query parameters
-  const filters: any = {
-    username: searchParams.get('username') ? { contains: searchParams.get('username'), mode: 'insensitive' } : undefined,
-    
-    name: searchParams.get('name') ? { contains: searchParams.get('name'), mode: 'insensitive' } : undefined,
-    primarySkill: searchParams.get('primarySkill') ? { contains: searchParams.get('primarySkill'), mode: 'insensitive' } : undefined,
-    profession: searchParams.get('profession') ? { contains: searchParams.get('profession'), mode: 'insensitive' } : undefined,
-    country: searchParams.get('country') ? { contains: searchParams.get('country'), mode: 'insensitive' } : undefined,
-    gender: searchParams.get('gender') ? { equals: searchParams.get('gender') } : undefined, // Use `equals` for enum
-    college: searchParams.get('college') ? { equals: searchParams.get('college') } : undefined, // Use 
-    profession: searchParams.get('profession') ? { equals: searchParams.get('profession') } : undefined,
-  };
+  const page = Math.max(1, Number(searchParams.get('page')) || 1);
+  const skip = (page - 1) * PAGE_SIZE;
 
-  // Remove any undefined fields from filters
-  Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]);
+
+  const filters: any = {};
+
+  if (searchParams.get('username')) {
+    filters.username = { contains: searchParams.get('username'), mode: 'insensitive' };
+  }
+  if (searchParams.get('name')) {
+    filters.name = { contains: searchParams.get('name'), mode: 'insensitive' };
+  }
+  if (searchParams.get('primarySkill')) {
+    filters.primarySkill = { contains: searchParams.get('primarySkill'), mode: 'insensitive' };
+  }
+  if (searchParams.get('profession')) {
+    filters.profession = { equals: searchParams.get('profession') };
+  }
+  if (searchParams.get('country')) {
+    filters.country = { contains: searchParams.get('country'), mode: 'insensitive' };
+  }
+  if (searchParams.get('gender')) {
+    filters.gender = { equals: searchParams.get('gender') };
+  }
+  if (searchParams.get('college')) {
+    filters.college = { equals: searchParams.get('college') };
+  }
 
   try {
-    // Query Prisma with constructed filters
+
     const users = await db.user.findMany({
       where: filters,
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        country: true,
+        gender: true,
+        college: true,
+      },
+      orderBy: {
+        id: 'desc'
+      },
+      skip,
+      take: PAGE_SIZE + 1
     });
-    return NextResponse.json(users);
+
+
+    const hasMore = users.length > PAGE_SIZE;
+
+    const paginatedUsers = hasMore ? users.slice(0, PAGE_SIZE) : users;
+
+    const totalCount = await db.user.count({
+      where: filters
+    });
+
+    return NextResponse.json({
+      users: paginatedUsers,
+      hasMore,
+      totalCount,
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / PAGE_SIZE)
+    });
+
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json(
