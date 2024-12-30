@@ -8,7 +8,7 @@ RUN npm install
 RUN npm install eslint eslint-config-next --save-dev
 
 COPY . .
-# Disable ESLint during the build
+
 ENV DISABLE_ESLINT_PLUGIN=true
 
 # Disable TypeScript type checking

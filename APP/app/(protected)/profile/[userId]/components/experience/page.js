@@ -1,3 +1,4 @@
+'use client'
 import React, { useState, useEffect } from 'react';
 import { FaGraduationCap, FaBriefcase, FaBuilding } from 'react-icons/fa';
 
@@ -55,7 +56,7 @@ function Experience() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="relative min-h-screen border-t border-[#25213b] bg-gradient-to-b from-blue-50 to-white">
       {isLoading ? (
         <LoadingSpinner />
       ) : (
@@ -66,12 +67,24 @@ function Experience() {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center">
-              <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 rounded-full shadow-lg">
-                <FaBriefcase className="text-white text-2xl" />
-                <h2 className="text-2xl font-bold text-white">Professional Experience</h2>
-              </div>
-            </div>
+              {/* <div className="inline-flex items-center space-x-3  px-6 py-3 rounded-full shadow-lg">
+                <FaBriefcase className=" text-2xl" />
+                <h2 className="text-3xl font-bold text-gray-700 mt-5">Professional Experience</h2>
+                <div className="h-1 w-20 bg-indigo-600 rounded-full mt-20 ml-20" />
+              </div> */}
+                <div className="flex flex-col items-center mb-12 px-3 py-5 rounded-full ">
+          <div className="flex items-center gap-3 mb-4">
+          <FaBriefcase className=" text-2xl" />
+            <h2 className="text-3xl font-bold text-gray-900">Professional Experience</h2>
           </div>
+          <div className="h-1 w-20 bg-indigo-600 rounded-full" />
+        </div>
+              
+             
+            </div>
+            
+          </div>
+         
 
           {/* Experience Cards Grid */}
           <div className="grid gap-8 md:grid-cols-1 lg:gap-12 max-w-4xl mx-auto">
