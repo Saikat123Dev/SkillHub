@@ -82,7 +82,6 @@ model GroupMembership {
   user  User  @relation(fields: [userId], references: [id])
   group Group @relation(fields: [groupId], references: [id])
 
-  // Add a composite unique constraint for userId and groupId
   @@unique([userId, groupId])
   @@index([groupId])
 }

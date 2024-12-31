@@ -2,6 +2,7 @@ import { Navbar } from "../../components/navbar";
 import Sidebar, { SidebarItem } from "../../components/sidebar";
 import { LayoutDashboard, Home, Calendar, Settings } from "lucide-react";
 
+
 interface ProtectedLayoutProps {
     children: React.ReactElement;
 }
@@ -9,6 +10,8 @@ interface ProtectedLayoutProps {
 const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
     return (
         <div className="h-screen flex border-round border-gray-900/25">
+            
+
             <Sidebar>
                 <SidebarItem
                     itemKey="home"
@@ -41,8 +44,11 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
             </Sidebar>
             <div className="flex flex-col flex-grow w-full overflow-hidden">
                 <Navbar />
+               
                 <div className="flex-grow p-1 overflow-y-auto">{children}</div>
+                
             </div>
+           
         </div>
     );
 };

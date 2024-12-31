@@ -1,15 +1,11 @@
 "use client"; // This line marks the component as a client component
-
 import { useEffect, useState } from "react";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
-import { Education } from "../[userId]/components/education/page";
-import Experience from "../[userId]/components/experience/page";
-import ScrollToTop from "./components/helper/scroll-to-top";
+import { Education } from "./components/education/page";
+import Experience from "./components/experience/page";
 import AboutSection from "./components/homepage/about";
 import HeroSection from "./components/homepage/hero-section";
 import Skills from "./components/homepage/skills";
+
 
 
 
@@ -44,16 +40,21 @@ const HomePage = ({ params }) => {
 
   return (
     <div className="flex flex-col  ">
-      <ToastContainer />
-      {/* <Navbar name={userProfile?.name} userId={userId} /> */}
+      
       <div className="flex-grow">
         <HeroSection details={userProfile} profileUserId={userId} />
         <AboutSection details={userProfile} />
         <Education details={userProfile} />
         <Skills userId={userId} />
         <Experience />
-        <ScrollToTop />
+        <div>
+        
       </div>
+       
+      
+      </div>
+     
+     
     </div>
   );
 };
