@@ -4,6 +4,7 @@ import UserPage from "../client/page";
 import Link from "next/link";
 import { Settings, Briefcase, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 
+
 interface ProtectedLayoutProps {
   children: React.ReactNode;
 }
@@ -107,7 +108,11 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
         `}>
           {children}
         </div>
+
       </div>
+        <div>
+                    
+                    </div>
     </div>
   );
 };

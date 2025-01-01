@@ -92,6 +92,9 @@ function HeroSection({ details, profileUserId }) {
 
   return (
     <section className="relative flex flex-col items-center justify-between py-4 lg:py-12 border-t border-[#25213b]  bg-gradient-to-b from-blue-50 to-white">
+     
+    
+     
       {notification && (
         <div
           className={`fixed top-5 right-5 px-4 py-3 rounded-lg shadow-lg transition duration-300 ease-in-out z-[100] ${
@@ -105,7 +108,10 @@ function HeroSection({ details, profileUserId }) {
       )}
 
       <div className="grid grid-cols-1 items-start lg:grid-cols-2 lg:gap-12 gap-y-8">
-        <div className="order-2 lg:order-1 flex flex-col items-start justify-center p-2 pb-20 md:pb-10 lg:pt-10">
+        <div className="order-2 lg:order-1 flex flex-col items-start justify-center p-2 pb-20 md:pb-10 lg:pt-3">
+        <h1 className="text-4xl font-bold text-gray-800 mb-7 px-4 py-2 border-b-2 border-gray-200">
+      {details?.name || "Name"}
+    </h1>
           <h1 className="text-3xl font-bold leading-10 text-slate-050 md:font-extrabold lg:text-[2.6rem] lg:leading-[3.5rem]">
             Hello, <br />
             This is{" "}

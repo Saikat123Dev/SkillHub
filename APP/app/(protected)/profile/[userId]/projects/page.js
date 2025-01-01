@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ProjectPortfolio = ({ params }) => {
@@ -100,6 +101,13 @@ const ProjectPortfolio = ({ params }) => {
 
   return (
     <div className="min-h-screen  bg-gradient-to-b from-blue-50 to-white">
+       <Link  className="flex items-center gap-2 px-4 py-2  text-black font-semibold   transition-all duration-300 transform hover:scale-75 active:scale-95" 
+       href={`/profile/${params.userId}`}>
+      
+        <ArrowLeft className="w-5 h-5" />
+        <span>Back to Profile</span>
+
+    </Link>
       
 
       <div className="relative  mx-auto px-4 sm:px-6 lg:px-8 py-16">
