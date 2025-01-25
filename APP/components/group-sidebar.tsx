@@ -1,16 +1,14 @@
 "use client";
-import React, { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import {
-    IconArrowLeft,
-    IconBrandTabler,
-    IconSettings,
-    IconUserBolt,
-} from "@tabler/icons-react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import {
+  IconBrandTabler,
+  IconSettings,
+  IconUserBolt
+} from "@tabler/icons-react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import React, { useState } from "react";
 
 interface SidebarDemoProps {
     children: React.ReactNode;
@@ -35,12 +33,7 @@ export function SidebarDemo({ children, id, requestId,groupName }: SidebarDemoPr
             label: "Settings",
             href: "#",
             icon: <IconSettings className="h-5 w-5 flex-shrink-0" />,
-        },
-        {
-            label: "Logout",
-            href: "#",
-            icon: <IconArrowLeft className="h-5 w-5 flex-shrink-0" />,
-        },
+        }
     ];
 
     const [open, setOpen] = useState(false);
@@ -68,23 +61,7 @@ export function SidebarDemo({ children, id, requestId,groupName }: SidebarDemoPr
                             ))}
                         </div>
                     </div>
-                    <div>
-                        <SidebarLink
-                            link={{
-                                label: "Manu Arora",
-                                href: "#",
-                                icon: (
-                                    <Image
-                                        src="https://assets.aceternity.com/manu.png"
-                                        className="h-7 w-7 flex-shrink-0 rounded-full"
-                                        width={50}
-                                        height={50}
-                                        alt="Avatar"
-                                    />
-                                ),
-                            }}
-                        />
-                    </div>
+
                 </SidebarBody>
             </Sidebar>
             <div className="flex-1">{children}</div>

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-deployment
+spec:
+  replicas: 2  # This will run two replicas of your application pod
+  selector:
+    matchLabels:
+      app: v1
+  template:
+    metadata:
+      labels:
+        app: v1
+    spec:
+      containers:
+      - name: v1
+        image: skillhub/v1:latest  # Update with your image details
+        ports:
+        - containerPort: 3000
