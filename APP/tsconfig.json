@@ -32,6 +32,6 @@
     "components/sidebar.jsx",
     "app/api/connect/request/route.ts",
     "app/api/socket.js"
-  ],
+, "app/api/remommendation/route.js"  ],
   "exclude": ["node_modules"]
 }

@@ -1,44 +1,34 @@
-"use client";
+"use client"
 import {
   AlertCircle,
+  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
   Clock,
-  Info,
+  MapPin,
   Plus,
+  Tag,
+  Users,
   X
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Findgrouprole } from "../../../../../.././actions/group";
+import { useCallback, useEffect, useState } from "react";
+
+// Placeholder imports for actual server actions
 import { createCalendy, getEvents } from "../../../../../../actions/calendy";
+import { Findgrouprole } from "../../../../../../actions/group";
 
 const Calendar = ({ params }) => {
   const groupId = params.id;
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [view, setView] = useState("month");
-  const [showEventModal, setShowEventModal] = useState(false);
+  const [events, setEvents] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [events, setEvents] = useState([]);
   const [error, setError] = useState(null);
 
+  // Modal states
+  const [showEventModal, setShowEventModal] = useState(false);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-
-  // Initialize new event with proper structure
-  const [newEvent, setNewEvent] = useState({
-    title: "",
-    start: new Date(),
-    end: new Date(),
-    description: "",
-    priority: {
-      id: "medium",
-      label: "Medium",
-      color: "bg-yellow-100 text-yellow-800",
-    },
-    color: "bg-blue-500",
-  });
 
   const priorities = [
     { id: "high", label: "High", color: "bg-red-100 text-red-800" },
@@ -46,502 +36,523 @@ const Calendar = ({ params }) => {
     { id: "low", label: "Low", color: "bg-green-100 text-green-800" },
   ];
 
-  // Fetch events on component mount
+  const colorOptions = [
+    { id: "blue", className: "bg-blue-500" },
+    { id: "green", className: "bg-green-500" },
+    { id: "red", className: "bg-red-500" },
+    { id: "yellow", className: "bg-yellow-500" },
+    { id: "purple", className: "bg-purple-500" },
+  ];
+
+  // Fetch events and admin status
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        setError(null);
-        const fetchedEvents = await getEvents(groupId);
-        // Ensure events are properly formatted with dates
-        const formattedEvents = fetchedEvents.map((event) => ({
+        const [fetchedEvents, { isAdmin }] = await Promise.all([
+          getEvents(groupId),
+          Findgrouprole(groupId)
+        ]);
+
+        const formattedEvents = fetchedEvents.map(event => ({
           ...event,
           start: new Date(event.start),
           end: new Date(event.end),
         }));
-        setEvents(formattedEvents || []); // Ensure we always set an array
+
+        setEvents(formattedEvents);
+        setIsAdmin(isAdmin);
       } catch (error) {
-        console.error("Error fetching events:", error);
-        setError("Failed to load events");
-        setEvents([]); // Set empty array on error
+        console.error("Error fetching calendar data:", error);
+        setError("Failed to load calendar data");
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (groupId) {
-      fetchEvents();
-    }
+    if (groupId) fetchData();
   }, [groupId]);
 
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      try {
-        setIsLoading(true);
-        const { isAdmin } = await Findgrouprole(groupId);
-        setIsAdmin(isAdmin === true);
-      } catch (error) {
-        console.error("Error checking admin status:", error);
-        setError("Failed to check admin status");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (groupId) {
-      checkAdminStatus();
-    }
-  }, [groupId]);
-
-  const getDaysInMonth = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const days = [];
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-
-    for (let i = 0; i < firstDay.getDay(); i++) {
-      const day = new Date(year, month, -i);
-      days.unshift(day);
-    }
-
-    for (let i = 1; i <= lastDay.getDate(); i++) {
-      days.push(new Date(year, month, i));
-    }
-
-    const remainingDays = 42 - days.length;
-    for (let i = 1; i <= remainingDays; i++) {
-      days.push(new Date(year, month + 1, i));
-    }
-
-    return days;
-  };
-
-  // Navigation functions
+  // Calendar navigation
   const goToPreviousMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-    );
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
 
   const goToNextMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
-    );
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
-  // Improved event filtering for date
-  const getEventsForDate = (date) => {
-    if (!Array.isArray(events)) return [];
-
+  // Event filtering
+  const getEventsForDate = useCallback((date) => {
     return events.filter((event) => {
-      if (!event || !event.start) return false;
-
-      const eventDate = new Date(event.start);
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
       return (
-        eventDate.getDate() === date.getDate() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getFullYear() === date.getFullYear()
+        (eventStart <= date && eventEnd >= date) ||
+        eventStart.toDateString() === date.toDateString()
       );
     });
-  };
+  }, [events]);
 
-  const handleDateClick = (date) => {
-    const startDate = new Date(date);
-    startDate.setHours(9, 0, 0);
-    const endDate = new Date(date);
-    endDate.setHours(10, 0, 0);
+  // Corrected calendar grid calculation
+  const getDaysInMonth = useCallback((date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
 
-    setNewEvent({
+    const days = [];
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - startDate.getDay());
+
+    for (let i = 0; i < 42; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(currentDate.getDate() + i);
+      days.push(currentDate);
+    }
+
+    return days;
+  }, []);
+
+  const handleAddNewEvent = useCallback((newEvent) => {
+    setEvents(prev => [...prev, {
       ...newEvent,
-      start: startDate,
-      end: endDate,
-    });
-    setSelectedDate(date);
-  };
+      start: new Date(newEvent.start),
+      end: new Date(newEvent.end),
+      id: Date.now().toString()
+    }]);
+  }, []);
 
-  const handleAddEvent = async () => {
-    if (!isAdmin || !newEvent.title.trim() || !newEvent.description.trim()) {
-      setError("Please fill in all required fields");
-      return;
-    }
-
-    try {
-      const eventData = {
-        ...newEvent,
-        groupId,
-        id: Date.now().toString(),
-        start: new Date(newEvent.start),
-        end: new Date(newEvent.end),
-      };
-
-      const success = await createCalendy(groupId, eventData);
-
-      if (success) {
-        setEvents((prevEvents) => [...(prevEvents || []), eventData]);
-        setShowEventModal(false);
-        setNewEvent({
-          title: "",
-          start: new Date(),
-          end: new Date(),
-          description: "",
-          priority: {
-            id: "medium",
-            label: "Medium",
-            color: "bg-yellow-100 text-yellow-800",
-          },
-          color: "bg-blue-500",
-        });
-        setError(null);
-      }
-    } catch (error) {
-      console.error("Error adding event:", error);
-      setError("Failed to add event");
-    }
-  };
-
-  const formatDateForInput = (date) => {
-    const d = new Date(date);
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d.toISOString().slice(0, 16);
-  };
-  setShowEventModal;
-
-  const handleStartDateChange = (e) => {
-    const newDate = new Date(e.target.value);
-    setNewEvent((prev) => ({
-      ...prev,
-      start: newDate,
-      end: new Date(Math.max(newDate, prev.end)),
-    }));
-  };
-
-  const handleEndDateChange = (e) => {
-    const newDate = new Date(e.target.value);
-    setNewEvent((prev) => ({
-      ...prev,
-      end: newDate,
-    }));
-  };
-
-  // Event component
+  // Event Component
   const EventItem = ({ event }) => {
-    if (!event || !event.start) return null;
-
-    const formatTime = (date) => {
-      return new Date(date).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    };
-
-    const handleEventClick = (e) => {
-      e.stopPropagation(); // Prevent the date cell click handler from firing
+    const handleEventClick = () => {
       setSelectedEvent(event);
       setShowEventDetailsModal(true);
     };
 
     return (
-      <div className="relative">
-        <div
-          className={`${event.color} text-white text-sm p-2 rounded mb-1 cursor-pointer transition-all hover:opacity-90`}
-          onClick={handleEventClick}
-        >
-          <div className="flex items-center justify-between">
-            <div className="font-semibold truncate">{event.title}</div>
-            <Info size={14} />
-          </div>
-          <div className="text-xs flex items-center gap-1">
-            <Clock size={12} />
-            {formatTime(event.start)}
-          </div>
+      <div
+        onClick={handleEventClick}
+        className={`
+          ${colorOptions.find(c => c.id === event.color)?.className || 'bg-blue-500'}
+          text-white text-sm p-2 rounded mb-1 cursor-pointer
+          hover:opacity-90 transition-all
+        `}
+      >
+        <div className="flex justify-between items-center">
+          <span className="font-semibold truncate">{event.title}</span>
+          <Clock size={14} />
         </div>
       </div>
     );
   };
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-700 via-indigo-800 to-gray-900 text-white p-8 flex items-center justify-center">
-        <div className="text-xl">Loading calendar...</div>
-      </div>
-    );
-  }
+  // Add Event Modal Component
+  const AddEventModal = ({ show, onClose, onAddEvent, isAdmin, groupId }) => {
+    const [newEvent, setNewEvent] = useState({
+      title: "",
+      start: new Date(),
+      end: new Date(),
+      description: "",
+      location: "",
+      attendees: "",
+      priority: "medium",
+      color: "blue",
+    });
+    const [localError, setLocalError] = useState(null);
 
-  // Show error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-700 via-indigo-800 to-gray-900 text-white p-8">
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-center gap-2">
-          <AlertCircle className="text-red-500" />
-          <p>{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const EventDetailsModal = () => {
-    if (!selectedEvent) return null;
-
-    const formatDateTime = (date) => {
-      return new Date(date).toLocaleString([], {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+    const formatDateForInput = (date) => {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
+    const handleSubmit = async () => {
+      try {
+        if (!isAdmin) {
+          setLocalError("You do not have permission to add events");
+          return;
+        }
+
+        if (!newEvent.title.trim()) {
+          setLocalError("Please fill in the event title");
+          return;
+        }
+
+        if (newEvent.end < newEvent.start) {
+          setLocalError("End date cannot be before start date");
+          return;
+        }
+
+        const eventData = {
+          ...newEvent,
+          groupId,
+          start: newEvent.start.toISOString(),
+          end: newEvent.end.toISOString(),
+        };
+
+        const success = await createCalendy(groupId, eventData);
+
+        if (success) {
+          onAddEvent(eventData);
+          onClose();
+          setLocalError(null);
+        }
+      } catch (error) {
+        console.error("Error adding event:", error);
+        setLocalError("Failed to add event");
+      }
+    };
+
+    if (!show) return null;
+
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-        <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md text-white">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold">{selectedEvent.title}</h3>
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="sticky top-0 bg-white rounded-t-2xl border-b p-4 flex justify-between items-center z-10">
+            <h3 className="text-xl font-bold text-gray-800">Add New Event</h3>
             <button
-              onClick={() => setShowEventDetailsModal(false)}
-              className="text-white/60 hover:text-white"
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-800 transition-colors rounded-full p-1 hover:bg-gray-100"
             >
               <X size={24} />
             </button>
           </div>
-          <div className="space-y-2">
-            <p>
-              <strong>Start:</strong> {formatDateTime(selectedEvent.start)}
-            </p>
-            <p>
-              <strong>End:</strong> {formatDateTime(selectedEvent.end)}
-            </p>
-            <p>
-              <strong>Description:</strong> {selectedEvent.description}
-            </p>
-            {selectedEvent.priority && (
-              <p>
-                <strong>Priority:</strong>{" "}
-                <span
-                  className={`${selectedEvent.priority.color} px-2 py-1 rounded`}
-                >
-                  {selectedEvent.priority.label}
-                </span>
-              </p>
+
+          <div className="p-4 space-y-4">
+            {localError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                <AlertCircle className="inline-block mr-2" />
+                {localError}
+              </div>
             )}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-700 via-indigo-800 to-gray-900 text-white p-8">
-        {/* Calendar Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={goToPreviousMonth}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <h2 className="text-2xl font-bold">
-              {currentDate.toLocaleDateString("en-US", {
-                month: "long",
-                year: "numeric",
-              })}
-            </h2>
-            <button
-              onClick={goToNextMonth}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <ChevronRight size={24} />
-            </button>
-          </div>
-
-          {isAdmin && (
-            <button
-              onClick={() => {
-                setNewEvent({
-                  ...newEvent,
-                  start: new Date(),
-                  end: new Date(new Date().setHours(new Date().getHours() + 1)),
-                });
-                setShowEventModal(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              <Plus size={20} />
-              Add Event
-            </button>
-          )}
-        </div>
-
-        {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-4">
-          {/* Day Headers */}
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-            <div key={day} className="text-center font-semibold mb-2">
-              {day}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Title*</label>
+              <input
+                type="text"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 transition-all"
+                value={newEvent.title}
+                placeholder="Enter event title"
+                onChange={(e) => setNewEvent(prev => ({ ...prev, title: e.target.value }))}
+                autoFocus
+              />
             </div>
-          ))}
 
-          {/* Calendar Days */}
-          {getDaysInMonth(currentDate).map((date, index) => {
-            const dayEvents = getEventsForDate(date);
-            const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start*</label>
+                <input
+                  type="datetime-local"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 transition-all"
+                  value={formatDateForInput(newEvent.start)}
+                  onChange={(e) => setNewEvent(prev => ({
+                    ...prev,
+                    start: new Date(e.target.value),
+                    end: new Date(Math.max(new Date(e.target.value), prev.end))
+                  }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End*</label>
+                <input
+                  type="datetime-local"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 transition-all"
+                  value={formatDateForInput(newEvent.end)}
+                  onChange={(e) => setNewEvent(prev => ({
+                    ...prev,
+                    end: new Date(e.target.value)
+                  }))}
+                />
+              </div>
+            </div>
 
-            return (
-              <div
-                key={index}
-                className={`min-h-24 p-2 rounded border border-white/10 ${
-                  isCurrentMonth ? "bg-white/5" : "bg-white/5 opacity-50"
-                } hover:bg-white/10 cursor-pointer transition-colors relative group`}
-                onClick={() => handleDateClick(date)}
-              >
-                <div className="font-semibold mb-2 flex items-center justify-between">
-                  <span>{date.getDate()}</span>
-                  {isCurrentMonth && dayEvents.length > 0 && (
-                    <span className="text-xs bg-white/20 px-2 rounded-full">
-                      {dayEvents.length}
-                    </span>
-                  )}
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 transition-all min-h-[100px]"
+                value={newEvent.description}
+                placeholder="Enter event description"
+                onChange={(e) => setNewEvent(prev => ({ ...prev, description: e.target.value }))}
+              />
+            </div>
 
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {dayEvents.map((event) => (
-                    <EventItem key={event.id} event={event} />
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 transition-all"
+                  value={newEvent.location}
+                  placeholder="Event location"
+                  onChange={(e) => setNewEvent(prev => ({ ...prev, location: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Attendees</label>
+                <input
+                  type="text"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 transition-all"
+                  value={newEvent.attendees}
+                  placeholder="Comma-separated emails"
+                  onChange={(e) => setNewEvent(prev => ({ ...prev, attendees: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                <select
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 transition-all"
+                  value={newEvent.priority}
+                  onChange={(e) => setNewEvent(prev => ({ ...prev, priority: e.target.value }))}
+                >
+                  {priorities.map((priority) => (
+                    <option key={priority.id} value={priority.id}>
+                      {priority.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                <div className="flex gap-2 items-center">
+                  {colorOptions.map((color) => (
+                    <button
+                      key={color.id}
+                      className={`
+                        w-8 h-8 rounded-full ${color.className}
+                        ${newEvent.color === color.id ? 'ring-2 ring-blue-500 scale-110' : 'hover:scale-110'}
+                        transition-all
+                      `}
+                      onClick={() => setNewEvent(prev => ({ ...prev, color: color.id }))}
+                    />
                   ))}
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        {isAdmin && showEventModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-            <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">Add Event</h3>
-                <button
-                  onClick={() => setShowEventModal(false)}
-                  className="text-white/60 hover:text-white"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full p-2 bg-gray-700 rounded border border-white/20"
-                    value={newEvent.title}
-                    onChange={(e) =>
-                      setNewEvent({ ...newEvent, title: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Start
-                    </label>
-                    <input
-                      type="datetime-local"
-                      className="w-full p-2 bg-gray-700 rounded border border-white/20"
-                      value={formatDateForInput(newEvent.start)}
-                      onChange={handleStartDateChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      End
-                    </label>
-                    <input
-                      type="datetime-local"
-                      className="w-full p-2 bg-gray-700 rounded border border-white/20"
-                      value={formatDateForInput(newEvent.end)}
-                      onChange={handleEndDateChange}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    className="w-full p-2 bg-gray-700 rounded border border-white/20"
-                    value={newEvent.description}
-                    onChange={(e) =>
-                      setNewEvent({ ...newEvent, description: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Priority
-                  </label>
-                  <select
-                    className="w-full p-2 bg-gray-700 rounded border border-white/20"
-                    value={newEvent.priority?.id || ""}
-                    onChange={(e) => {
-                      const priority = priorities.find(
-                        (p) => p.id === e.target.value
-                      );
-                      setNewEvent({ ...newEvent, priority });
-                    }}
-                  >
-                    <option value="">Select Priority</option>
-                    {priorities.map((priority) => (
-                      <option key={priority.id} value={priority.id}>
-                        {priority.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Color
-                  </label>
-                  <div className="flex gap-2">
-                    {[
-                      "bg-blue-500",
-                      "bg-green-500",
-                      "bg-red-500",
-                      "bg-yellow-500",
-                      "bg-purple-500",
-                    ].map((color) => (
-                      <button
-                        key={color}
-                        className={`w-8 h-8 rounded-full ${color} ${
-                          newEvent.color === color ? "ring-2 ring-white" : ""
-                        }`}
-                        onClick={() => setNewEvent({ ...newEvent, color })}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleAddEvent}
-                  className="w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                >
-                  Add Event
-                </button>
-              </div>
             </div>
+
+            <button
+              onClick={handleSubmit}
+              className="
+                w-full py-3 mt-4
+                bg-blue-500 text-white rounded-lg
+                hover:bg-blue-600
+                transition-colors
+                shadow-md hover:shadow-lg
+                flex items-center justify-center gap-2
+              "
+            >
+              <Plus size={20} /> Add Event
+            </button>
           </div>
-        )}
-          {showEventDetailsModal && <EventDetailsModal />}
+        </div>
       </div>
     );
   };
 
+  // Loading and Error States
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading calendar...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          <AlertCircle className="inline-block mr-2" />
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        {/* Calendar Header */}
+        <div className="bg-gradient-to-r from-blue-50 to-white p-6 border-b">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={goToPreviousMonth}
+                className="hover:bg-blue-100 p-2 rounded-full transition"
+              >
+                <ChevronLeft size={24} className="text-gray-600" />
+              </button>
+              <h2 className="text-2xl font-bold text-gray-800">
+                {currentDate.toLocaleDateString("en-US", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </h2>
+              <button
+                onClick={goToNextMonth}
+                className="hover:bg-blue-100 p-2 rounded-full transition"
+              >
+                <ChevronRight size={24} className="text-gray-600" />
+              </button>
+            </div>
+            {isAdmin && (
+              <button
+                onClick={() => setShowEventModal(true)}
+                className="
+                  flex items-center gap-2 px-4 py-2
+                  bg-blue-500 text-white rounded-lg
+                  hover:bg-blue-600 transition
+                  shadow-md hover:shadow-lg
+                "
+              >
+                <Plus size={20} /> Add Event
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable Calendar Grid */}
+        <div className="overflow-y-auto h-[600px]">
+          <div className="grid grid-cols-7 gap-4 p-6">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <div
+                key={day}
+                className="text-center font-semibold text-gray-500"
+              >
+                {day}
+              </div>
+            ))}
+
+            {getDaysInMonth(currentDate).map((date) => {
+              const dayEvents = getEventsForDate(date);
+              const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+
+              return (
+                <div
+                  key={date.getTime()}
+                  className={`
+                    min-h-[120px] p-2 rounded-lg border
+                    ${isCurrentMonth
+                      ? 'bg-white border-gray-200 hover:border-blue-300'
+                      : 'bg-gray-50 border-gray-100 opacity-50'}
+                    transition cursor-pointer
+                  `}
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <span
+                      className={`
+                        font-semibold
+                        ${isCurrentMonth ? 'text-gray-800' : 'text-gray-400'}
+                      `}
+                    >
+                      {date.getDate()}
+                    </span>
+                    {isCurrentMonth && dayEvents.length > 0 && (
+                      <span className="bg-blue-100 text-blue-600 text-xs px-2 rounded-full">
+                        {dayEvents.length}
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {dayEvents.map((event) => (
+                      <EventItem key={event.id} event={event} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <AddEventModal
+        show={showEventModal}
+        onClose={() => setShowEventModal(false)}
+        onAddEvent={handleAddNewEvent}
+        isAdmin={isAdmin}
+        groupId={groupId}
+      />
+      {showEventDetailsModal && (
+        <EventDetailsModal
+          event={selectedEvent}
+          onClose={() => setShowEventDetailsModal(false)}
+          priorities={priorities}
+        />
+      )}
+    </div>
+  );
+};
+
+// Memoized Event Details Modal
+const EventDetailsModal = ({ event, onClose, priorities }) => {
+  if (!event) return null;
+
+  const formatDateTime = (date) => {
+    return new Date(date).toLocaleString([], {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-gray-800">{event.title}</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <CalendarIcon size={20} className="text-gray-500" />
+            <span>
+              {formatDateTime(event.start)} - {formatDateTime(event.end)}
+            </span>
+          </div>
+          {event.location && (
+            <div className="flex items-center gap-3">
+              <MapPin size={20} className="text-gray-500" />
+              <span>{event.location}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <Tag size={20} className="text-gray-500" />
+            <span
+              className={`
+                px-2 py-1 rounded
+                ${priorities.find(p => p.id === event.priority)?.color || ''}
+              `}
+            >
+              {priorities.find(p => p.id === event.priority)?.label} Priority
+            </span>
+          </div>
+          {event.attendees && (
+            <div className="flex items-center gap-3">
+              <Users size={20} className="text-gray-500" />
+              <span>{event.attendees}</span>
+            </div>
+          )}
+          {event.description && (
+            <p className="text-gray-600 mt-2">{event.description}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default Calendar;
