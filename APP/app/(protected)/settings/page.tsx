@@ -95,11 +95,11 @@ const SettingsPage = () => {
       try {
         const data = await getSettings();
         console.log(data);
-        
-      
+
+
         if (data) {
           data.getsettingdetails.name && form.setValue('name', data.getsettingdetails.name);
-          data.getsettingdetails.pssword && form.setValue('password', data.getsettingdetails.password);
+          data.getsettingdetails.password && form.setValue('password', data.getsettingdetails.password);
           data.getsettingdetails.email && form.setValue('email', data.getsettingdetails.email);
           data.getsettingdetails.Roles && form.setValue('Roles', data.getsettingdetails.Roles);
           data.getsettingdetails.Skills && form.setValue('Skills', data.getsettingdetails.Skills);
@@ -124,13 +124,13 @@ const SettingsPage = () => {
           data.getsettingdetails.duration && form.setValue('duration', data.getsettingdetails.duration)
           data.getsettingdetails.leetcode && form.setValue('leetcode', data.getsettingdetails.leetcode)
         }
-  
+
       } catch (error) {
         console.error('Error fetching settings:', error);
         setError('Failed to load user settings');
       }
     };
-  
+
     getDetails();
   }, [form]); // Add form as dependency
 
@@ -838,7 +838,7 @@ const SettingsPage = () => {
                       )}
                     />
 
-                  
+
                     <FormField
                       control={form.control}
                       name="github"
@@ -952,7 +952,7 @@ const SettingsPage = () => {
             )}
           </form>
         </Form>
-          
+
       </div>
     </div>
   );
