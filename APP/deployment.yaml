@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: my-app-deployment
 spec:
-  replicas: 2  # This will run two replicas of your application pod
+  replicas: 2
   selector:
     matchLabels:
       app: v1

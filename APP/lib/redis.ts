@@ -1,10 +1,7 @@
 import Redis from 'ioredis';
 
 // Connect to Redis (adjust host and port if needed)
-const redis = new Redis({
-  host: 'localhost', // Replace with 'host.docker.internal' if the app runs in a Docker container
-  port: 6379,        // Redis default port
-});
+const redis = new Redis("rediss://default:AeTYAAIjcDE1NmZlNjVmOGZjOTg0MTE1ODE5MzBiYmQ1NmVlMjI2NnAxMA@living-tadpole-58584.upstash.io:6379");
 
 redis.on('connect', () => {
   console.log('Connected to Redis successfully');
