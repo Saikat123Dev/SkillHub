@@ -8,19 +8,20 @@ import * as z from "zod";
 
 import { createClient } from "redis";
 
-let client:any;
+let client: any;
 
 async function getRedisClient() {
   if (!client || !client.isOpen) {
-    client = createClient();
-    client.on('error', (err:Error) => console.error('Redis Client Error', err));
+    client = createClient({
+      url: "rediss://default:AeTYAAIjcDE1NmZlNjVmOGZjOTg0MTE1ODE5MzBiYmQ1NmVlMjI2NnAxMA@living-tadpole-58584.upstash.io:6379",
+    });
+    client.on("error", (err: Error) => console.error("Redis Client Error", err));
     await client.connect();
   }
   return client;
 }
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
-
   const redisClient = await getRedisClient();
 
   const validatedFields = RegisterSchema.safeParse(values);
@@ -31,7 +32,6 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
   const { email, password, name, birthday } = validatedFields.data;
 
-
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
     return { error: "Email already in use!" };
@@ -39,13 +39,12 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-   try {
-     const redisSetPromise = redisClient.set(
+  try {
+    const redisSetPromise = redisClient.set(
       `user:register:${email}`,
       JSON.stringify({ name, email }),
       { EX: 900 }
     );
-
 
     const dbCreatePromise = db.user.create({
       data: {
@@ -55,7 +54,6 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         birthday,
       },
     });
-
 
     await Promise.all([redisSetPromise, dbCreatePromise]);
 
