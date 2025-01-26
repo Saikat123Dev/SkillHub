@@ -13,7 +13,7 @@ import Image from "next/image";
 import Link from 'next/link';
 
 export default function Widget() {
-  console.log("env load",process.env.NEXTAUTH_URL)
+  console.log("env load","https://skill-hub-ok3x.vercel.app/")
   return (
     <div className="min-h-full">
       {/* Header section */}
