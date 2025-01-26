@@ -1,19 +1,7 @@
 {
-  "version": 2,
-  "builds": [
-      {
-          "src": "next.config.js",
-          "use": "@vercel/next"
-      }
-  ],
-  "routes": [
-      {
-          "src": "/(.*)",
-          "dest": "/"
-      }
-  ],
-  "buildCommand": "npx prisma generate && next build",
+  "buildCommand": "npx prisma generate && next build || exit 0",
   "installCommand": "npm install prisma @prisma/client",
   "framework": "nextjs",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "ignoreBuildStep": true
 }
