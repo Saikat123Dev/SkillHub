@@ -95,7 +95,7 @@ export default function Sidebar({ children }) {
                     {/* Navigation */}
                     <SidebarContext.Provider value={{ expanded, activeItem, handleItemClick }}>
                         <nav className="flex-1 overflow-y-auto scrollbar-none">
-                            <ul className="p-2 space-y-1">
+                            <ul className="p-2 text-lg  space-y-1">
                                 {children}
                             </ul>
                         </nav>
@@ -105,7 +105,7 @@ export default function Sidebar({ children }) {
                     <div className="border-t border-blue-800/50 p-2.5">
                         <div className="flex items-center space-x-2">
                             <div className="relative group">
-                                <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition duration-200" />
+                                <div className="absolutrukendo hindi dubbed e -inset-0.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition duration-200" />
                                 <div className="relative w-7 h-7 rounded-full overflow-hidden">
                                     <UserButton/>
                                 </div>
@@ -143,10 +143,10 @@ export function SidebarItem({ icon, text, alert, href, itemKey }) {
                 {icon}
             </span>
             <span
-                className={`ml-2.5 transition-all duration-200 ${
-                    expanded ? "opacity-100 visible" : "opacity-0 invisible md:invisible"
-                } whitespace-nowrap text-xs font-medium ${
-                    isActive ? "text-blue-400" : "text-gray-400 group-hover:text-blue-400"
+                className={`ml-2.5 text-sm lg:text-[1rem]  transition-all duration-200 ${
+                    expanded ? "opacity-100  visible" : "opacity-0 invisible md:invisible"
+                } whitespace-nowrap text-md font-medium ${
+                    isActive ? "text-blue-400 " : "text-gray-400 group-hover:text-blue-400"
                 }`}
             >
                 {text}
