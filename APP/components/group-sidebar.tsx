@@ -14,10 +14,10 @@ interface SidebarDemoProps {
     children: React.ReactNode;
     id: string;
     requestId: string;
-    groupName:string;
+    groupName: string;
 }
 
-export function SidebarDemo({ children, id, requestId,groupName }: SidebarDemoProps) {
+export function SidebarDemo({ children, id, requestId, groupName }: SidebarDemoProps) {
     const links = [
         {
             label: "Dashboard",
@@ -44,10 +44,17 @@ export function SidebarDemo({ children, id, requestId,groupName }: SidebarDemoPr
                 "flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full h-screen max-w-full mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden"
             )}
         >
+            {/* Sidebar */}
             <Sidebar open={open} setOpen={setOpen}>
                 <SidebarBody className="flex flex-col justify-between h-full gap-10">
                     <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-                        {open ? <Logo id={id} requestId={requestId} groupName={groupName} />: <LogoIcon />}
+                        {/* Render Logo or Logo Icon based on `open` */}
+                        {open ? (
+                            <Logo id={id} requestId={requestId} groupName={groupName} />
+                        ) : (
+                            <LogoIcon />
+                        )}
+                        {/* Render Navigation Links */}
                         <div className="mt-8 flex lg:flex-col gap-2">
                             {links.map((link, idx) => (
                                 <motion.div
@@ -61,9 +68,10 @@ export function SidebarDemo({ children, id, requestId,groupName }: SidebarDemoPr
                             ))}
                         </div>
                     </div>
-
                 </SidebarBody>
             </Sidebar>
+
+            {/* Main Content */}
             <div className="flex-1">{children}</div>
         </div>
     );
@@ -72,10 +80,10 @@ export function SidebarDemo({ children, id, requestId,groupName }: SidebarDemoPr
 interface LogoProps {
     id: string;
     requestId: string;
-    groupName:string;
+    groupName: string;
 }
 
-export const Logo = ({ id, requestId,groupName }: LogoProps) => {
+export const Logo = ({ id, requestId, groupName }: LogoProps) => {
     return (
         <Link
             href={`/group/${id}/${requestId}`}

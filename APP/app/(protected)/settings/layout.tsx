@@ -102,50 +102,45 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
                 </div>
             </nav>
 
-            {/* Mobile Bottom Navigation */}
-            <div className="fixed bottom-4 left-4 right-4 md:hidden z-50">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
-                    <div className="relative">
-                        {/* Floating highlight indicator */}
-                        <div
-                            className="absolute h-12 w-1/3 bg-blue-50 rounded-xl transition-all duration-300 ease-in-out"
-                            style={{
-                                left: `${(navigationItems.findIndex(item => item.href === activeItem) * 100/3)}%`,
-                            }}
-                        />
+{/* Mobile Bottom Navigation */}
+<div className="fixed bottom-4 left-4 right-4 md:hidden z-50">
+    <div className="bg-white h-16 rounded-2xl shadow-lg border border-gray-200 flex justify-center items-center">
+        <div className="relative w-full flex justify-around items-center">
+            {/* Floating highlight indicator */}
+            <div
+                className="absolute h-14 w-1/3 bg-blue-100/50 rounded-xl shadow-md transition-all duration-300 ease-in-out"
+                style={{
+                    left: `${(navigationItems.findIndex(item => item.href === activeItem) * 100 / 3)}%`,
+                }}
+            />
 
-                        <div className="flex items-center justify-around relative z-10">
-                            {navigationItems.map((item) => (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    onClick={() => handleNavigation(item.href)}
-                                    className="flex flex-col items-center py-3 w-1/3 group"
-                                >
-                                    <div className={`
-                                        p-2 rounded-xl transition-all duration-300
-                                        ${activeItem === item.href ? 'bg-blue-100/50' : 'hover:bg-blue-50'}
-                                    `}>
-                                        <item.icon
-                                            className={`
-                                                w-6 h-6 transition-all duration-300
-                                                ${activeItem === item.href ? 'text-blue-600 scale-110' : 'text-gray-500 group-hover:text-blue-500'}
-                                                ${item.rotate && activeItem === item.href ? 'rotate-90' : ''}
-                                            `}
-                                        />
-                                    </div>
-                                    <span className={`
-                                        text-xs font-medium mt-1 transition-all duration-300
-                                        ${activeItem === item.href ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-500'}
-                                    `}>
-                                        {item.label.split(' ')[1] || item.label.split(' ')[0]}
-                                    </span>
-                                </Link>
-                            ))}
-                        </div>
+            {navigationItems.map((item) => (
+                <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => handleNavigation(item.href)}
+                    className="relative flex flex-col items-center justify-center group w-1/3 transition-all duration-300"
+                >
+                    <div
+                        className={`
+                            flex items-center justify-center p-3 rounded-full transition-transform duration-300
+                            ${activeItem === item.href ? 'bg-blue-500 text-white scale-110 shadow-md' : 'hover:bg-blue-100 text-gray-500 hover:scale-105'}
+                        `}
+                    >
+                        <item.icon
+                            className={`
+                                w-6 h-6 transition-transform duration-300
+                                ${activeItem === item.href ? 'scale-125' : 'group-hover:scale-110'}
+                            `}
+                        />
                     </div>
-                </div>
-            </div>
+                </Link>
+            ))}
+        </div>
+    </div>
+</div>
+
+
 
             {/* Main Content */}
             <div className="flex-grow p-6 pb-24 md:pb-6 bg-gray-50">

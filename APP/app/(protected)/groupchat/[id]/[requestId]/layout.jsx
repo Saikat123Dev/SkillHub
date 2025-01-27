@@ -1,10 +1,7 @@
 
+import { IndividualGroup } from "@/actions/group";
+import { SidebarDemo } from "@/components/group-sidebar";
 import React from 'react';
-import Link from 'next/link';
-import Sidebar, {SidebarItem} from "@/components/sidebar";
-import {Calendar, Home, LayoutDashboard, Settings} from "lucide-react";
-import {SidebarDemo} from "@/components/group-sidebar";
-import {IndividualGroup} from "@/actions/group";
 
 
 const Layout =async ({ params, children }) => {
@@ -90,10 +87,8 @@ const Layout =async ({ params, children }) => {
         {/*    />*/}
         {/*</Sidebar>*/}
 
-        <SidebarDemo children={children} id={id} requestId={requestId} groupName={grp.grpname} />
-        <div className="flex-grow overflow-auto">
+        <SidebarDemo  children={children} id={id} requestId={requestId} groupName={grp.grpname} />
 
-      </div>
     </div>
   );
 };

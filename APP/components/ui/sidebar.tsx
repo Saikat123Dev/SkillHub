@@ -18,7 +18,10 @@ interface SidebarContextProps {
     animate: boolean;
     isMobile: boolean;
 }
-
+interface MobileNavigationProps {
+  children: React.ReactNode;
+  className?: string;
+}
 // Context
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
@@ -108,44 +111,45 @@ const DesktopNavigation = ({
 };
 
 // Mobile Navigation
-const MobileNavigation = ({
-    children,
-    className,
-}: {
-    children: React.ReactNode;
-    className?: string;
+const MobileNavigation: React.FC<MobileNavigationProps> = ({
+  children,
+  className,
 }) => {
-    return (
-        <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4 z-50 md:hidden">
-            <motion.div
-                initial={{ y: 100 }}
-                animate={{ y: 0 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                className={cn(
-                    "flex items-center gap-2 px-6 py-3",
-                    "bg-white/80 dark:bg-black/80",
-                    "backdrop-blur-lg",
-                    "rounded-2xl",
-                    "border border-neutral-200/50 dark:border-neutral-800/50",
-                    "shadow-lg shadow-black/5",
-                    "max-w-fit mx-auto",
-                    className
-                )}
-            >
-                {React.Children.map(children, (child, index) => (
-                    <motion.div
-                        key={index}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-2"
-                    >
-                        {child}
-                    </motion.div>
-                ))}
-            </motion.div>
-        </div>
-    );
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center items-center h-24 md:hidden">
+      <motion.div
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        className={cn(
+          "flex items-center gap-4 px-6 ",
+          "bg-transparent backdrop-blur-md",
+          "rounded-3xl border ",
+          "max-w-fit mx-auto",
+          className
+        )}
+      >
+        {React.Children.map(children, (child, index) => (
+          <motion.div
+            key={index}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className={cn(
+              "px-3 py-0 pb-10 rounded-full",
+              "transition-all duration-300",
+              "bg-gradient-to-br from-white/20 via-transparent to-white/10",
+              "hover:bg-gradient-to-br hover:from-white/30 hover:to-white/15",
+              " hover:shadow-xl"
+            )}
+          >
+            {child}
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
+  );
 };
+
 
 // Sidebar Link Component
 export const SidebarLink = ({
