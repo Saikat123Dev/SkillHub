@@ -4,17 +4,17 @@ const UserGender = z.enum(["male", "female", "others"]);
 
 export const project = z.object({
   title : z.string(),
-  about : z.string(),   
-  techStack : z.string(),  
-  demovideo : z.string().url().optional(),    
+  about : z.string(),
+  techStack : z.string(),
+  demovideo : z.string().url().optional(),
   collaborator : z.string().url().optional(),
-  liveLink : z.string().url().optional()   
+  liveLink : z.string().url().optional()
 })
 
 export const experience = z.object({
-  company : z.string().optional(),   
-  duration : z.string().optional(),    
-  role : z.string().optional(),         
+  company : z.string().optional(),
+  duration : z.string().optional(),
+  role : z.string().optional(),
 })
 
 export const SettingsSchema = z
@@ -29,9 +29,9 @@ export const SettingsSchema = z
       .string()
       .min(6, { message: "Minimum of 6 characters required for new password" })
       .optional(),
-    
+
     username: z.string().optional(),
-    
+
    Roles: z.array(z.string()).optional(), // Updated to array of strings
     Skills: z.array(z.string()).optional(), // Updated to array of strings
     country: z.string().optional(),
@@ -46,19 +46,19 @@ export const SettingsSchema = z
     linkedin: z.string().url({ message: "Invalid URL format" }).optional(),
     github  :  z.string().url({ message: "Invalid URL format" }).optional(),
     leetcode  :  z.string().url({ message: "Invalid URL format" }).optional(),
-          
+
     twitter:z.string().url({ message: "Invalid URL format" }).optional(),
-            
-    class10 : z.string().optional(),     
+
+    class10 : z.string().optional(),
     percentage_10:z.string().optional(),
-    class12    : z.string().optional(),  
+    class12    : z.string().optional(),
     percentage_12: z.string().optional(),
-    college   : z.string().optional(),   
-    currentYear : z.string().optional(), 
-    dept   : z.string().optional(),      
-    duration  : z.string().optional(),      
-    domain : z.string().optional(),      
-    shortIntro : z.string().optional()      
+    college   : z.string().optional(),
+    currentYear : z.string().optional(),
+    dept   : z.string().optional(),
+    duration  : z.string().optional(),
+    domain : z.string().optional(),
+    shortIntro : z.string().optional()
   })
   .refine(
     (data) => {
@@ -113,10 +113,6 @@ export const RegisterSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  birthday: z.string().refine((val) => {
-    const date = new Date(val);
-    return !isNaN(date.getTime());
-  }, "Invalid date format"),
 
 });
 

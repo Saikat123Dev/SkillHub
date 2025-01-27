@@ -36,7 +36,7 @@ const RegisterForm = () => {
       name: "",
       email: "",
       password: "",
-      birthday: "",
+
     },
   });
 
@@ -133,25 +133,7 @@ const RegisterForm = () => {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="birthday"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 font-medium text-sm">
-                    Date of Birth
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="date"
-                      disabled={isPending}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs lg:text-sm" />
-                </FormItem>
-              )}
-            />
+
 
             <FormField
               control={form.control}
