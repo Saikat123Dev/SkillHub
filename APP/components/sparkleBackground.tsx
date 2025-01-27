@@ -1,9 +1,7 @@
 "use client";
-import React from "react";
 import { SparklesCore } from "@/components/ui/sparkles";
 import Link from "next/link";
 import { Button } from "./ui/moving-border";
-import { GlobeDemo } from "./globeGithub";
 
 export function SparklesPreview() {
   return (
@@ -20,7 +18,7 @@ export function SparklesPreview() {
         />
       </div>
        <div className="relative flex flex-col md:flex-row justify-between items-center w-full h-full">
-          
+
           <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex flex-col justify-center items-start p-4 md:p-6 space-y-4 z-10">
             <h1 className="text-white text-4xl md:text-6xl font-bold leading-tight">
               Connect.<br />Showcase.<br />Collaborate.<br />Succeed.
@@ -39,7 +37,7 @@ export function SparklesPreview() {
           </div>
           <div className="relative w-full h-full">
             <div className="absolute right-1 flex items-center h-full">
-              <GlobeDemo />
+              {/* <GlobeDemo /> */}
             </div>
           </div>
         </div>
