@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as z from "zod";
 
 const ProfilePicSchema = z.object({
-  profilePic: z.string().url(),
+  image: z.string().url(),
 });
 
 export const updateProfilePic = async (
@@ -30,7 +30,7 @@ export const updateProfilePic = async (
   await db.user.update({
     where: { id: user.id },
     data: {
-      profilePic: validationResult.data.profilePic,
+      image: validationResult.data.image,
     },
   });
 }
@@ -47,7 +47,7 @@ export const getProfilePic = async () => {
     return { error: "Unauthorized" };
   }
 
-  return { profilePic: dbUser.profilePic };
+  return { profilePic: dbUser.image };
 }
 
 export const GET = async (req: NextRequest) => {

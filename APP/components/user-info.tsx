@@ -11,7 +11,7 @@ const fetchProfilePic = async (): Promise<string | null> => {
     const response = await fetch("/api/upload");
     if (!response.ok) throw new Error("Failed to fetch profile picture");
     const data = await response.json();
-    return data.profilePic;
+    return data.image;
   } catch (error) {
     console.error("Fetch error:", error);
     return null;
