@@ -48,7 +48,7 @@ export function SidebarDemo({ children, id, requestId,groupName }: SidebarDemoPr
                 <SidebarBody className="flex flex-col justify-between h-full gap-10">
                     <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
                         {open ? <Logo id={id} requestId={requestId} groupName={groupName} />: <LogoIcon />}
-                        <div className="mt-8 flex flex-col gap-2">
+                        <div className="mt-8 flex lg:flex-col gap-2">
                             {links.map((link, idx) => (
                                 <motion.div
                                     key={idx}
@@ -97,7 +97,7 @@ export const LogoIcon = () => {
     return (
         <Link
             href="#"
-            className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+            className="font-normal lg:block hidden space-x-2 items-center text-sm text-black py-1 relative z-20"
         >
             <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
         </Link>

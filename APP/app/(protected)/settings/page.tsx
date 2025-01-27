@@ -1,35 +1,34 @@
 "use client";
-import { useEffect } from "react";
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition, useState } from "react";
-import { useSession } from "next-auth/react";
-import { SettingsSchema } from "@/schemas";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { settings, getSettings } from "@/actions/settings";
-import { motion } from "framer-motion";
+import { getSettings, settings } from "@/actions/settings";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { SettingsSchema } from "@/schemas";
 import { roles } from "@/utils/data/roles";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
+import { useEffect, useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 import {
-  User,
   Book,
   Code,
+  Edit,
+  Globe,
   Link as LinkIcon,
   Save,
-  X,
   Settings,
-  Edit,
   Sliders,
-  Globe,
+  User,
+  X,
 } from "lucide-react";
 
 import {
   Form,
-  FormField,
   FormControl,
+  FormField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -42,10 +41,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Input } from "@/components/ui/input";
-import { useCurrentUser } from "@/hooks/use-current-user";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
+import { Input } from "@/components/ui/input";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { techtags } from "@/utils/data/techtags";
 
 const fadeIn = {

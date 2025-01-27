@@ -1,27 +1,28 @@
 "use client";
-import { cn } from "@/lib/utils";
-import Link, { LinkProps } from "next/link";
-import React, { useState, createContext, useContext } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { IconMenu2, IconX } from "@tabler/icons-react";
 
-interface Links {
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import React, { createContext, useContext, useEffect, useState } from "react";
+
+// Types
+interface NavItem {
     label: string;
     href: string;
-    icon: React.JSX.Element | React.ReactNode;
+    icon: React.ReactNode;
 }
 
 interface SidebarContextProps {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     animate: boolean;
+    isMobile: boolean;
 }
 
-const SidebarContext = createContext<SidebarContextProps | undefined>(
-    undefined
-);
+// Context
+const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
-export const useSidebar = () => {
+const useSidebar = () => {
     const context = useContext(SidebarContext);
     if (!context) {
         throw new Error("useSidebar must be used within a SidebarProvider");
@@ -29,162 +30,167 @@ export const useSidebar = () => {
     return context;
 };
 
-export const SidebarProvider = ({
-                                    children,
-                                    open: openProp,
-                                    setOpen: setOpenProp,
-                                    animate = true,
-                                }: {
+// Main Sidebar Components
+export const Sidebar = ({
+    children,
+    open,
+    setOpen,
+    animate = true,
+}: {
     children: React.ReactNode;
-    open?: boolean;
-    setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+    open: boolean;
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     animate?: boolean;
 }) => {
-    const [openState, setOpenState] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
-    const open = openProp !== undefined ? openProp : openState;
-    const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenState;
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     return (
-        <SidebarContext.Provider value={{ open, setOpen, animate: animate }}>
+        <SidebarContext.Provider value={{ open, setOpen, animate, isMobile }}>
             {children}
         </SidebarContext.Provider>
     );
 };
 
-export const Sidebar = ({
-                            children,
-                            open,
-                            setOpen,
-                            animate,
-                        }: {
+export const SidebarBody = ({
+    children,
+    className,
+}: {
     children: React.ReactNode;
-    open?: boolean;
-    setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
-    animate?: boolean;
+    className?: string;
+}) => {
+    const { isMobile } = useSidebar();
+
+    return isMobile ? (
+        <MobileNavigation className={className}>{children}</MobileNavigation>
+    ) : (
+        <DesktopNavigation className={className}>{children}</DesktopNavigation>
+    );
+};
+
+// Desktop Navigation
+const DesktopNavigation = ({
+    children,
+    className,
+}: {
+    children: React.ReactNode;
+    className?: string;
+}) => {
+    const { open, setOpen, animate } = useSidebar();
+
+    return (
+        <motion.div
+            className={cn(
+                "h-full px-4 py-6 hidden md:flex md:flex-col",
+                "bg-white dark:bg-neutral-900",
+                "border-r border-neutral-200 dark:border-neutral-800",
+                className
+            )}
+            animate={{
+                width: animate ? (open ? "180px" : "50px") : "180px",
+            }}
+            onMouseEnter={() => setOpen(true)}
+            onMouseLeave={() => setOpen(false)}
+        >
+            <div className="flex flex-col space-y-4">
+                {children}
+            </div>
+        </motion.div>
+    );
+};
+
+// Mobile Navigation
+const MobileNavigation = ({
+    children,
+    className,
+}: {
+    children: React.ReactNode;
+    className?: string;
 }) => {
     return (
-        <SidebarProvider open={open} setOpen={setOpen} animate={animate}>
-            {children}
-        </SidebarProvider>
-    );
-};
-
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
-    return (
-        <>
-            <DesktopSidebar {...props} />
-            <MobileSidebar {...(props as React.ComponentProps<"div">)} />
-        </>
-    );
-};
-
-export const DesktopSidebar = ({
-                                   className,
-                                   children,
-                                   ...props
-                               }: React.ComponentProps<typeof motion.div>) => {
-    const { open, setOpen, animate } = useSidebar();
-    return (
-        <>
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4 z-50 md:hidden">
             <motion.div
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 className={cn(
-                    "h-full px-4 py-4 hidden  md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[300px] flex-shrink-0",
+                    "flex items-center gap-2 px-6 py-3",
+                    "bg-white/80 dark:bg-black/80",
+                    "backdrop-blur-lg",
+                    "rounded-2xl",
+                    "border border-neutral-200/50 dark:border-neutral-800/50",
+                    "shadow-lg shadow-black/5",
+                    "max-w-fit mx-auto",
                     className
                 )}
-                animate={{
-                    width: animate ? (open ? "150px" : "60px") : "150px",
-                }}
-                onMouseEnter={() => setOpen(true)}
-                onMouseLeave={() => setOpen(false)}
-                {...props}
             >
-                {children}
+                {React.Children.map(children, (child, index) => (
+                    <motion.div
+                        key={index}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-2"
+                    >
+                        {child}
+                    </motion.div>
+                ))}
             </motion.div>
-        </>
+        </div>
     );
 };
 
-export const MobileSidebar = ({
-                                  className,
-                                  children,
-                                  ...props
-                              }: React.ComponentProps<"div">) => {
-    const { open, setOpen } = useSidebar();
-    return (
-        <>
-            <div
-                className={cn(
-                    "h-10 px-4 py-4 flex flex-row md:hidden  items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
-                )}
-                {...props}
-            >
-                <div className="flex justify-end z-20 w-full">
-                    <IconMenu2
-                        className="text-neutral-800 dark:text-neutral-200"
-                        onClick={() => setOpen(!open)}
-                    />
-                </div>
-                <AnimatePresence>
-                    {open && (
-                        <motion.div
-                            initial={{ x: "-100%", opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: "-100%", opacity: 0 }}
-                            transition={{
-                                duration: 0.3,
-                                ease: "easeInOut",
-                            }}
-                            className={cn(
-                                "fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 z-[100] flex flex-col justify-between",
-                                className
-                            )}
-                        >
-                            <div
-                                className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200"
-                                onClick={() => setOpen(!open)}
-                            >
-                                <IconX />
-                            </div>
-                            {children}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        </>
-    );
-};
-
+// Sidebar Link Component
 export const SidebarLink = ({
-                                link,
-                                className,
-                                ...props
-                            }: {
-    link: Links;
+    link,
+    className,
+}: {
+    link: NavItem;
     className?: string;
-    props?: LinkProps;
 }) => {
-    const { open, animate } = useSidebar();
+    const { open, isMobile } = useSidebar();
+
     return (
         <Link
             href={link.href}
             className={cn(
-                "flex items-center justify-start gap-2  group/sidebar py-2",
+                "group flex flex-col items-center gap-1 p-1 rounded-xl transition-all",
+                isMobile ? [
+                    "relative",
+                    "min-w-[64px]",
+                    "hover:bg-black/5 dark:hover:bg-white/5",
+                ] : [
+                    "hover:bg-neutral-100 dark:hover:bg-neutral-800",
+                    "active:bg-neutral-200 dark:active:bg-neutral-700",
+                ],
                 className
             )}
-            {...props}
         >
-            {link.icon}
+            <div className={cn(
+                "flex-shrink-0 transition-colors",
+                isMobile ? "w-6 h-6" : "w-5 h-5",
+                "text-neutral-600 dark:text-neutral-400",
+                "group-hover:text-neutral-900 dark:group-hover:text-neutral-100"
+            )}>
+                {link.icon}
+            </div>
 
-            <motion.span
-                animate={{
-                    display: animate ? (open ? "inline-block" : "none") : "inline-block",
-                    opacity: animate ? (open ? 1 : 0) : 1,
-                }}
-                className="text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
-            >
+            <span className={cn(
+                "text-xs transition-colors",
+                isMobile ? "font-medium" : "text-sm",
+                !isMobile && !open && "hidden",
+                "text-neutral-600 dark:text-neutral-400",
+                "group-hover:text-neutral-900 dark:group-hover:text-neutral-100"
+            )}>
                 {link.label}
-            </motion.span>
+            </span>
         </Link>
     );
 };
