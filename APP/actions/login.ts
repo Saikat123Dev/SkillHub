@@ -1,11 +1,11 @@
 "use server";
 
-import * as z from "zod";
 import { signIn } from "@/auth"; // Assuming this is your NextAuth configuration
-import { LoginSchema } from "@/schemas";
 import { getUserByEmail } from "@/data/user";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { LoginSchema } from "@/schemas";
 import { AuthError } from "next-auth";
+import * as z from "zod";
 
 export const login = async (
   values: z.infer<typeof LoginSchema>,
@@ -56,4 +56,4 @@ export const login = async (
     console.error("Unexpected error during login:", error);
     return { error: "An unexpected error occurred." };
   }
-};
+}

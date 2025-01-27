@@ -1,5 +1,5 @@
-
 'use client'
+import { register } from "@/actions/register"; // Import the server action
 import {
   Form,
   FormControl,
@@ -8,10 +8,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Eye, EyeOff } from "lucide-react";
+import { RegisterSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, Github } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
+import { FcGoogle } from "react-icons/fc";
+import * as z from "zod";
 import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
 import { Button } from "../ui/button";
@@ -25,7 +30,8 @@ const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof RegisterSchema>>({
+    resolver: zodResolver(RegisterSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -34,19 +40,43 @@ const RegisterForm = () => {
     },
   });
 
-  const onSubmit = async (values:any) => {
+  const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
     setError("");
     setSuccess("");
 
-    if (!values.birthday) {
-      setError("Birthday is required");
-      return;
-    }
+    startTransition(async () => {
+      const result = await register(values);
 
-    startTransition(() => {
-      // Your registration logic here
-      setSuccess("Account created successfully!");
-      router.push("/settings");
+      if (result?.error) {
+        setError(result.error);
+      }
+
+      if (result?.success) {
+        setSuccess(result.success);
+      }
+    });
+  };
+
+  const onSocialAuth = async (provider: 'google' | 'github') => {
+    setError("");
+    setSuccess("");
+
+    startTransition(async () => {
+      try {
+        const result = await signIn(provider, {
+          redirect: false,
+          callbackUrl: "/settings"
+        });
+
+        if (result?.error) {
+          setError("Authentication failed. Please try again.");
+        } else {
+          setSuccess(`Authenticated with ${provider}`);
+          router.push("/settings");
+        }
+      } catch (err) {
+        setError("An unexpected error occurred");
+      }
     });
   };
 
@@ -64,104 +94,98 @@ const RegisterForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Full Name
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    disabled={isPending}
-
-                    placeholder="John Doe"
-                  />
-                </FormControl>
-                <FormMessage className="text-xs lg:text-sm" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 font-medium text-sm">
-                  Email Address
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    disabled={isPending}
-
-                    placeholder="john@example.com"
-                  />
-                </FormControl>
-                <FormMessage className="text-xs lg:text-sm" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="birthday"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 font-medium text-sm">
-                  Date of Birth
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="date"
-                    disabled={isPending}
-
-                  />
-                </FormControl>
-                <FormMessage className="text-xs lg:text-sm" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 font-medium text-sm">
-                  Password
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
                     <Input
                       {...field}
-                      type={showPassword ? "text" : "password"}
                       disabled={isPending}
-
-                      placeholder="••••••••"
+                      placeholder="John Doe"
                     />
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 lg:h-5 lg:w-5" />
-                      ) : (
-                        <Eye className="h-4 w-4 lg:h-5 lg:w-5" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage className="text-xs lg:text-sm" />
-              </FormItem>
-            )}
-          />
+                  </FormControl>
+                  <FormMessage className="text-xs lg:text-sm" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700 font-medium text-sm">
+                    Email Address
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      disabled={isPending}
+                      placeholder="john@example.com"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs lg:text-sm" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="birthday"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700 font-medium text-sm">
+                    Date of Birth
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="date"
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs lg:text-sm" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700 font-medium text-sm">
+                    Password
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        type={showPassword ? "text" : "password"}
+                        disabled={isPending}
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={togglePasswordVisibility}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 lg:h-5 lg:w-5" />
+                        ) : (
+                          <Eye className="h-4 w-4 lg:h-5 lg:w-5" />
+                        )}
+                      </button>
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-xs lg:text-sm" />
+                </FormItem>
+              )}
+            />
           </div>
 
           {error && <FormError message={error} />}
@@ -181,6 +205,29 @@ const RegisterForm = () => {
               "Create Account"
             )}
           </Button>
+
+          <div className="flex items-center justify-center space-x-4 mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2"
+              onClick={() => onSocialAuth('google')}
+              disabled={isPending}
+            >
+              <FcGoogle className="h-5 w-5" />
+              <span>Continue with Google</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2"
+              onClick={() => onSocialAuth('github')}
+              disabled={isPending}
+            >
+              <Github className="h-5 w-5" />
+              <span>Continue with GitHub</span>
+            </Button>
+          </div>
         </form>
       </Form>
     </CardWrapper>

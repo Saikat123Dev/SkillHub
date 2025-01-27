@@ -1,14 +1,19 @@
 "use client";
 
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { useState, useTransition } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { FaGithub, FaGoogle } from "react-icons/fa";
+import * as z from "zod";
 
-import { LoginSchema } from "@/schemas";
-import { Input } from "@/components/ui/input";
+import { login } from "@/actions/login";
+import CardWrapper from "@/components/auth/card-wrapper";
+import { FormError } from "@/components/form-error";
+import { FormSuccess } from "@/components/form-success";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -17,16 +22,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import CardWrapper from "@/components/auth/card-wrapper";
-import { Button } from "@/components/ui/button";
-import { FormError } from "@/components/form-error";
-import { FormSuccess } from "@/components/form-success";
-import { login } from "@/actions/login";
+import { Input } from "@/components/ui/input";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { LoginSchema } from "@/schemas";
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl"); // Get the callback URL from query params
-  const router = useRouter(); // Initialize the router
+  const callbackUrl = searchParams.get("callbackUrl");
+  const router = useRouter();
 
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -54,18 +57,23 @@ export const LoginForm = () => {
 
           if (data?.success) {
             form.reset();
+            setSuccess(data.success);
 
-              setSuccess(data.success);
             if (data.redirect) {
-              // Redirect to the specified URL after successful login
               router.push(data.redirect);
             } else {
-              // Default to the callback URL or a fallback URL
-              router.push(callbackUrl || "/settings");
+              router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
             }
           }
         })
         .catch(() => setError("Something went wrong"));
+    });
+  };
+
+  const handleOAuthSignIn = (provider: "google" | "github") => {
+    setError("");
+    signIn(provider, {
+      callbackUrl: callbackUrl || DEFAULT_LOGIN_REDIRECT,
     });
   };
 
@@ -131,6 +139,27 @@ export const LoginForm = () => {
           </Button>
         </form>
       </Form>
+
+      <div className="flex flex-col gap-4 mt-6">
+        <Button
+          variant="outline"
+          disabled={isPending}
+          onClick={() => handleOAuthSignIn("google")}
+          className="flex items-center gap-2"
+        >
+          <FaGoogle className="h-5 w-5" />
+          Continue with Google
+        </Button>
+        <Button
+          variant="outline"
+          disabled={isPending}
+          onClick={() => handleOAuthSignIn("github")}
+          className="flex items-center gap-2"
+        >
+          <FaGithub className="h-5 w-5" />
+          Continue with GitHub
+        </Button>
+      </div>
     </CardWrapper>
   );
 };

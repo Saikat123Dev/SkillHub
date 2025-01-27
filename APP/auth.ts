@@ -1,61 +1,56 @@
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-
-import { db } from "@/lib/db";
 import authConfig from "@/auth.config";
-import { getUserById } from "@/data/user";
-import { getAccountByUserId } from "./data/account";
+import { db } from "@/lib/db";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import NextAuth from "next-auth";
+import Github from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 
 export const {
   handlers: { GET, POST },
   auth,
   signIn,
   signOut,
-  unstable_update,
 } = NextAuth({
+  adapter: PrismaAdapter(db),
+  session: { strategy: "jwt" },
   pages: {
     signIn: "/auth/login",
     error: "/auth/error",
   },
   callbacks: {
     async signIn({ user, account }) {
-    
+      // Allow OAuth without email verification
       if (account?.provider !== "credentials") return true;
 
-      const existingUser = await getUserById(user.id);
-      if (!existingUser) return false;
-
-      return true;    },
+      // Add any additional checks for credentials users here
+      return true;
+    },
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
-
-      if (session.user) {
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.isOAuth = token.isOAuth as boolean;
-      }
-
       return session;
-    },
-    async jwt({ token }) {
-      if (!token.sub) return token;
-
-      const existingUser = await getUserById(token.sub);
-
-      if (!existingUser) return token;
-
-      const existingAccount = await getAccountByUserId(existingUser.id);
-
-      token.isOAuth = !!existingAccount;
-      token.name = existingUser.name;
-      token.email = existingUser.email;
-
-      return token;
-    },
+    }
   },
-  adapter: PrismaAdapter(db),
-  session: { strategy: "jwt" },
+  providers: [
+    Github({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      profile(profile) {
+        return {
+          id: profile.id.toString(),
+          name: profile.name || profile.login,
+          email: profile.email,
+          profilePic: profile.avatar_url, // Map to your schema's field name
+          // Map other required fields
+          username: profile.login,
+        };
+      },
+    }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+  ],
   ...authConfig,
 });

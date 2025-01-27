@@ -1,29 +1,13 @@
 "use server";
 
+import { signIn } from "@/auth";
 import { getUserByEmail } from "@/data/user";
 import { db } from "@/lib/db";
 import { RegisterSchema } from "@/schemas";
 import bcrypt from "bcryptjs";
 import * as z from "zod";
 
-import { createClient } from "redis";
-
-let client: any;
-
-async function getRedisClient() {
-  if (!client || !client.isOpen) {
-    client = createClient({
-      url: "rediss://default:AeTYAAIjcDE1NmZlNjVmOGZjOTg0MTE1ODE5MzBiYmQ1NmVlMjI2NnAxMA@living-tadpole-58584.upstash.io:6379",
-    });
-    client.on("error", (err: Error) => console.error("Redis Client Error", err));
-    await client.connect();
-  }
-  return client;
-}
-
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
-  const redisClient = await getRedisClient();
-
   const validatedFields = RegisterSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -40,26 +24,45 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    const redisSetPromise = redisClient.set(
-      `user:register:${email}`,
-      JSON.stringify({ name, email }),
-      { EX: 900 }
-    );
-
-    const dbCreatePromise = db.user.create({
+    await db.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        birthday,
+
       },
     });
 
-    await Promise.all([redisSetPromise, dbCreatePromise]);
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: "/settings",
+    });
 
     return { success: "Registration completed" };
   } catch (error) {
+    // Handle NextAuth.js errors
+    if (isNextAuthError(error)) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { error: "Invalid credentials!" };
+        default:
+          return { error: "Something went wrong with authentication!" };
+      }
+    }
+
+    // Handle other errors
     console.error("Registration error:", error);
     return { error: "Failed to register user. Please try again." };
   }
 };
+
+// Type guard for NextAuth.js errors
+function isNextAuthError(error: unknown): error is { type: string } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "type" in error &&
+    typeof (error as { type: unknown }).type === "string"
+  );
+}

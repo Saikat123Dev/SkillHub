@@ -22,33 +22,33 @@ model User {
   //Date-Time
   group           Group[]
   groupMembership GroupMembership[]
-
-  password      String
-  Roles         String[]
-  gender        UserGender?
-  Skills        String[]
-  country       String?
-  about         String?
-  location      String?
-  linkedin      String?
-  github        String?
-  twitter       String?
-  class10       String?
-  percentage_10 String?
-  class12       String?
-  percentage_12 String?
-  college       String?
-  currentYear   String?
-  dept          String?
-  domain        String?
-  posts         Post[]
-  projects      Project[]
-  experience    Experience[]
-  profilePic    String?
-  accounts      Account[]     @relation("UserAccounts")
-  Comment       Comment[]
-  CommentLike   CommentVote[]
-  votes         Vote[]
+  emailVerified   DateTime?
+  password        String?
+  Roles           String[]
+  gender          UserGender?
+  Skills          String[]
+  country         String?
+  about           String?
+  location        String?
+  linkedin        String?
+  github          String?
+  twitter         String?
+  class10         String?
+  percentage_10   String?
+  class12         String?
+  percentage_12   String?
+  college         String?
+  currentYear     String?
+  dept            String?
+  domain          String?
+  posts           Post[]
+  projects        Project[]
+  experience      Experience[]
+  image           String?
+  accounts        Account[]         @relation("UserAccounts")
+  Comment         Comment[]
+  CommentLike     CommentVote[]
+  votes           Vote[]
 
   FriendRequest FriendRequest[] @relation("Sender")
 
