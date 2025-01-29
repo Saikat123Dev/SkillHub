@@ -1,302 +1,274 @@
-import EmojiPicker from "emoji-picker-react";
-import {
-  Send,
-  Smile
-} from "lucide-react";
-import { io } from "socket.io-client";
+"use client";
 
+import { useSocket } from "@/hooks/useSocket";
+import { Message } from "@/services/socketClient";
+import EmojiPicker from "emoji-picker-react";
+import { AlertCircle, Paperclip, Send, Smile } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import { Alert, AlertDescription } from "./ui/alert";
 import { Avatar } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-interface Message {
+import { Progress } from "./ui/progress";
+
+interface ChatAreaProps {
   id: string;
-  sender: string;
-  content?: string; // Optional for file sharing
-  time: string;
-  isOwn?: boolean;
-  userId?: string;
-  groupId?: string;
-  fileName?: string;
-  fileData?: string;
-  fileUrl?: string; // For streamed files
+  requestId: string;
+  groupName?: string;
+  memberCount?: number;
 }
 
-export function ChatArea({ id, requestId }: { id: string; requestId: string }) {
+export function ChatArea({ id, requestId, groupName = "Chat Group", memberCount = 0 }: ChatAreaProps) {
   const session = useSession();
-
   const currentUserId = session.data?.user.id;
   const username = session.data?.user.name;
   const [message, setMessage] = useState("");
   const [isEmojiPickerVisible, setIsEmojiPickerVisible] = useState(false);
-  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
-  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const socketRef = useRef(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [initialMessages, setInitialMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Initialize socket connection
+  const { messages, error: socketError, sendMessage, sendFile, isConnected } = useSocket(
+    process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8001",
+    id
+  );
+
+  // Format message for consistency between DB and new messages
+  const formatMessage = (msg: any) => {
+    const parsedDate = new Date(msg.createdAt);
+    const time = isNaN(parsedDate.getTime()) ? "Invalid Date" : parsedDate.toLocaleTimeString();
+    return {
+      id: msg.id,
+      sender: msg.userName,
+      content: msg.content,
+      time: time,
+      isOwn: msg.userId === currentUserId,
+      userId: msg.userId,
+    };
+  };
+
+
+
+  // Fetch initial messages
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await fetch(
-          `/api/message?id=${id}&requestId=${requestId}`
-        );
+        setIsLoading(true);
+        const response = await fetch(`/api/message?id=${id}&requestId=${requestId}`);
         if (!response.ok) throw new Error("Failed to fetch messages");
+
         const data = await response.json();
-        const initialMessages = data.map((message: any) => ({
-          id: message.id,
-          sender: message.sender,
-          content: message.content,
-          time: message.time,
-          isOwn: message.userId === currentUserId,
-          userId: message.userId,
-          groupId: message.groupId,
-        }));
-        setMessages(initialMessages);
+
+        if (data.messages && Array.isArray(data.messages)) {  // Ensure it's an array
+          const formattedMessages = data.messages.map((msg: any) => formatMessage(msg));
+          setInitialMessages(formattedMessages);
+        } else {
+          throw new Error("Invalid response format");
+        }
       } catch (error) {
-        console.error("Error fetching messages:", error);
+        setLoadError(error instanceof Error ? error.message : "Failed to load messages");
+      } finally {
+        setIsLoading(false);
       }
     };
+
 
     fetchMessages();
-  }, [id, requestId, currentUserId]);
+  }, [id, requestId, currentUserId, username]);
 
-  useEffect(() => {
-    socketRef.current = io("http://localhost:8001");
+  // Format socket messages
+  const formattedSocketMessages = messages.map((msg) => formatMessage(msg));
 
-    // Listen for regular messages
-    socketRef.current.on("message", (messageData: any) => {
-      const parsedMessage = JSON.parse(messageData);
-      const parsedMessageContent = JSON.parse(parsedMessage.message);
-
-      const newMessage: Message = {
-        id: parsedMessageContent.id,
-        sender: parsedMessageContent.sender || "Unknown",
-        content: parsedMessageContent.content,
-        fileName: parsedMessageContent.fileName,
-        fileData: parsedMessageContent.fileData,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        isOwn: parsedMessageContent.userId === currentUserId,
-        userId: parsedMessageContent.userId,
-        groupId: parsedMessageContent.groupId,
-      };
-
-      setMessages((prev) =>
-        prev.some((msg) => msg.id === newMessage.id) ? prev : [...prev, newMessage]
-      );
-    });
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
-  }, [currentUserId]);
-
-  // Handle outside click for dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setSelectedMessageId(null);
-      }
-    };
-
-    if (selectedMessageId !== null) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }
-  }, [selectedMessageId]);
-
-  const handleEmojiClick = (emoji: { emoji: string }) => {
-    setMessage((prev) => prev + emoji.emoji);
-  };
-
+  // Handle message sending
   const handleSend = () => {
-    if (message.trim() && socketRef.current) {
-      const timestamp = new Date();
-      const messageId = `${Date.now()}-${currentUserId}`;
-
-      const newMessage = {
-        id: messageId,
-        content: message.trim(),
-        sender: "You",
-        userId: currentUserId,
-        groupId: id,
-        time: timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-
-      socketRef.current.emit("event:message", JSON.stringify(newMessage));
-
-      const localMessage: Message = {
-        id: messageId,
-        sender: "You",
-        content: message.trim(),
-        userId: currentUserId,
-        groupId: id,
-        time: timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isOwn: true,
-      };
-
-      setMessages((prev) => [...prev, localMessage]);
+    if (message.trim() && currentUserId && username) {
+      sendMessage(message.trim(), currentUserId, username);
       setMessage("");
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !socketRef.current) return;
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [formattedSocketMessages]);
 
-    const maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
-    if (file.size > maxFileSize) {
-      alert("File size exceeds 10MB. Please upload a smaller file.");
-    } else {
-      const reader = new FileReader();
+  // Handle emoji selection
+  const handleEmojiClick = (emojiData: { emoji: string }) => {
+    setMessage((prev) => prev + emojiData.emoji);
+    setIsEmojiPickerVisible(false);
+  };
 
-      reader.onload = () => {
-        const fileData = reader.result as string; // File content as base64 string
-        const timestamp = new Date();
-        const messageId = `${Date.now()}-${currentUserId}`;
-
-        const newMessage = {
-          id: messageId,
-          sender: "You",
-          userId: currentUserId,
-          groupId: id,
-          time: timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          fileName: file.name,
-          fileData, // Base64 string
-        };
-
-        socketRef.current.emit("event:message", JSON.stringify(newMessage));
-
-        setMessages((prev) => [...prev, { ...newMessage, isOwn: true }]);
-      };
-
-      reader.readAsDataURL(file);
+  // Handle key press
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
     }
   };
 
+  // Handle file upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !currentUserId || !username) return;
+
+    const maxFileSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxFileSize) {
+      alert("File size exceeds 10MB. Please upload a smaller file.");
+      return;
+    }
+
+    try {
+      setUploadProgress(0);
+      await sendFile(file, currentUserId, username, (progress) => {
+        setUploadProgress(progress);
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+    } finally {
+      setUploadProgress(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  // Combine initial and socket messages
+  const allMessages = [...initialMessages, ...formattedSocketMessages];
+
+  const MessageBubble = ({ msg }: { msg: Message }) => (
+    <div className={`flex group ${msg.isOwn ? "justify-end" : "justify-start"} mb-4`}>
+      <div className={`flex gap-3 max-w-[70%] ${msg.isOwn ? "flex-row-reverse" : ""}`}>
+        <Avatar className="h-8 w-8 shrink-0">
+          <img src={`https://i.pravatar.cc/150?u=${msg.userId}`} alt={msg.sender} />
+        </Avatar>
+        <div className={`flex flex-col ${msg.isOwn ? "items-end" : "items-start"}`}>
+          <p className="text-sm text-muted-foreground mb-1">{msg.sender}</p>
+          <div
+            className={`rounded-lg p-3 ${
+              msg.isOwn ? "bg-primary text-primary-foreground" : "bg-secondary"
+            }`}
+          >
+            {msg.content && <p className="break-words">{msg.content}</p>}
+            {msg.fileName && (
+              <div className="mt-2">
+                <p className="text-sm font-semibold mb-1">📎 {msg.fileName}</p>
+                <a
+                  href={msg.fileData || msg.fileUrl}
+                  download={msg.fileName}
+                  className="text-xs underline hover:no-underline"
+                >
+                  Download
+                </a>
+              </div>
+            )}
+            <p className="text-xs mt-1 opacity-70">{msg.time}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col h-screen">
-      {/* Header Section */}
-      <div className="border-b p-4">
-        <div className="flex items-center gap-3">
+    <div className="flex flex-col h-screen max-h-[calc(100vh-64px)] relative">
+      {/* Header */}
+      <div className="border-b p-4 bg-background">
+        <div className="flex items-center gap-3 max-w-6xl mx-auto w-full">
           <Avatar className="h-10 w-10">
-            <img
-              src="https://i.pravatar.cc/150?u=group"
-              alt="Group"
-            />
+            <img src={`https://i.pravatar.cc/150?u=${id}`} alt={groupName} />
           </Avatar>
           <div>
-            <h3 className="font-semibold">Real estate deals</h3>
-            <p className="text-sm text-muted-foreground">10 members</p>
+            <h3 className="font-semibold">{groupName}</h3>
+            <p className="text-sm text-muted-foreground">
+              {memberCount} members • {isConnected ? "Connected" : "Disconnected"}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Scrollable Chat Area */}
+      {/* Error Alerts */}
+      {(loadError || socketError) && (
+        <Alert variant="destructive" className="m-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{loadError || socketError}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex group relative ${message.isOwn ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`flex gap-3 max-w-[70%] relative ${message.isOwn ? "flex-row-reverse" : ""}`}
-              >
-                {!message.isOwn && (
-                  <Avatar className="h-8 w-8">
-                    <img
-                      src={`https://i.pravatar.cc/150?u=${message.sender}`}
-                      alt={message.sender}
-                    />
-                  </Avatar>
-                )}
-                <div className="relative">
-                  {!message.isOwn && (
-                    <p className="text-sm text-muted-foreground mb-1">{message.sender}</p>
-                  )}
-                  <div
-                    className={`rounded-lg p-3 ${
-                      message.isOwn
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary"
-                    }`}
-                  >
-                    {message.content && <p>{message.content}</p>}
-                    {message.fileName && (
-                      <div>
-                        <p className="text-sm font-bold">File: {message.fileName}</p>
-                        <a
-                          href={message.fileData}
-                          download={message.fileName}
-                          className="text-blue-500 hover:underline"
-                        >
-                          Download
-                        </a>
-                      </div>
-                    )}
-                    <p className="text-xs mt-1 opacity-70">{message.time}</p>
-                  </div>
-                </div>
-              </div>
+        <div className="max-w-6xl mx-auto w-full">
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <span className="text-muted-foreground">Loading messages...</span>
             </div>
-          ))}
+          ) : (
+            allMessages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)
+          )}
+          <div ref={messagesEndRef} />
         </div>
       </div>
+
+      {/* Upload Progress */}
+      {uploadProgress !== null && (
+        <div className="absolute bottom-20 left-0 right-0 px-4">
+          <Progress value={uploadProgress} className="w-full" />
+        </div>
+      )}
 
       {/* Input Area */}
-      <div className="border-t p-4 relative">
-        {isEmojiPickerVisible && (
-          <div className="absolute bottom-16 left-0 z-50">
-            <EmojiPicker onEmojiClick={handleEmojiClick} />
+      <div className="sticky bottom-0 left-0 right-0 bg-background border-t z-20">
+        <div className="max-w-6xl mx-auto w-full p-4">
+          {isEmojiPickerVisible && (
+            <div className="absolute bottom-full left-4 mb-2">
+              <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </div>
+          )}
+          <div className="flex gap-2 items-center">
+            <Button
+              size="icon"
+              variant="outline"
+              className="rounded-lg p-2 shrink-0"
+              onClick={() => setIsEmojiPickerVisible(!isEmojiPickerVisible)}
+            >
+              <Smile className="h-5 w-5 text-gray-500" />
+            </Button>
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Write your message..."
+              className="flex-1 rounded-lg"
+              disabled={!isConnected}
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={handleFileUpload}
+              accept="image/*,.pdf,.doc,.docx,.txt"
+            />
+            <Button
+              size="icon"
+              variant="outline"
+              className="rounded-lg p-2 shrink-0"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={!isConnected}
+            >
+              <Paperclip className="h-5 w-5 text-gray-500" />
+            </Button>
+            <Button
+              size="icon"
+              className="rounded-lg bg-primary text-primary-foreground p-2 shrink-0"
+              onClick={handleSend}
+              disabled={!message.trim() || !isConnected}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
           </div>
-        )}
-        <div className="flex gap-2 items-center">
-          <Button
-            size="icon"
-            variant="outline"
-            className="rounded-lg p-2"
-            onClick={() => setIsEmojiPickerVisible((prev) => !prev)}
-          >
-            <Smile className="h-5 w-5 text-gray-500" />
-          </Button>
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Write your message..."
-            className="flex-1 rounded-lg"
-          />
-          <input
-            type="file"
-            id="file-upload"
-            style={{ display: "none" }}
-            onChange={handleFileUpload}
-          />
-          <Button
-            size="icon"
-            className="rounded-lg p-3"
-            onClick={() => document.getElementById("file-upload")?.click()}
-          >
-            📎
-          </Button>
-          <Button
-            size="icon"
-            className="rounded-lg bg-blue-500 text-white p-3"
-            onClick={handleSend}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>

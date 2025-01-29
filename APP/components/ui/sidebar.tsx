@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-// Types
+// Types remain the same
 interface NavItem {
     label: string;
     href: string;
@@ -18,11 +18,13 @@ interface SidebarContextProps {
     animate: boolean;
     isMobile: boolean;
 }
+
 interface MobileNavigationProps {
-  children: React.ReactNode;
-  className?: string;
+    children: React.ReactNode;
+    className?: string;
 }
-// Context
+
+// Context and hooks remain the same
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
 const useSidebar = () => {
@@ -33,7 +35,7 @@ const useSidebar = () => {
     return context;
 };
 
-// Main Sidebar Components
+// Main Sidebar Components remain the same
 export const Sidebar = ({
     children,
     open,
@@ -79,7 +81,7 @@ export const SidebarBody = ({
     );
 };
 
-// Desktop Navigation
+// Desktop Navigation remains the same
 const DesktopNavigation = ({
     children,
     className,
@@ -110,91 +112,99 @@ const DesktopNavigation = ({
     );
 };
 
-// Mobile Navigation
+// Enhanced Mobile Navigation
+// Previous imports and context remain the same...
+
 const MobileNavigation: React.FC<MobileNavigationProps> = ({
   children,
   className,
 }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center items-center h-24 md:hidden">
-      <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className={cn(
-          "flex items-center gap-4 px-6 ",
-          "bg-transparent backdrop-blur-md",
-          "rounded-3xl border ",
-          "max-w-fit mx-auto",
-          className
-        )}
-      >
-        {React.Children.map(children, (child, index) => (
+      <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-center items-center md:hidden">
           <motion.div
-            key={index}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className={cn(
-              "px-3 py-0 pb-10 rounded-full",
-              "transition-all duration-300",
-              "bg-gradient-to-br from-white/20 via-transparent to-white/10",
-              "hover:bg-gradient-to-br hover:from-white/30 hover:to-white/15",
-              " hover:shadow-xl"
-            )}
+              initial={{ y: 100 }}
+              animate={{ y: 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              className={cn(
+                  "flex items-center gap-6 px-10",  // Increased gap between items
+                  "bg-white/80 dark:bg-neutral-900/80 backdrop-blur-lg",
+                  "rounded-2xl border border-neutral-200 dark:border-neutral-800",
+                  "shadow-lg shadow-neutral-900/10",
+                  "max-w-fit mx-auto",
+                  className
+              )}
           >
-            {child}
+              {React.Children.map(children, (child, index) => (
+                  <motion.div
+                      key={index}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={cn(
+                          "flex flex-col items-center justify-center",
+                          "px-5 py-1.5",  // Adjusted padding
+                          "rounded-xl",
+                          "-mt-6",  // Shift icons upward
+                          "transition-all duration-200",
+                          "hover:bg-neutral-100 dark:hover:bg-neutral-800",
+                          "active:bg-neutral-200 dark:active:bg-neutral-700"
+                      )}
+                  >
+                      {child}
+                  </motion.div>
+              ))}
           </motion.div>
-        ))}
-      </motion.div>
-    </div>
+      </div>
   );
 };
 
-
-// Sidebar Link Component
+// Enhanced SidebarLink Component with adjusted spacing
 export const SidebarLink = ({
-    link,
-    className,
+  link,
+  className,
 }: {
-    link: NavItem;
-    className?: string;
+  link: NavItem;
+  className?: string;
 }) => {
-    const { open, isMobile } = useSidebar();
+  const { open, isMobile } = useSidebar();
 
-    return (
-        <Link
-            href={link.href}
-            className={cn(
-                "group flex flex-col items-center gap-1 p-1 rounded-xl transition-all",
-                isMobile ? [
-                    "relative",
-                    "min-w-[64px]",
-                    "hover:bg-black/5 dark:hover:bg-white/5",
-                ] : [
-                    "hover:bg-neutral-100 dark:hover:bg-neutral-800",
-                    "active:bg-neutral-200 dark:active:bg-neutral-700",
-                ],
-                className
-            )}
-        >
-            <div className={cn(
-                "flex-shrink-0 transition-colors",
-                isMobile ? "w-6 h-6" : "w-5 h-5",
-                "text-neutral-600 dark:text-neutral-400",
-                "group-hover:text-neutral-900 dark:group-hover:text-neutral-100"
-            )}>
-                {link.icon}
-            </div>
+  return (
+      <Link
+          href={link.href}
+          className={cn(
+              "group flex items-center transition-all",
+              isMobile ? [
+                  "flex-col",
+                  "gap-1.5",  // Reduced gap for mobile
+                  "min-w-[48px]",
+              ] : [
+                  "gap-2 p-2",
+                  "hover:bg-neutral-100 dark:hover:bg-neutral-800",
+                  "active:bg-neutral-200 dark:active:bg-neutral-700",
+              ],
+              "rounded-xl",
+              className
+          )}
+      >
+          <div className={cn(
+              "flex-shrink-0 transition-colors",
+              isMobile ? "w-6 h-6" : "w-5 h-5",  // Slightly larger icons for mobile
+              "text-neutral-600 dark:text-neutral-400",
+              "group-hover:text-neutral-900 dark:group-hover:text-neutral-100"
+          )}>
+              {link.icon}
+          </div>
 
-            <span className={cn(
-                "text-xs transition-colors",
-                isMobile ? "font-medium" : "text-sm",
-                !isMobile && !open && "hidden",
-                "text-neutral-600 dark:text-neutral-400",
-                "group-hover:text-neutral-900 dark:group-hover:text-neutral-100"
-            )}>
-                {link.label}
-            </span>
-        </Link>
-    );
+          <span className={cn(
+              "transition-colors whitespace-nowrap",
+              isMobile ? "text-xs font-medium" : "text-sm",  // Added font-medium for better readability
+              !isMobile && !open && "hidden",
+              "text-neutral-600 dark:text-neutral-400",
+              "group-hover:text-neutral-900 dark:group-hover:text-neutral-100"
+          )}>
+              {link.label}
+          </span>
+      </Link>
+  );
 };
+
+export default MobileNavigation;

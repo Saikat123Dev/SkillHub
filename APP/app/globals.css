@@ -71,3 +71,14 @@ body,
     --ring: 212.7 26.8% 83.9%;
   }
 }
+@media (max-width: 640px) {
+  .max-w-\[70\%\] {
+    max-width: 90%; /* Allow messages to take more space on small screens */
+  }
+  .p-4 {
+    padding: 1rem; /* Reduce padding on small screens */
+  }
+  .text-sm {
+    font-size: 0.875rem; /* Adjust font size for small screens */
+  }
+}

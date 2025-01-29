@@ -56,21 +56,25 @@ export async function startMessageConsumer() {
               console.log("Received message:", messageText);
 
               try {
-                  // Parse the outer JSON string
+                  // Parse the message as a JSON object
                   const parsedMessage = JSON.parse(messageText);
-                  // Now, parse the inner message string
-                  const msg = JSON.parse(parsedMessage.message);
+                  if (parsedMessage && parsedMessage.message) {
+                      // Parse the inner message JSON
+                      const msg = JSON.parse(parsedMessage.message);
 
-                  // Save to the database
-                  const data = await prismaClient.message.create({
-                      data: {
-                          content: msg.content, // This is the actual content
-                          userId: msg.userId,
-                          groupId: msg.groupId
-                      },
-                  });
+                      // Save to the database
+                      const data = await prismaClient.message.create({
+                          data: {
+                              content: msg.content, // This is the actual content
+                              userId: msg.userId,
+                              groupId: msg.groupId
+                          },
+                      });
 
-                  console.log("Message saved to database", data);
+                      console.log("Message saved to database", data);
+                  } else {
+                      console.error('Message format invalid:', parsedMessage);
+                  }
               } catch (err) {
                   console.error("Failed to parse or save message:", err);
               }

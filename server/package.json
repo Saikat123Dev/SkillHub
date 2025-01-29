@@ -3,17 +3,17 @@
   "version": "1.0.0",
   "main": "server",
   "type": "commonjs",
- "scripts": {
-  "start": "ts-node ./server.ts",
-  "dev": "nodemon --watch './**/*.ts' --exec 'ts-node' ./server.ts",
-  "build": "tsc"
-}
-,
+  "scripts": {
+    "start": "ts-node ./server.ts",
+    "dev": "nodemon --watch './**/*.ts' --exec 'ts-node' ./server.ts",
+    "build": "tsc"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.0.1",
+    "aws-sdk": "^2.1692.0",
     "ioredis": "^5.4.1",
     "kafkajs": "^2.2.4",
     "nodemon": "^3.1.7",

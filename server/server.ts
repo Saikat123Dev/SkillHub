@@ -4,12 +4,6 @@ import SocketService from "./src/lib/socket";
 
 async function init() {
   try {
-    // Start Kafka message consumer
-    await startMessageConsumer().catch((kafkaError) => {
-      console.error('Failed to start Kafka message consumer:', kafkaError);
-      throw kafkaError;
-    });
-
     // Initialize socket service
     const socketService = new SocketService();
 
@@ -17,55 +11,103 @@ async function init() {
     const httpServer = http.createServer();
     const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8001;
 
-    // Attach socket service to HTTP server
-    socketService.io.attach(httpServer);
+    // Initialize socket listeners before attaching to server
+    socketService.initListeners();
 
-    // Error handling for socket connections
+    // Attach socket service to HTTP server with CORS configuration
+    socketService.io.attach(httpServer, {
+      cors: {
+        origin: ["http://localhost:3000"], // Add your client's origin
+        methods: ["GET", "POST"],
+        credentials: true,
+        allowedHeaders: ["*"]
+      },
+      maxHttpBufferSize: 10 * 1024 * 1024,
+    });
+
+    // Start Kafka message consumer
+    try {
+      await startMessageConsumer();
+      console.log('Kafka consumer started successfully');
+    } catch (kafkaError) {
+      console.error('Failed to start Kafka message consumer:', kafkaError);
+      // Continue server startup even if Kafka fails
+    }
+
+    // Enhanced error handling for socket connections
     socketService.io.on('connection_error', (error) => {
       console.error('Socket.IO Connection Error:', error);
+    });
+
+    socketService.io.on('connect', (socket) => {
+      console.log(`Client connected with ID: ${socket.id}`);
+
+      socket.on('disconnect', (reason) => {
+        console.log(`Client ${socket.id} disconnected: ${reason}`);
+      });
     });
 
     // Server error handling
     httpServer.on('error', (error) => {
       console.error('HTTP Server Error:', error);
-
-      // Handle specific port-related errors
       if ((error as any).code === 'EADDRINUSE') {
         console.error(`Port ${PORT} is already in use`);
+        process.exit(1);
       }
     });
 
     // Start the server
     httpServer.listen(PORT, () => {
       console.log(`HTTP Server started at PORT: ${PORT}`);
+      console.log(`Socket.IO server is ready to accept connections`);
     });
-
-    // Initialize socket listeners
-    socketService.initListeners();
 
     // Graceful shutdown handling
-    process.on('SIGINT', () => {
-      console.log('Received SIGINT. Shutting down gracefully...');
-      httpServer.close(() => {
-        console.log('HTTP Server closed');
-        process.exit(0);
-      });
-    });
+    const gracefulShutdown = async () => {
+      console.log('Received shutdown signal. Closing server...');
 
+      // Close socket connections
+      await new Promise<void>((resolve) => {
+        socketService.io.close(() => {
+          console.log('Socket.IO server closed');
+          resolve();
+        });
+      });
+
+      // Close HTTP server
+      await new Promise<void>((resolve) => {
+        httpServer.close(() => {
+          console.log('HTTP Server closed');
+          resolve();
+        });
+      });
+
+      process.exit(0);
+    };
+
+    // Handle various termination signals
+    process.on('SIGTERM', gracefulShutdown);
+    process.on('SIGINT', gracefulShutdown);
+
+    // Global error handlers
     process.on('unhandledRejection', (reason, promise) => {
       console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     });
 
     process.on('uncaughtException', (error) => {
       console.error('Uncaught Exception:', error);
-      // Optional: exit the process in case of critical errors
-      process.exit(1);
+      // Log the error but don't exit immediately to allow for graceful shutdown
+      gracefulShutdown();
     });
 
   } catch (error) {
-    console.error('Initialization Error:', error);
+    console.error('Server Initialization Error:', error);
     process.exit(1);
   }
 }
 
-init();
+// Start the server
+init().catch((error) => {
+  console.error('Failed to initialize server:', error);
+  process.exit(1);
+});

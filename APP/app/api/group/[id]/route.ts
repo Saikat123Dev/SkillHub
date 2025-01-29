@@ -1,12 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { currentUser } from '@/lib/auth'; // update path based on your auth setup
 import { db } from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
 
 
 export async function POST(request: NextRequest) {
   try {
     const { groupId, userId, role = "MEMBER" } = await request.json();
-    
+
 
     const newMember = await db.groupMembership.create({
       data: {
