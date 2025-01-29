@@ -12,12 +12,12 @@ function SearchBar() {
   const [currentFilter, setCurrentFilter] = useState('');
 
   const allFilters = [
+    'name',
     'country',
     'college',
-    'primarySkill',
-    'name',
-    'gender',
-    'profession'
+    'Roles',
+    'Skills',
+    'dept',
   ];
 
   useEffect(() => {

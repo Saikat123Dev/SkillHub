@@ -1,6 +1,7 @@
 'use client'
+import { getExperiences } from '@/actions/experience';
 import React, { useState, useEffect } from 'react';
-import { FaGraduationCap, FaBriefcase, FaBuilding } from 'react-icons/fa';
+import { FaGraduationCap, FaBriefcase, FaBuilding,FaStar} from 'react-icons/fa';
 
 const LoadingSpinner = () => (
   <div className="flex justify-center items-center min-h-[600px]">
@@ -11,7 +12,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const ExperienceCard = ({ company, duration, description }) => (
+const ExperienceCard = ({ company, duration, description, roles }) => (
   <div className="group relative">
     <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-500"></div>
     <div className="relative p-6 bg-white rounded-lg shadow-xl transform transition duration-500 hover:scale-[1.02]">
@@ -24,36 +25,58 @@ const ExperienceCard = ({ company, duration, description }) => (
           {duration}
         </span>
       </div>
-      <p className="text-gray-600 leading-relaxed">{description}</p>
+      
+      <p className="text-gray-600 leading-relaxed mb-4">{description}</p>
+      
+      {roles && roles.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-lg font-semibold text-gray-700 mb-2">Roles & Responsibilities</h4>
+          <div className="flex flex-wrap gap-2">
+            {roles.map((role, index) => (
+              <div 
+                key={index}
+                className="flex items-center space-x-1 px-3 py-1 bg-indigo-50 rounded-full"
+              >
+                <FaStar className="text-indigo-500 text-sm" />
+                <span className="text-indigo-700 text-sm font-medium">{role}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   </div>
 );
-
-function Experience() {
+function Experience({ userId }) {
+  // console.log(params);
   const [isLoading, setIsLoading] = useState(true);
+  const[Experiences,setExperiences]=useState([])
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchExperiences = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedExperiences = await getExperiences(userId);
+        console.log('fetchedExperiences',fetchedExperiences)
+        const transformedExperiences = fetchedExperiences.getExperiences.map(exp => ({
+          ...exp,
+          role: exp.role ? exp.role.split(',').map(tech => tech.trim()) : []
+        }));
+        setExperiences(transformedExperiences);
+        console.log(Experiences);
+        
+      } catch (error) {
+        setError("Failed to fetch projects");
+        console.error("Failed to fetch projects:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const experiences = [
-    {
-      company: "Goldman Sachs",
-      duration: "Dec 2021 - May 2022",
-      description: "As a software engineer at Goldman Sachs, I led the development of robust technology solutions supporting financial operations and trading activities. Specialized in building and optimizing systems for trading, risk management, and data analytics while ensuring security and compliance. Collaborated with cross-functional teams to deliver innovative tools enhancing decision-making across business units."
-    },
-    {
-      company: "JPMorgan Chase",
-      duration: "May 2022 - Dec 2022",
-      description: "Spearheaded the development of high-performance trading platforms and risk management systems. Implemented scalable solutions for real-time data processing and analytics. Worked closely with quantitative teams to optimize algorithmic trading strategies and enhance system reliability."
-    },
-    {
-      company: "Morgan Stanley",
-      duration: "Jan 2023 - Present",
-      description: "Leading the modernization of legacy systems and implementation of cloud-native solutions. Developing microservices architecture for improved scalability and maintenance. Driving technical initiatives for process automation and efficiency improvements across the platform."
-    }
-  ];
+    fetchExperiences();
+  }, [userId]);
+
+ 
 
   return (
     <div className="relative min-h-screen border-t border-[#25213b] bg-gradient-to-b from-blue-50 to-white">
@@ -81,14 +104,14 @@ function Experience() {
           </div>
          
 
-          {/* Experience Cards Grid */}
           <div className="grid gap-8 md:grid-cols-1 lg:gap-12 max-w-4xl mx-auto">
-            {experiences.map((exp, index) => (
+            {Experiences.map((exp, index) => (
               <ExperienceCard
                 key={index}
                 company={exp.company}
                 duration={exp.duration}
                 description={exp.description}
+                roles={exp.role}
               />
             ))}
           </div>
