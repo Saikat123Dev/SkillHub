@@ -24,15 +24,9 @@ class SocketService {
     this.prisma = new PrismaClient();  // Initialize Prisma Client
 
     // Initialize Redis clients
-    this.pub = new Redis({
-      host: "localhost",
-      port: 6379,
-    });
+    this.pub = new Redis("rediss://default:AWmxAAIjcDE1YmQwNjhhZjBkMjE0MzYyYjBlMTQ1NjY2YTViNDhmNXAxMA@sunny-stingray-27057.upstash.io:6379");
 
-    this.sub = new Redis({
-      host: "localhost",
-      port: 6379,
-    });
+    this.sub = new Redis("rediss://default:AWmxAAIjcDE1YmQwNjhhZjBkMjE0MzYyYjBlMTQ1NjY2YTViNDhmNXAxMA@sunny-stingray-27057.upstash.io:6379");
 
     // Subscribe to Redis channel
     this.sub.on("message", (channel, messageStr) => {
