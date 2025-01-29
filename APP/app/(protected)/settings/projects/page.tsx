@@ -30,7 +30,7 @@ import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
-import { addProjects, getProjects } from "@/actions/projects";
+import { addProjects } from "@/actions/projects";
 
 const ProjectSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -51,7 +51,6 @@ function ProjectSettingsPage() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
-  const [fetchedProjects, setFetchedProjects] = useState([]);
 
   // Initialize form with empty values
   const form = useForm<z.infer<typeof SettingsSchema>>({

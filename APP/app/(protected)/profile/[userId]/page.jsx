@@ -46,7 +46,7 @@ const HomePage = ({ params }) => {
         <AboutSection details={userProfile} />
         <Education details={userProfile} />
         <Skills userId={userId} />
-        <Experience />
+        <Experience userId={userId} />
         <div>
         
       </div>
