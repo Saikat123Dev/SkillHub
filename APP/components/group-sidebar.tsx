@@ -20,8 +20,8 @@ interface SidebarDemoProps {
 export function SidebarDemo({ children, id, requestId, groupName }: SidebarDemoProps) {
     const links = [
         {
-            label: "Dashboard",
-            href: "#",
+            label: "Chat",
+            href: `${requestId}/Chat`,
             icon: <IconBrandTabler className="h-5 w-5 flex-shrink-0" />,
         },
         {
