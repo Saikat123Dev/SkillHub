@@ -34,7 +34,7 @@ export function ChatArea({ id, requestId, groupName = "Chat Group", memberCount 
 
   // Initialize socket connection
   const { messages, error: socketError, sendMessage, sendFile, isConnected } = useSocket(
-    process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8001",
+    process.env.NEXT_PUBLIC_SOCKET_URL || "https://skillhub-kc05.onrender.com",
     id
   );
 
