@@ -43,7 +43,7 @@ export default function Sidebar({ children }) {
             {/* Overlay for mobile */}
             {isMobileMenuOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden transition-opacity duration-300"
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden transition-opacity duration-300"
                     onClick={() => setMobileMenuOpen(false)}
                 />
             )}
@@ -51,10 +51,10 @@ export default function Sidebar({ children }) {
             {/* Mobile Toggle Button */}
             <button
                 onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden fixed left-4 top-4 z-50 p-2 rounded-full bg-blue-500/10 backdrop-blur-lg shadow-lg border border-blue-500/20 hover:scale-105 active:scale-95 transition-all duration-200"
+                className="md:hidden fixed left-4 top-4 z-50 p-2.5 rounded-xl bg-blue-500/10 backdrop-blur-xl shadow-lg border border-blue-500/20 hover:scale-105 active:scale-95 transition-all duration-200"
                 aria-label="Toggle Menu"
             >
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -68,26 +68,29 @@ export default function Sidebar({ children }) {
                 className={`fixed md:sticky left-0 top-0 h-screen z-40
                     transform transition-all duration-300 ease-out
                     ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-                    ${expanded ? "md:w-56" : "md:w-16"}
-                    w-52 backdrop-blur-xl`}
-                style={{ backgroundColor: '#010917' }}
+                    ${expanded ? "md:w-64" : "md:w-20"}
+                    w-64 bg-gradient-to-b from-[#010917] to-[#011224] backdrop-blur-xl
+                    border-r border-blue-500/10 shadow-2xl`}
             >
-                <div className="h-full flex flex-col shadow-2xl">
+                <div className="h-full flex flex-col rounded-r-2xl bg-blue-950/20 backdrop-blur-xl">
                     {/* Header */}
-                    <div className="p-3 flex justify-between items-center border-b border-blue-800/50">
-                        <div className={`flex items-center space-x-2 transition-all duration-300 ${expanded ? "opacity-100" : "opacity-0 md:opacity-0"}`}>
-                            <span className="text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                    <div className="p-4 flex justify-between items-center border-b border-blue-400/10 bg-blue-950/30">
+                        <div className={`flex items-center space-x-3 transition-all duration-300 ${expanded ? "opacity-100" : "opacity-0 md:opacity-0"}`}>
+                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                                <span className="text-lg font-bold text-white">S</span>
+                            </div>
+                            <span className="text-lg font-bold bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent">
                                 Slide
                             </span>
                         </div>
                         <button
                             onClick={() => setExpanded((curr) => !curr)}
-                            className="hidden md:flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-blue-500/20 to-blue-600/20 hover:from-blue-500/30 hover:to-blue-600/30 transition-all duration-200 hover:scale-110 active:scale-95 group"
+                            className="hidden md:flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500/10 to-blue-600/10 hover:from-blue-500/20 hover:to-blue-600/20 transition-all duration-200 hover:scale-105 active:scale-95 group border border-blue-500/20"
                         >
                             {expanded ? (
-                                <ChevronFirst size={14} className="text-blue-400 group-hover:text-blue-300"/>
+                                <ChevronFirst size={16} className="text-blue-400 group-hover:text-blue-300"/>
                             ) : (
-                                <ChevronLast size={14} className="text-blue-400 group-hover:text-blue-300"/>
+                                <ChevronLast size={16} className="text-blue-400 group-hover:text-blue-300"/>
                             )}
                         </button>
                     </div>
@@ -95,18 +98,18 @@ export default function Sidebar({ children }) {
                     {/* Navigation */}
                     <SidebarContext.Provider value={{ expanded, activeItem, handleItemClick }}>
                         <nav className="flex-1 overflow-y-auto scrollbar-none">
-                            <ul className="p-2 space-y-1">
+                            <ul className="p-3 text-lg space-y-2">
                                 {children}
                             </ul>
                         </nav>
                     </SidebarContext.Provider>
 
                     {/* Footer */}
-                    <div className="border-t border-blue-800/50 p-2.5">
-                        <div className="flex items-center space-x-2">
+                    <div className="border-t border-blue-400/10 p-4 bg-blue-950/30">
+                        <div className="flex items-center space-x-3">
                             <div className="relative group">
-                                <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition duration-200" />
-                                <div className="relative w-7 h-7 rounded-full overflow-hidden">
+                                <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition duration-200" />
+                                <div className="relative w-10 h-10 rounded-lg overflow-hidden ring-2 ring-blue-500/20">
                                     <UserButton/>
                                 </div>
                             </div>
@@ -115,12 +118,12 @@ export default function Sidebar({ children }) {
                                     expanded ? "opacity-100 visible" : "opacity-0 invisible md:invisible"
                                 }`}
                             >
-                                <p className="text-xs font-medium text-white">User Profile</p>
+                                <p className="text-sm font-medium text-white">User Profile</p>
                                 <p className="text-xs text-blue-400">Settings</p>
                             </div>
                             {expanded && (
-                                <button className="p-1.5 hover:bg-white/10 rounded-full transition-colors duration-200">
-                                    <MoreVertical size={14} className="text-white/60"/>
+                                <button className="p-2 hover:bg-blue-500/10 rounded-lg transition-colors duration-200 border border-blue-500/20">
+                                    <MoreVertical size={16} className="text-blue-400"/>
                                 </button>
                             )}
                         </div>
@@ -143,16 +146,16 @@ export function SidebarItem({ icon, text, alert, href, itemKey }) {
                 {icon}
             </span>
             <span
-                className={`ml-2.5 transition-all duration-200 ${
+                className={`ml-3 text-sm transition-all duration-200 ${
                     expanded ? "opacity-100 visible" : "opacity-0 invisible md:invisible"
-                } whitespace-nowrap text-xs font-medium ${
+                } whitespace-nowrap font-medium ${
                     isActive ? "text-blue-400" : "text-gray-400 group-hover:text-blue-400"
                 }`}
             >
                 {text}
             </span>
             {alert && (
-                <span className={`absolute right-2 w-1.5 h-1.5 rounded-full bg-blue-400 ${
+                <span className={`absolute right-3 w-2 h-2 rounded-full bg-blue-400 ring-4 ring-blue-400/20 ${
                     expanded ? "" : "top-2"
                 }`} />
             )}
@@ -164,24 +167,24 @@ export function SidebarItem({ icon, text, alert, href, itemKey }) {
             onClick={() => handleItemClick(itemKey)}
             className={`relative group transition-all duration-200 rounded-lg ${
                 isActive
-                    ? "bg-gradient-to-r from-blue-500/10 to-blue-600/10"
-                    : "hover:bg-blue-500/5"
+                    ? "bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20"
+                    : "hover:bg-blue-500/5 border border-transparent hover:border-blue-500/10"
             }`}
         >
             {/* Highlight border */}
-            <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 bg-blue-500 rounded-r-full transition-all duration-200 ${
+            <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-gradient-to-b from-blue-400 to-blue-600 rounded-r-full transition-all duration-200 ${
                 isActive ? "opacity-100" : "opacity-0 group-hover:opacity-50"
             }`} />
 
             {href ? (
                 <Link
                     href={href}
-                    className="flex items-center py-1.5 px-3 cursor-pointer"
+                    className="flex items-center py-2 px-3 cursor-pointer"
                 >
                     {content}
                 </Link>
             ) : (
-                <div className="flex items-center py-1.5 px-3 cursor-pointer">
+                <div className="flex items-center py-2 px-3 cursor-pointer">
                     {content}
                 </div>
             )}
