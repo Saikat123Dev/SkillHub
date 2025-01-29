@@ -3,7 +3,7 @@
 import { useSocket } from "@/hooks/useSocket";
 import { Message } from "@/services/socketClient";
 import EmojiPicker from "emoji-picker-react";
-import { AlertCircle, Paperclip, Send, Smile } from "lucide-react";
+import { AlertCircle, Send, Smile } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { Alert, AlertDescription } from "./ui/alert";
@@ -244,22 +244,8 @@ export function ChatArea({ id, requestId, groupName = "Chat Group", memberCount 
               className="flex-1 rounded-lg"
               disabled={!isConnected}
             />
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              onChange={handleFileUpload}
-              accept="image/*,.pdf,.doc,.docx,.txt"
-            />
-            <Button
-              size="icon"
-              variant="outline"
-              className="rounded-lg p-2 shrink-0"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={!isConnected}
-            >
-              <Paperclip className="h-5 w-5 text-gray-500" />
-            </Button>
+
+
             <Button
               size="icon"
               className="rounded-lg bg-primary text-primary-foreground p-2 shrink-0"
