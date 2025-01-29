@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useCurrentUser } from '../hooks/use-current-user';
 import { Avatar } from "./ui/avatar";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
+
 
 interface Member {
   id: string;
@@ -20,10 +22,12 @@ interface User {
 }
 
 export function Sidebar({ id }: { id: string }) {
+  const currentUser = useCurrentUser();
   const [members, setMembers] = useState<Member[]>([]);
   const [users, setUsers] = useState<{ [key: string]: User }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -64,6 +68,17 @@ export function Sidebar({ id }: { id: string }) {
     fetchMembers();
   }, [id]);
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value.toLowerCase());
+  };
+
+  // Filter members based on search query
+  const filteredMembers = members.filter((member) => {
+    const user = users[member.userId];
+    if (!user) return false;
+    return user.name.toLowerCase().includes(searchQuery);
+  });
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -75,20 +90,22 @@ export function Sidebar({ id }: { id: string }) {
             <img src="https://github.com/shadcn.png" alt="User" />
           </Avatar>
           <div>
-            <h3 className="font-semibold">Jontray Arnold</h3>
+            <h3 className="font-semibold">{currentUser.name}</h3>
             <p className="text-sm text-muted-foreground">available</p>
           </div>
         </div>
         <div className="relative">
           <Input
             placeholder="Search"
+            value={searchQuery}
+            onChange={handleSearchChange}
             className="pl-10 bg-secondary border border-transparent rounded-lg py-2 px-4 w-full transition-all focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary"
           />
         </div>
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2">
-          {members.map((member) => {
+          {filteredMembers.map((member) => {
             const user = users[member.userId];
             if (!user) return null; // Skip rendering if user details are not available
 
