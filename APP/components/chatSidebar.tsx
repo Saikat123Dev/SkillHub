@@ -29,7 +29,7 @@ export function Sidebar({ id }: { id: string }) {
     const fetchMembers = async () => {
       try {
         // Fetch group members
-        const membersResponse = await fetch(`http://localhost:3000/api/groupMembers/${id}`);
+        const membersResponse = await fetch(`https://skill-hub-ftc6.vercel.app/api/groupMembers/${id}`);
         if (!membersResponse.ok) {
           throw new Error('Failed to fetch members');
         }
@@ -38,7 +38,7 @@ export function Sidebar({ id }: { id: string }) {
 
         // Fetch user details for each member
         const userPromises = membersData.map(async (member) => {
-          const userResponse = await fetch(`http://localhost:3000/api/user/${member.userId}`);
+          const userResponse = await fetch(`https://skill-hub-ftc6.vercel.app/api/user/${member.userId}`);
           if (!userResponse.ok) {
             throw new Error(`Failed to fetch user details for userId: ${member.userId}`);
           }
