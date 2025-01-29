@@ -1,33 +1,33 @@
 "use client";
-import * as z from "zod";
-import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSession } from "next-auth/react";
-import { 
-  Plus, 
-  Trash2, 
-  Save, 
-  Briefcase, 
-  Code, 
-  Link2, 
-  Video, 
-  Users 
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Briefcase,
+  Code,
+  Link2,
+  Plus,
+  Save,
+  Trash2,
+  Users,
+  Video
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useState, useTransition } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import * as z from "zod";
 
+import { FormError } from "@/components/form-error";
+import { FormSuccess } from "@/components/form-success";
+import { Button } from "@/components/ui/button";
 import {
   Form,
-  FormField,
   FormControl,
+  FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { FormError } from "@/components/form-error";
-import { FormSuccess } from "@/components/form-success";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 import { addProjects } from "@/actions/projects";
@@ -52,7 +52,6 @@ function ProjectSettingsPage() {
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
 
-  // Initialize form with empty values
   const form = useForm<z.infer<typeof SettingsSchema>>({
     resolver: zodResolver(SettingsSchema),
     defaultValues: {
@@ -71,9 +70,6 @@ function ProjectSettingsPage() {
     name: "projects",
     control: form.control
   });
-
-  
- 
 
   const addProject = () => {
     append({
@@ -109,19 +105,18 @@ function ProjectSettingsPage() {
     });
   };
 
-  // Rest of the component remains the same...
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-6">
-      <div className="w-full max-w-7xl bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
-        <div className="p-10">
-          <header className="mb-10 flex items-center justify-between border-b border-gray-200 pb-6">
-            <div className="flex items-center space-x-5">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+
+<div className="py-6 w-full max-w-7xl px-4 sm:px-6">
+          <header className="mb-8 sm:mb-10 flex items-center justify-between border-b border-gray-200 pb-4 sm:pb-6">
+            <div className="flex items-center space-x-4 sm:space-x-5">
               <div className="bg-indigo-100 p-3 rounded-xl">
-                <Briefcase className="w-8 h-8 text-indigo-600" />
+                <Briefcase className="w-6 sm:w-8 h-6 sm:h-8 text-indigo-600" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-800">Project Portfolio</h1>
-                <p className="text-gray-500 mt-2">Showcase and manage your professional projects</p>
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Project Portfolio</h1>
+                <p className="text-gray-500 mt-2 text-sm sm:text-base">Showcase and manage your professional projects</p>
               </div>
             </div>
           </header>
@@ -135,11 +130,11 @@ function ProjectSettingsPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="bg-white border border-gray-200 rounded-2xl p-8 mb-8 shadow-md relative overflow-hidden"
+                    className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 mb-8 shadow-md relative overflow-hidden"
                   >
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
                         name={`projects.${index}.title`}
@@ -204,7 +199,7 @@ function ProjectSettingsPage() {
                       )}
                     />
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
                       <FormField
                         control={form.control}
                         name={`projects.${index}.demovideo`}
@@ -296,11 +291,11 @@ function ProjectSettingsPage() {
                   </motion.div>
                 ))}
               </AnimatePresence>
-              
-              <Button 
+
+              <Button
                 type="submit"
                 disabled={isPending}
-                className="flex items-center gap-3 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors px-6 py-3 rounded-xl shadow-lg"
+                className="flex items-center gap-3 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors px-6 py-3 rounded-xl shadow-lg w-full sm:w-auto"
               >
                 <Save className="w-5 h-5" />
                 Save All Projects
@@ -331,7 +326,7 @@ function ProjectSettingsPage() {
             )}
           </AnimatePresence>
         </div>
-      </div>
+
     </div>
   );
 }
