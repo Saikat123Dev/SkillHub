@@ -56,7 +56,7 @@ class SocketService {
     // Initialize Socket.IO server
     this._io = new Server({
       cors: {
-        origin: "http://localhost:3000", // Make sure this matches your client URL exactly
+        origin: "skill-hub-ftc6.vercel.app", // Make sure this matches your client URL exactly
         methods: ["GET", "POST"],
         credentials: true,
         allowedHeaders: ["*"]
