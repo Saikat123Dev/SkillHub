@@ -1,79 +1,33 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import CardWrapper from "@/components/auth/card-wrapper";
+import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
 import { FaGithub, FaGoogle } from "react-icons/fa";
-import * as z from "zod";
-
-import { login } from "@/actions/login";
-import CardWrapper from "@/components/auth/card-wrapper";
-import { FormError } from "@/components/form-error";
-import { FormSuccess } from "@/components/form-success";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { LoginSchema } from "@/schemas";
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
+  const callbackUrl = searchParams.get("callbackUrl") || "/settings";
   const router = useRouter();
 
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
+  const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+  const handleOAuthSignIn = async (provider: "google" | "github") => {
     setError("");
-    setSuccess("");
-
-    startTransition(() => {
-      login(values, callbackUrl)
-        .then((data) => {
-          if (data?.error) {
-            form.reset();
-            setError(data.error);
-          }
-
-          if (data?.success) {
-            form.reset();
-            setSuccess(data.success);
-
-            if (data.redirect) {
-              router.push(data.redirect);
-            } else {
-              router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
-            }
-          }
-        })
-        .catch(() => setError("Something went wrong"));
-    });
-  };
-
-  const handleOAuthSignIn = (provider: "google" | "github") => {
-    setError("");
-    signIn(provider, {
-      callbackUrl: callbackUrl || DEFAULT_LOGIN_REDIRECT,
+    startTransition(async () => {
+      try {
+        const result = await signIn(provider, { redirect: false, callbackUrl });
+        if (result?.error) {
+          setError("Authentication failed. Please try again.");
+        } else {
+          router.push(callbackUrl);
+        }
+      } catch (err) {
+        setError("An unexpected error occurred. Please try again later.");
+      }
     });
   };
 
@@ -84,82 +38,34 @@ export const LoginForm = () => {
       backButtonHref="/auth/register"
       showSocial
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="john.doe@example.com"
-                      type="email"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="******"
-                      type="password"
-                    />
-                  </FormControl>
-                  <Button
-                    size="sm"
-                    variant="link"
-                    asChild
-                    className="px-0 font-normal"
-                  >
-                    <Link href="/auth/reset">Forgot password?</Link>
-                  </Button>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormError message={error} />
-          <FormSuccess message={success} />
-          <Button disabled={isPending} type="submit" className="w-full">
-            Login
-          </Button>
-        </form>
-      </Form>
+      {error && (
+        <div className="bg-red-100 text-red-600 p-3 rounded-lg text-sm font-medium text-center">
+          {error}
+        </div>
+      )}
 
       <div className="flex flex-col gap-4 mt-6">
         <Button
           variant="outline"
           disabled={isPending}
           onClick={() => handleOAuthSignIn("google")}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full h-12 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 shadow-md rounded-lg transition-all duration-200"
         >
           <FaGoogle className="h-5 w-5" />
-          Continue with Google
+          <span className="text-base font-semibold">Continue with Google</span>
         </Button>
         <Button
           variant="outline"
           disabled={isPending}
           onClick={() => handleOAuthSignIn("github")}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full h-12 bg-gray-900 hover:bg-gray-800 text-white shadow-md rounded-lg transition-all duration-200"
         >
           <FaGithub className="h-5 w-5" />
-          Continue with GitHub
+          <span className="text-base font-semibold">Continue with GitHub</span>
         </Button>
       </div>
     </CardWrapper>
   );
 };
+
+export default LoginForm;
