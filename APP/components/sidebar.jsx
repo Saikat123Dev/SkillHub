@@ -43,7 +43,7 @@ export default function Sidebar({ children }) {
             {/* Overlay for mobile */}
             {isMobileMenuOpen && (
                 <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden transition-opacity duration-300"
+                    className="fixed  inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden transition-opacity duration-300"
                     onClick={() => setMobileMenuOpen(false)}
                 />
             )}
@@ -51,7 +51,7 @@ export default function Sidebar({ children }) {
             {/* Mobile Toggle Button */}
             <button
                 onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden fixed left-4 top-4 z-50 p-2.5 rounded-xl bg-blue-500/10 backdrop-blur-xl shadow-lg border border-blue-500/20 hover:scale-105 active:scale-95 transition-all duration-200"
+                className="md:hidden fixed  left-4 top-2 z-50 p-2.5 rounded-xl bg-blue-500/10 backdrop-blur-xl shadow-lg border border-blue-500/20 hover:scale-105 active:scale-95 transition-all duration-200"
                 aria-label="Toggle Menu"
             >
                 <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
