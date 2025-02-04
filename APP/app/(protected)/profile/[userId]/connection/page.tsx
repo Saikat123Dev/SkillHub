@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type FriendRequest = {
   groupname: string;
@@ -21,28 +21,38 @@ type FriendRequest = {
     name: string;
     email: string;
   };
-  avatar: string; // If you have an avatar in your friend request structure
+  avatar: string;
 };
 
-// Function to generate a random background color
-const getRandomColor = () => {
-  const colors = [
-    "#FF5733",
-    "#33C1FF",
-    "#33FF57",
-    "#FF33A1",
-    "#FFBD33",
-    "#9B33FF",
-  ]; // Define some random colors
-  return colors[Math.floor(Math.random() * colors.length)];
-};
+const LoadingState = () => (
+  <div className="w-full space-y-8">
+    <div className="flex justify-center">
+      <div className="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="border-2 border-gray-200 rounded-xl p-6 space-y-4">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 rounded-full bg-gray-200 animate-pulse"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+              <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
+            </div>
+          </div>
+          {[1, 2, 3].map((j) => (
+            <div key={j} className="space-y-1">
+              <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 const getInitials = (name: string) => {
-  const nameParts = name.split(" ");
-  return nameParts
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
+  return name.split(" ").map((part) => part[0]).join("").toUpperCase();
 };
 
 const FriendRequestsPage = () => {
@@ -50,24 +60,20 @@ const FriendRequestsPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const session = useCurrentUser();
-  const receiverId = session?.id; // Get the logged-in user's session
+  const receiverId = session?.id;
 
   const fetchFriendRequests = async () => {
     try {
-      console.log("Receiver ID:", receiverId); // Log receiverId
-
       const response = await fetch(
-        `http://localhost:3000/api/connect/getAll?receiverId=${receiverId}`
+        `https://skill-hub-ftc6.vercel.app/api/connect/getAll?receiverId=${receiverId}`
       );
-      console.log("Response:", response); // Log full response
 
       if (!response.ok) {
-        const errorData = await response.json(); // Try to get error message from the response
+        const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch friend requests");
       }
 
       const data = await response.json();
-      console.log("Data:", data);
       if (Array.isArray(data)) {
         setFriendRequests(data);
       } else if (data.message) {
@@ -87,14 +93,11 @@ const FriendRequestsPage = () => {
     fetchFriendRequests();
   }, []);
 
-  // Function to handle accepting a friend request
   const acceptFriendRequest = async (id: string) => {
     try {
-      const response = await fetch("http://localhost:3000/api/connect/accept", {
+      const response = await fetch("https://skill-hub-ftc6.vercel.app/api/connect/accept", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestId: id }),
       });
       if (!response.ok) {
@@ -109,15 +112,12 @@ const FriendRequestsPage = () => {
     }
   };
 
-  // Function to handle rejecting a friend request
   const rejectFriendRequest = async (id: string) => {
     try {
-      const response = await fetch("http://localhost:3000/api/connect/reject", {
+      const response = await fetch("https://skill-hub-ftc6.vercel.app/api/connect/reject", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ requestId: id }), // Send the request ID
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId: id }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -132,93 +132,98 @@ const FriendRequestsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-indigo-500 flex flex-col items-center p-10">
-      <h1 className="text-4xl text-white font-bold mb-8">Friend Requests</h1>
-      {loading ? (
-        <p className="text-white">Loading...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : friendRequests.length === 0 ? (
-        <p className="text-white">No friend requests available.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
-          {friendRequests
-            .filter((request) => request.status === "PENDING") // Only show pending requests
-            .map((request) => (
-              <div
-                key={request.id}
-                className={`p-6 bg-white rounded-lg shadow-lg transition-transform duration-200 ${
-                  request.status === "ACCEPTED"
-                    ? "border-green-500"
-                    : request.status === "REJECTED"
-                    ? "border-red-500"
-                    : "border-gray-300"
-                } hover:scale-105`}
-              >
-                <div className="flex items-center space-x-4">
-                  {request.avatar ? (
-                    <img
-                      className="w-16 h-16 rounded-full shadow-md"
-                      src={request.avatar}
-                      alt={request.sender.name}
-                    />
-                  ) : (
-                    <div
-                      className="w-16 h-16 rounded-full shadow-md flex items-center justify-center"
-                      style={{ backgroundColor: getRandomColor() }}
-                    >
-                      <span className="text-white font-bold">
-                        {getInitials(request.sender.name)}
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-800">
-                      {request.sender.name}
-                    </h2>
-                    <p className="text-sm text-gray-600">
-                      Status:{" "}
-                      <span
-                        className={`font-bold ${
-                          request.status === "PENDING"
-                            ? "text-yellow-500"
-                            : request.status === "ACCEPTED"
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
-                      >
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="text-5xl font-bold text-black tracking-tight text-center mb-16 font-serif">
+          Friend Requests
+        </h1>
+
+        {loading ? (
+          <LoadingState />
+        ) : error ? (
+          <p className="text-red-600 text-center text-lg">{error}</p>
+        ) : friendRequests.length === 0 ? (
+          <p className="text-gray-600 text-center text-lg">No friend requests available.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {friendRequests
+              .filter((request) => request.status === "PENDING")
+              .map((request) => (
+                <div
+                  key={request.id}
+                  className="bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 p-6 space-y-6"
+                >
+                  <div className="flex items-center space-x-4">
+                    {request.avatar ? (
+                      <img
+                        className="w-16 h-16 rounded-full border-2 border-black"
+                        src={request.avatar}
+                        alt={request.sender.name}
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full border-2 border-black bg-gray-100 flex items-center justify-center">
+                        <span className="text-black font-bold text-xl">
+                          {getInitials(request.sender.name)}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <h2 className="text-xl font-bold text-black">
+                        {request.sender.name}
+                      </h2>
+                      <p className="text-sm font-medium text-gray-600">
                         {request.status}
-                      </span>
-                    </p>
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="mt-4">
-                  <p className="text-gray-700">
-                    <strong>Project Description:</strong>{" "}
-                    {request.projectDescription}
-                  </p>
-                  <p className="text-gray-700">
-                    <strong>Purpose:</strong> {request.purpose}
-                  </p>
-                  <p className="text-gray-700">
-                    <strong>Mutual Skill:</strong> {request.mutualSkill}
-                  </p>
-                  <div className="text-gray-700">
-                    <strong>Group:</strong>
-
-                    <p>{request.groupname}</p>
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500">Project Description</h3>
+                      <p className="text-black">{request.projectDescription}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500">Purpose</h3>
+                      <p className="text-black">{request.purpose}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500">Mutual Skill</h3>
+                      <p className="text-black">{request.mutualSkill}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500">Group</h3>
+                      <p className="text-black">{request.groupname}</p>
+                    </div>
                   </div>
-                  <p>
-                    <Link href={`${request.groupUrl}/${request.id}`}>
+
+                  <div className="flex flex-col space-y-3">
+                    <Link
+                      href={`${request.groupUrl}/${request.id}`}
+                      className="text-black underline hover:no-underline font-medium"
+                    >
                       View Group Details
                     </Link>
-                  </p>
+
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => acceptFriendRequest(request.id)}
+                        className="flex-1 bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition-colors duration-200"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => rejectFriendRequest(request.id)}
+                        className="flex-1 bg-white text-black border-2 border-black py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
-        </div>
-      )}
+              ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
