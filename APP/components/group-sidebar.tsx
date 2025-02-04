@@ -25,13 +25,13 @@ export function SidebarDemo({ children, id, requestId, groupName }: SidebarDemoP
             icon: <IconBrandTabler className="h-5 w-5 flex-shrink-0" />,
         },
         {
-            label: "Profile",
-            href: "#",
+            label: "Task",
+            href: `${requestId}/tasks`,
             icon: <IconUserBolt className="h-5 w-5 flex-shrink-0" />,
         },
         {
-            label: "Settings",
-            href: "#",
+            label: "Calender",
+            href: `${requestId}/calender`,
             icon: <IconSettings className="h-5 w-5 flex-shrink-0" />,
         }
     ];
