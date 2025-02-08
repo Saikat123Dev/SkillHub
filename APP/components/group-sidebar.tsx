@@ -21,17 +21,17 @@ export function SidebarDemo({ children, id, requestId, groupName }: SidebarDemoP
     const links = [
         {
             label: "Chat",
-            href: `${requestId}/Chat`,
+            href: `/groupchat/${id}/${requestId}/Chat`,
             icon: <IconBrandTabler className="h-5 w-5 flex-shrink-0" />,
         },
         {
-            label: "Profile",
-            href: "#",
+            label: "Task",
+            href: `/groupchat/${id}/${requestId}/tasks`,
             icon: <IconUserBolt className="h-5 w-5 flex-shrink-0" />,
         },
         {
-            label: "Settings",
-            href: "#",
+            label: "Calender",
+            href: `/groupchat/${id}/${requestId}/calender`,
             icon: <IconSettings className="h-5 w-5 flex-shrink-0" />,
         }
     ];

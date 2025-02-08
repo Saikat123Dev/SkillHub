@@ -94,13 +94,13 @@ const DesktopNavigation = ({
     return (
         <motion.div
             className={cn(
-                "h-full px-4 py-6 hidden md:flex md:flex-col",
-                "bg-white dark:bg-neutral-900",
+                "h-16  bg-white px-4 py-6 hidden md:flex md:flex-col",
+                " dark:bg-neutral-900",
                 "border-r border-neutral-200 dark:border-neutral-800",
                 className
             )}
             animate={{
-                width: animate ? (open ? "180px" : "50px") : "180px",
+                width: animate ? (open ? "180px" : "60px") : "180px",
             }}
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
