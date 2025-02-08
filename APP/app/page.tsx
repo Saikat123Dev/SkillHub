@@ -1,275 +1,260 @@
-"use client";
+'use client'
+import React, { useState } from 'react';
 
-import { SparklesPreview } from "@/components/sparkleBackground";
-import { BackgroundGradient } from "@/components/ui/background-gradient";
-import { Button } from "@/components/ui/moving-border";
-import Article from '@/images/Article.png';
-import communicate from '@/images/Communicate.png';
-import connect from '@/images/Connect.png';
-import Global from '@/images/Global Connecti 770a56d2-46ae-435d-abb7-3c33115e9ba8.png';
-import Badge from '@/images/Profile Badges_ 2b31e583-03f4-47bd-b406-5eba2bf79072.png';
-import Skill from '@/images/Skill.png';
-import Image from "next/image";
+import { Search, Users, BookOpen, Play, ChevronDown } from 'lucide-react';
+import { InfiniteMovingCards } from '@/components/ui/infinite-moving-cards';
 import Link from 'next/link';
+import { Button } from '@/components/ui/moving-border';
+import { Facebook, Instagram, Twitter, Linkedin, Github } from 'lucide-react';
+import search from '@/public/image/search.png'
+import join from '@/public/image/join.png'
+import meet from '@/public/image/meet.png'
 
-export default function Widget() {
-  console.log("env load","https://skill-hub-ok3x.vercel.app/")
+const NavBar = () => (
+  
+  <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm">
+    <div className="container mx-auto px-4">
+      <div className="flex items-center justify-between h-16">
+        <div className="text-xl font-bold">ConnectAll</div>
+        <div className="hidden md:flex space-x-8">
+          <a href="#" className="text-gray-600 hover:text-gray-900">Profile</a>
+          <a href="#" className="text-gray-600 hover:text-gray-900">Search</a>
+          <a href="#" className="text-gray-600 hover:text-gray-900">Groups</a>
+          <a href="#" className="text-gray-600 hover:text-gray-900">Projects</a>
+        </div>
+        <button className="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 transition-colors">
+          Join Now
+        </button>
+      </div>
+    </div>
+  </nav>
+);
+
+const Hero = () => {
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
+  const handleVideoClick = () => {
+    window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+  };
+
+  const scrollToNextSection = () => {
+    window.scrollTo({
+      top: window.innerHeight,
+      behavior: 'smooth'
+    });
+  };
+
   return (
-    <div className="min-h-full">
-      {/* Header section */}
-      <div className="relative h-screen bg-cover bg-center" style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
-
-        <nav className="fixed top-0 left-0 w-full flex justify-between items-center p-4 md:p-6 z-20 ">
-          <div className="text-white text-xl md:text-2xl font-bold">TeamMadeEasy</div>
-          <div className="flex items-center space-x-4 md:space-x-6 text-white">
-            {/* Navigation links */}
-            <Link href="/profile" className="nav-link relative inline-block px-2 py-1 font-bold">Profile</Link>
-            <Link href="/search" className="nav-link font-bold">Search</Link>
-            <Link href="/groups" className="nav-link font-bold ">Groups</Link>
-            <Link href="/projects" className="nav-link font-bold">Projects</Link>
-            {/* Button component */}
-            <Button borderRadius="1.5rem" className="border-neutral-200 dark:border-slate-800 transform transition-transform duration-300 hover:scale-95 px-3 py-1">
-              <Link href="/auth/register" className="text-white rounded-full font-bold">Join Now</Link>
-            </Button>
-          </div>
-        </nav>
-        {/* Hero section */}
-
-        <SparklesPreview />
-
-        {/* Main content */}
-        <div className="relative h-screen bg-cover bg-center" style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
-        <div className="container mx-auto px-4 py-40">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white">
-              Seamless Integration, Comprehensive Profiles, Endless Opportunities
+    <div className="relative min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+      {/* Overlay Pattern */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
+      
+      <div className="flex flex-col lg:flex-row min-h-screen">
+        {/* Left Side - Content */}
+        <div className="relative lg:w-1/2 flex items-center px-6 lg:px-16 py-20">
+          <div className="relative z-10 max-w-2xl mx-auto lg:mx-0">
+            
+            
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-8">
+              <span className="block mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-200">
+                Connect.
+              </span>
+              <span className="block mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
+                Showcase.
+              </span>
+              <span className="block mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                Collaborate.
+              </span>
+              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-500">
+                Succeed.
+              </span>
             </h1>
-            <p className="text-lg text-zinc-400 light:text-zinc-400 mt-2">
-              Showcase talents, connect, and collaborate professionally.
+
+            <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+              Transform your digital presence with our cutting-edge platform. 
+              Connect with industry leaders, showcase your expertise, and drive success.
             </p>
+
+            <div className="flex flex-wrap gap-4">
+              <button className="bg-green-500 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-green-600 transition-all transform hover:translate-y-[-2px] hover:shadow-lg">
+                Get Started
+              </button>
+              <Button
+                borderRadius="1.75rem"
+                className="dark:bg-slate-900 border-neutral-200 dark:border-slate-800 font-bold transform transition-transform duration-300 hover:scale-95"
+              >
+                <Link href="/auth/register" className="text-white px-1 py-1 md:px-1 md:py-1 rounded-full">Watch Demo</Link>
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <h2 className="text-3xl font-bold text-white light:text-white">
-                Profile Integration Made Easy
-              </h2>
-              <p className="text-lg text-zinc-400 light:text-zinc-400 mt-2">
-                Combine LinkedIn, GitHub, and certificates for a complete profile.
-              </p>
-              <div className="mt-4">
-                <button className="bg-green-500 text-white px-4 py-2 rounded-full mr-2 font-bold hover:bg-green-600">
-                  Get Started
-                </button>
-                <button className="border border-zinc-300 text-zinc-700 font-bold  light:text-zinc-300 light:border-zinc-600 px-4 py-2 rounded-full hover:bg-zinc-300 light:hover:bg-zinc-600">
-                  Learn More
-                </button>
+        </div>
+
+        {/* Right Side - Video */}
+        <div className="relative lg:w-1/2 flex items-center justify-center p-6 lg:p-16">
+          <div className="w-full max-w-2xl aspect-video rounded-2xl overflow-hidden shadow-2xl relative group">
+            <div 
+              className="absolute inset-0 cursor-pointer transform transition-transform hover:scale-[1.02]"
+              onClick={handleVideoClick}
+            >
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=0"
+                title="Promotional Video"
+                allow="autoplay; encrypted-media"
+                className="absolute inset-0"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform">
+                  <Play size={72} className="text-white drop-shadow-lg" />
+                </div>
               </div>
             </div>
-            <div className="md:w-1/2">
-              {/* Image component */}
-              <img
-                src="https://t3.ftcdn.net/jpg/05/58/79/54/360_F_558795469_pvzp1H4yYhRSqo6hdhD00GzQMt2Vhian.jpg"
-                alt="Hands together on a table"
-                width={600}
-                height={100}
-                className="image-box w-full h-auto rounded-lg shadow-lg border-4 border-spacing-48 border-black"
-              />
-            </div>
           </div>
         </div>
-        </div>
+      </div>
 
-        {/* Feature section */}
-        <div className="flex flex-col md:flex-row items-center justify-center min-h-screen bg-white-900 text-white p-6"  style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
-          <div className="md:w-1/2">
-            {/* Image component */}
-            <img
-              src="https://st3.depositphotos.com/4282501/18282/i/450/depositphotos_182825916-stock-photo-skill-concept-chart-with-keywords.jpg"
-              alt="Person with magnifying glass"
-              className="image-box w-full h-auto rounded-lg shadow-lg border-4 border-spacing-48 border-black"
-            />
-          </div>
-          <div className="md:w-1/2 mt-6 md:mt-0 md:ml-6 text-center md:text-left">
-            <h1 className="text-3xl font-bold text-white light:text-white">
-              Skill-Based Search Simplified
-            </h1>
-            <p className="text-lg text-zinc-400 light:text-zinc-400 mt-2">
-              Find users by specific talents with our advanced search feature.
-            </p>
-            <div className="mt-6 flex justify-center md:justify-start space-x-4">
-              <button className="bg-green-500 text-white py-2 px-6 font-bold rounded-full hover:bg-green-600">
-                Try Now
-              </button>
-              <button className="bg-zinc-200 text-zinc-700 font-bold light:bg-zinc-700 light:text-zinc-300 py-2 px-6 rounded-full hover:bg-zinc-300 light:hover:bg-zinc-600">
-                More Info
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Scroll Indicator */}
+      <button 
+        onClick={scrollToNextSection}
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/50 hover:text-white/80 transition-colors"
+      >
+        <ChevronDown size={32} className="animate-bounce" />
+      </button>
+    </div>
+  );
+};
 
-        {/* Collaboration section */}
-        <div className="flex flex-col md:flex-row items-center p-6 bg-white-900 light:bg-zinc-800"  style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
-          <div className="md:w-1/2 p-6">
-            <h2 className="text-3xl font-bold text-white light:text-white">
-              Real-Time Collaboration Groups
-            </h2>
-            <p className="text-lg text-zinc-400 light:text-zinc-400 mt-2">
-              Create or join groups for real-time discussions and projects.
-            </p>
-            <div className="mt-6 flex space-x-4">
-              <button className="bg-green-500 text-white font-bold py-2 px-4 rounded-full hover:bg-green-600">
-                Join Groups
-              </button>
-              <button className="border border-zinc-300 font-bold text-zinc-700 light:text-zinc-300 light:border-zinc-600 py-2 px-4 rounded-full hover:bg-zinc-300 light:hover:bg-zinc-600">
-                Learn How
-              </button>
-            </div>
+const FeatureSection = () => (
+  <div className="bg-white py-12 sm:py-24">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Seamless Integration, Comprehensive Profiles, Endless Opportunities
+        </h2>
+        <p className="mt-6 text-xl text-gray-500">
+          Showcase talents, connect, and collaborate professionally.
+        </p>
+        <div className="mt-8">
+          <div className="inline-flex rounded-md shadow">
+            <a href="#" className="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-5 py-3 text-base font-medium text-white hover:bg-green-700">
+              Get Started
+            </a>
           </div>
-          <div className="md:w-1/2 p-6">
-            {/* Image component */}
-            <img
-              src="https://www.freshbooks.com/wp-content/uploads/2021/11/Why-is-collaboration-important.jpg"
-              alt="Collaboration Image"
-              className="image-box w-full h-auto rounded-lg shadow-lg border-4 border-spacing-48 border-black"
-            />
+          <div className="inline-flex ml-3">
+            <a href="#" className="inline-flex items-center justify-center rounded-md border border-transparent text-base font-medium text-green-600 hover:text-green-500">
+              Learn More
+            </a>
           </div>
         </div>
-
-
-
-             <div className="animate mx-auto p-8" style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
-  <div className="flex flex-col md:flex-row justify-between items-center mb-16"  >
-    <h2 className="mt-20 md:mt-0 text-4xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 mb-8 md:mb-0">
-      Boost Your Professional Network
-    </h2>
-    <p className="mt-4 font-medium text-base md:text-lg text-neutral-300 max-w-lg mx-auto">
-      Showcase projects and skills to the community, fostering recognition and valuable networking.
-    </p>
-  </div>
-  <div className="p-4 overflow-hidden relative"  style={{ backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wallpaper-background_58702-8632.jpg')" }}>
-    <div className="flex gap-9 animate-marquee">
-      {/* Duplicate Image Set 1 */}
-      <div className="relative flex-none max-h-[450px]">
-        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-          <Image
-            src={connect}
-            alt="Person with magnifying glass"
-            width={500}
-            height={300} // Increased height for a medium-sized div
-            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
-          />
-        </BackgroundGradient>
       </div>
-      <div className="relative flex-none max-h-[450px]">
-        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-          <Image
-            src={Skill}
-            alt="Person with magnifying glass"
-            width={500}
-            height={300} // Increased height for a medium-sized div
-            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
-          />
-        </BackgroundGradient>
+      <div className="mt-12 lg:mt-0">
+        <img className="w-full rounded-lg shadow-xl" src={join.src} alt="Profile integration"/>
       </div>
-      <div className="relative flex-none max-h-[450px]">
-        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-          <Image
-            src={Badge}
-            alt="Person with magnifying glass"
-            width={500}
-            height={300} // Increased height for a medium-sized div
-            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
-          />
-        </BackgroundGradient>
-      </div>
-      <div className="relative flex-none max-h-[450px]">
-        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-          <Image
-            src={Article}
-            alt="Person with magnifying glass"
-            width={500}
-            height={300} // Increased height for a medium-sized div
-            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
-          />
-        </BackgroundGradient>
-      </div>
-      <div className="relative flex-none max-h-[450px]">
-        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-          <Image
-            src={communicate}
-            alt="Person with magnifying glass"
-            width={500}
-            height={300} // Increased height for a medium-sized div
-            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
-          />
-        </BackgroundGradient>
-      </div>
-      <div className="relative flex-none max-h-[450px]">
-        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-          <Image
-            src={Global}
-            alt="Person with magnifying glass"
-            width={500}
-            height={300} // Increased height for a medium-sized div
-            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
-          />
-        </BackgroundGradient>
-      </div>
-
-      {/* Repeat similar blocks for other images */}
-      <div className="relative flex-none max-h-[450px]">
-        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-          <Image
-            src={Skill}
-            alt="Skill"
-            width={500}
-            height={300}
-            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
-          />
-        </BackgroundGradient>
-      </div>
-
-      {/* Additional image blocks here */}
-      {/* ... */}
-
-      {/* Duplicate Image Set 2 (exact copy of Image Set 1) */}
-      <div className="relative flex-none max-h-[450px]">
-        <BackgroundGradient className="rounded-lg max-w-2xl p-1 dark:bg-zinc-900 bg-cover bg-center shadow-lg">
-          <Image
-            src={connect}
-            alt="Person with magnifying glass"
-            width={500}
-            height={300}
-            className="w-full h-[300px] rounded-3xl shadow-2xl object-cover border-4 border-spacing-48 border-black"
-          />
-        </BackgroundGradient>
-      </div>
-
-      {/* Repeat similar blocks for other images */}
-      {/* ... */}
     </div>
   </div>
-
-
+  <div className="bg-white py-12 sm:py-24">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+    <div className="mt-12 lg:mt-0">
+        <img className="w-full rounded-lg shadow-xl" src={search.src} alt="Profile integration"/>
+      </div>
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Skill-Based Search Simplified
+        </h2>
+        <p className="mt-6 text-xl text-gray-500">
+          Find users by specific talents with our advanced search feature.
+        </p>
+        <div className="mt-8">
+          <div className="inline-flex rounded-md shadow">
+            <a href="#" className="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-5 py-3 text-base font-medium text-white hover:bg-green-700">
+              Try Now
+            </a>
+          </div>
+          <div className="inline-flex ml-3">
+            <a href="#" className="inline-flex items-center justify-center rounded-md border border-transparent text-base font-medium text-green-600 hover:text-green-500">
+              More Info
+            </a>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Seamless Integration, Comprehensive Profiles, Endless Opportunities
+        </h2>
+        <p className="mt-6 text-xl text-gray-500">
+          Showcase talents, connect, and collaborate professionally.
+        </p>
+        <div className="mt-8">
+          <div className="inline-flex rounded-md shadow">
+            <a href="#" className="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-5 py-3 text-base font-medium text-white hover:bg-green-700">
+              Get Started
+            </a>
+          </div>
+          <div className="inline-flex ml-3">
+            <a href="#" className="inline-flex items-center justify-center rounded-md border border-transparent text-base font-medium text-green-600 hover:text-green-500">
+              Learn More
+            </a>
+          </div>
+        </div>
+      </div>
+      <div className="mt-12 lg:mt-0">
+        <img className="w-full rounded-lg shadow-xl" src={meet.src} alt="Profile integration"/>
+      </div>
+    </div>
+  </div>
+  
 </div>
 
 
+);
 
 
-        {/* Footer section */}
 
-        <div className="bg-white dark:bg-zinc-800   py-9 px-4" style={{
-          backgroundImage: "url('https://img.freepik.com/free-photo/artistic-blurry-colorful-wall paper-background_58702-8632.jpg')",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-          height: "300px",
-          width: "100%"
-        }}>
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-6 ">
-            {/* Column 1 */}
-            <div className="md:col-span-2">
-              <h2 className="text-2xl font-bold text-white dark:text-white">TeamMadeEasy</h2>
+const TestimonialCard = ({ testimonials}) => (
+  <div className="h-[40rem] rounded-md flex flex-col antialiased bg-white dark:bg-black dark:bg-grid-white/[0.05] items-center justify-center relative overflow-hidden">
+      <InfiniteMovingCards
+      
+        items={testimonials}
+        direction="right"
+        speed="slow"
+      />
+    </div>
+);
+
+const Features = ({testimonials}) => (
+  <div>
+ <div className="bg-gray-900 text-white py-20">
+  <div className="container mx-auto px-4">
+    <h2 className="text-4xl font-bold text-center mb-16">Boost Your Professional Network</h2>
+    <InfiniteMovingCards
+      
+      items={testimonials}
+      direction="right"
+      speed="slow"
+    />
+  </div>
+</div>
+  
+  </div>
+);
+
+const Footer = () => (
+  <footer className="bg-white shadow-lg py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Logo Section */}
+          <div className="flex flex-col items-center space-y-6">
+          <div className="md:col-span-2">
+              <h2 className="text-2xl font-bold text-black dark:text-white">TeamMadeEasy</h2>
               <p className="mt-2 mb-2 text-zinc-400 dark:text-zinc-300">
                 Connect, Collaborate, Grow Together
               </p>
@@ -281,94 +266,194 @@ export default function Widget() {
                 <Link href="/auth/register" className="text-white px-1 py-1 md:px-1 md:py-1 rounded-full">Join Now</Link>
               </Button>
             </div>
-            {/* Column 2: Company links */}
-            <div>
-              <h3 className="text-lg font-bold text-white dark:text-white">Company</h3>
-              <ul className="mt-2 space-y-2">
-                <li>
-                  <Link href="/about" className="text-zinc-500 dark:text-zinc-300">About Us</Link>
-                </li>
-                <li>
-                  <Link href="/careers" className="text-zinc-500 dark:text-zinc-300">Careers</Link>
-                </li>
-                <li>
-                  <Link href="/team" className="text-zinc-500 dark:text-zinc-300">Team</Link>
-                </li>
-                <li>
-                  <Link href="/news" className="text-zinc-500 dark:text-zinc-300">News</Link>
-                </li>
-              </ul>
+            
+            <div className="flex space-x-6">
+              <SocialLink 
+                href="https://github.com/jwoc-jgec" 
+                icon={<Github className="w-8 h-8 text-gray-500 hover:text-blue-600" />} 
+                label="GitHub" 
+              />
+              <SocialLink 
+                href="https://discord.gg/7xwWUTdb" 
+                icon={<DiscordIcon className="w-8 h-8 text-gray-500 hover:text-blue-600" />} 
+                label="Discord" 
+              />
+             
+              <SocialLink 
+                href="https://www.linkedin.com/company/jwoc" 
+                icon={<Linkedin className="w-8 h-8 text-gray-500 hover:text-blue-600" />} 
+                label="LinkedIn" 
+              />
             </div>
-            {/* Column 3: Resources links */}
-            <div>
-              <h3 className="text-lg font-bold text-white dark:text-white">Resources</h3>
-              <ul className="mt-2 space-y-2">
-                <li>
-                  <Link href="/blog" className="text-zinc-500 dark:text-zinc-300">Blog</Link>
-                </li>
-                <li>
-                  <Link href="/webinar" className="text-zinc-500 dark:text-zinc-300">Webinars</Link>
-                </li>
-                <li>
-                  <Link href="/event" className="text-zinc-500 dark:text-zinc-300">Events</Link>
-                </li>
-                <li>
-                  <Link href="/guide" className="text-zinc-500 dark:text-zinc-300">Guides</Link>
-                </li>
-              </ul>
-            </div>
-            {/* Column 4: Support links */}
-            <div>
-              <h3 className="text-lg font-bold text-white dark:text-white">Support</h3>
-              <ul className="mt-2 space-y-2">
-                <li>
-                  <Link href="/help" className="text-zinc-500 dark:text-zinc-300">Help Center</Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="text-zinc-500 dark:text-zinc-300">Contact</Link>
-                </li>
-                <li>
-                  <Link href="FAQ" className="text-zinc-500 dark:text-zinc-300">FAQ</Link>
-                </li>
-              </ul>
-            </div>
-            {/* Column 5: Contact details */}
-            <div>
-              <h3 className="text-lg font-bold text-white dark:text-white">Contact us</h3>
-              <p className="mt-2 text-zinc-500 dark:text-zinc-300">support@teammadeeasy.com</p>
-              <p className="text-zinc-500 dark:text-zinc-300">123-456-7890</p>
-
-
-              {/* Social media links */}
-              <div className="mt-4 flex space-x-4 ">
-                <Link href="/insta" className="text-zinc-500 dark:text-zinc-300 ">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKWBPH_zlCOipWfslhiZSjBNaVxiSzMfWaYg&s/24x24 " alt="Discord" />
-                </Link>
-                <Link href="/insta" className="text-zinc-500 dark:text-zinc-300">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS95GxhjFFpXzk2LxvgS5zMnLvueaF5NY6Byg&s/24x24" alt="Reddit" />
-                </Link>
-                <Link href="/insta" className="text-zinc-500 dark:text-zinc-300">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZs5UtzLGqj9rC_JWwaVREzPoBJ_5DRgFH4Q&s/24x24" alt="Instagram" />
-                </Link>
-                <Link href="#" className="text-zinc-500 dark:text-zinc-300">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI-h-e2hgz8mwGfCt4gvj4IgMG_wAUolVM6w&s/24x24" alt="Twitter" />
-                </Link>
-                <Link href="#" className="text-zinc-500 dark:text-zinc-300">
-                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRW1M7nqpfp6Xzb7X8GgLQFd9dtOcjdXK20IQ&s/24x24" alt="Facebook" />
-                </Link>
-
-              </div>
-
-            </div>
-            <div className="text-left text-zinc-400 dark:text-zinc-300 ">
-              © 2024 TeamMadeEasy, we love our users!
-            </div>
-
+            
+            <p className="text-xs text-gray-500">
+              © JWoC {new Date().getFullYear()}. All rights reserved.
+            </p>
           </div>
+          
+          {/* Archives Section */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-md bg-gray-50 p-8 rounded-2xl shadow-lg">
+              <h2 className="text-2xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
+                Archives
+              </h2>
+              
+              <ArchiveLink year="2024" link="https://jwoc-5.vercel.app/" />
+              <ArchiveLink year="2023" link="https://jwoc-2k23.vercel.app/" />
+              <ArchiveLink year="2022" link="https://jwoc-2k22.vercel.app/" />
+              <ArchiveLink year="2021" link="https://jwoc-2k21.vercel.app/" />
+              <ArchiveLink year="2020" link="https://jwoc-2k20.vercel.app/" />
+            </div>
+          </div>
+          
+          {/* Contact Section */}
+          <div className="flex justify-center">
+            <form 
+             
+              className="w-full max-w-xs bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md"
+            >
+              <h3 className="text-xl font-semibold text-center mb-6 text-gray-800 dark:text-white">
+                Contact Us
+              </h3>
 
+              <div className="space-y-4">
+                <div>
+                  <label 
+                    htmlFor="name" 
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    Your Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                   
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label 
+                    htmlFor="email" 
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    Your Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                   
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="john@example.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label 
+                    htmlFor="message" 
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                   
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
+                    placeholder="Your message here..."
+                    required
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Send Message
+                </button>
+
+                {status && (
+                  <p className={`text-center text-sm mt-2 ${status.includes('successfully') ? 'text-green-600' : 'text-red-600'}`}>
+                    {status}
+                  </p>
+                )}
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+    </footer>
+);
 
+const SocialLink = ({ href, icon, label }) => (
+  <a 
+    href={href} 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    className="transition transform hover:scale-110"
+    aria-label={label}
+  >
+    {icon}
+  </a>
+);
+
+const ArchiveLink = ({ year, link }) => (
+  <div className="mb-4 group">
+    <a 
+      href={link} 
+      className="flex items-center text-gray-700 hover:text-blue-600 transition"
+    >
+      <span className="mr-2 opacity-0 group-hover:opacity-100 transition">→</span>
+      Jwoc {year}
+    </a>
+  </div>
+);
+
+const DiscordIcon = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" fill="currentColor" {...props}>
+    <path d="M41.625 10.77C37.645 7.566 31.348 7.023 31.078 7.004c-.418-.036-.817.199-.988.586-.016.024-.152.34-.304.832 2.633.446 5.867 1.34 8.793 3.156.469.29.613.906.324 1.375a1.06 1.06 0 0 1-1.53.153C37.492 10.156 31.211 10 25 10c-6.21 0-12.496.156-17.523 3.277-.469.293-1.086.148-1.375-.32-.293-.472-.148-1.086.32-1.375C14.348 9.766 17.582 8.868 20.215 8.426 20.062 7.93 19.926 7.617 19.914 7.59c-.176-.387-.57-.63-.992-.586-.27.02-6.566.563-10.601 3.809C6.215 12.762 2 24.152 2 34c0 .176.047.344.133.496 2.906 5.11 10.84 6.445 12.648 6.504h.03c.32 0 .621-.152.808-.41l1.828-2.516C12.516 36.8 9.996 34.637 9.852 34.508c-.414-.364-.453-.996-.086-1.41.363-.414.996-.453 1.41-.086.059.055 4.7 3.993 13.824 3.993 9.14 0 13.78-3.954 13.828-3.993.414-.36 1.043-.324 1.41.094.364.414.324 1.043-.086 1.41-.144.129-2.664 2.293-7.598 3.566l1.828 2.516c.188.258.488.41.808.41h.031c1.808-.059 9.742-1.395 12.648-6.504.086-.152.133-.32.133-.496 0-9.848-4.215-21.238-6.375-23.23zM18.5 30c-1.934 0-3.5-1.79-3.5-4s1.566-4 3.5-4 3.5 1.79 3.5 4-1.566 4-3.5 4zm13 0c-1.934 0-3.5-1.79-3.5-4s1.566-4 3.5-4 3.5 1.79 3.5 4-1.566 4-3.5 4z" />
+  </svg>
+);
+
+const App = () => {
+  const testimonials = [
+    {
+      name: "Advanced Search",
+      title: "Find and connect with professionals based on skills and expertise.",
+      icon:    <Search className="w-12 h-12 text-green-500 mb-4" />
+    },
+    {
+   
+      name: "Group Collaboration",
+      title: "Create or join groups for real-time discussions and projects.",
+      icon:    <Users className="w-12 h-12 text-green-500 mb-4" />
+    },
+    {
+    
+      name: "Skill Validation",
+      title: "Verify your expertise with certificates and peer endorsements.",
+      icon:    <BookOpen className="w-12 h-12 text-green-500 mb-4" />
+    },
+    {
+      quote:
+        "Call me Ishmael. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.",
+      name: "Herman Melville",
+      title: "Moby-Dick",
+    },
+  ];
+  return (
+    <div className="min-h-screen bg-white">
+      <NavBar />
+      <Hero />
+      <FeatureSection />
+      <Features testimonials={testimonials}/>
+     
+      <Footer />
+    </div>
   );
-}
+};
+
+export default App;

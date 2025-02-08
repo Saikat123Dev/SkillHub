@@ -196,7 +196,6 @@ export const findMembers = async (groupId: any) => {
               select: {
                 name: true,
                 id: true,
-                profilePic :true
               },
             },
           },

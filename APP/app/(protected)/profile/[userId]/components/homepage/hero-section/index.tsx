@@ -22,6 +22,7 @@ function HeroSection({ details, profileUserId }) {
   const [groupname, setGroupname] = useState("");
   useEffect(() => {
     const loadGroups = async () => {
+      console.log('details',details);
       if (session?.id) {
         const fetchedGroups = await AllGroups(session.id);
         setGroups(fetchedGroups);
@@ -328,31 +329,25 @@ function HeroSection({ details, profileUserId }) {
               <div>
                 <span className="ml-4 lg:ml-8 mr-2 text-white">name:</span>
                 <span className="text-gray-400">{""}</span>
-                <span className="text-amber-300">Abu Said</span>
+                <span className="text-amber-300">{details?.name}</span>
                 <span className="text-gray-400">{","}</span>
               </div>
               <div className="ml-4 lg:ml-8 mr-2">
-                <span className=" text-white">skills:</span>
-                <span className="text-gray-400">{"["}</span>
-                <span className="text-amber-300">React</span>
-                <span className="text-gray-400">{"', '"}</span>
-                <span className="text-amber-300">NextJS</span>
-                <span className="text-gray-400">{"', '"}</span>
-                <span className="text-amber-300">Redux</span>
-                <span className="text-gray-400">{"', '"}</span>
-                <span className="text-amber-300">Express</span>
-                <span className="text-gray-400">{"', '"}</span>
-                <span className="text-amber-300">NestJS</span>
-                <span className="text-gray-400">{"', '"}</span>
-                <span className="text-amber-300">MySql</span>
-                <span className="text-gray-400">{"', '"}</span>
-                <span className="text-amber-300">MongoDB</span>
-                <span className="text-gray-400">{"', '"}</span>
-                <span className="text-amber-300">Docker</span>
-                <span className="text-gray-400">{"', '"}</span>
-                <span className="text-amber-300">AWS</span>
-                <span className="text-gray-400">{"'],"}</span>
-              </div>
+  <span className="text-white font-semibold">Skills:</span>
+  <span className="text-gray-400 ml-1">[</span>
+  {details?.Skills.length > 0 ? (
+    details.Skills.map((skill, index) => (
+      <div key={index} className="text-amber-300">
+        {skill}
+        {index < details.Skills.length - 1 ? <span className="text-gray-400">, </span> : ''}
+      </div>
+    ))
+  ) : (
+    <span className="text-gray-500 italic ml-2">No skills listed</span>
+  )}
+  <span className="text-gray-400">]</span>
+</div>
+
               <div>
                 <span className="ml-4 lg:ml-8 mr-2 text-white">
                   hardWorker:
@@ -401,7 +396,7 @@ function HeroSection({ details, profileUserId }) {
                 <span className="ml-12 lg:ml-24 text-cyan-400">this.</span>
                 <span className="mr-2 text-white">skills.length</span>
                 <span className="mr-2 text-amber-300">&gt;=</span>
-                <span className="text-orange-400">5</span>
+                <span className="text-orange-400">{details?.length||"Skills not Listed"}</span>
               </div>
               <div>
                 <span className="ml-8 lg:ml-16 mr-2 text-gray-400">{");"}</span>
