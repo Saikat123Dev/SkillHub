@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-// Types remain the same
+
 interface NavItem {
     label: string;
     href: string;
