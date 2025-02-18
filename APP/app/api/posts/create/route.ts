@@ -1,42 +1,43 @@
-// import NextAuth from "next-auth";
-// import { PrismaAdapter } from "@auth/prisma-adapter";
-// import { db } from "@/lib/db";
-// import authConfig from "@/auth.config";
-// import { getUserById } from "@/data/user";
-// import { getAccountByUserId } from "@/data/account";
-// import { currentUser } from "@/lib/auth";
+import { getUserById } from "@/data/user";
+import { currentUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 
-// export async function POST(req: Request) {
-//     try {
+export async function POST(req: Request) {
+    try {
+        const user = await currentUser();
+        if (!user) {
+            return new Response('Unauthorized', { status: 401 });
+        }
 
-//         const user = await currentUser();
-//         if (!user) {
-//             return new Response('Unauthorized', { status: 401 });
-//         }
+        const dbUser = await getUserById(user.id);
+        if (!dbUser) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+        }
 
-//         const dbUser = await getUserById(user.id);
-//         if (!dbUser) {
-//             return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-//         }
+        const { description, techStack, looking, groupId } = await req.json();
+        console.log(description, techStack, looking, groupId);
+        if (!description || !Array.isArray(techStack) || !Array.isArray(looking) || !groupId) {
+            return new Response(JSON.stringify({ error: "Invalid data" }), { status: 400 });
+        }
 
+        const newPost = await db.post.create({
+            data: {
+                description,
+                techStack,
+                looking,
+                group: {
+                    connect: { id: groupId },
+                },
 
-//         const { title, content,slug } = await req.json();
+                author: {
+                    connect: { id: dbUser.id },
+                },
+            },
+        });
 
-//       console.log(title)
-//         const newPost = await db.post.create({
-//             data: {
-//                 title: title,
-//                 content: content,
-//                 slug,
-//                 author: {
-//                     connect: { id: dbUser.id },
-//                 },
-//             },
-//         });
-
-//         return new Response(JSON.stringify(newPost), { status: 201 });
-//     } catch (error) {
-//         console.error(error);
-//         return new Response('Error creating post', { status: 500 });
-//     }
-// }
+        return new Response(JSON.stringify(newPost), { status: 201 });
+    } catch (error) {
+        console.error(error);
+        return new Response(JSON.stringify({ error: "Error creating post" }), { status: 500 });
+    }
+}

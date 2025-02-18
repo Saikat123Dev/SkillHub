@@ -5,8 +5,18 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const { groupId, userId, role = "MEMBER" } = await request.json();
-
-
+    console.log(groupId, userId, role);
+    const existingMembership = await prisma.groupMembership.findUnique({
+      where: {
+        userId_groupId: {
+          userId,
+          groupId
+        }
+      }
+    });
+    if (existingMembership) {
+      return NextResponse.json({ error: "User is already a member of this group" }, { status: 400 });
+    }
     const newMember = await db.groupMembership.create({
       data: {
         userId,

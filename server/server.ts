@@ -17,7 +17,7 @@ async function init() {
     // Attach socket service to HTTP server with CORS configuration
     socketService.io.attach(httpServer, {
       cors: {
-        origin: ["http://localhost:3000"], // Add your client's origin
+        origin: ["https://skill-hub-ftc6.vercel.app"], // Add your client's origin
         methods: ["GET", "POST"],
         credentials: true,
         allowedHeaders: ["*"]

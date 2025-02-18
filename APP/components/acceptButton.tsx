@@ -1,8 +1,9 @@
 "use client";
-import { Check } from "lucide-react";
-import { useState } from "react";
+import { motion } from "framer-motion";
+import { Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify"; // Ensure react-toastify is installed and imported
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 type AcceptButtonProps = {
   requestId: string;
@@ -11,13 +12,12 @@ type AcceptButtonProps = {
 };
 
 export default function AcceptButton({ requestId, groupId, userId }: AcceptButtonProps) {
-  const [status, setStatus] = useState("pending");
+  const [status, setStatus] = useState<"pending" | "accepted" | "already_member" | "error" | "loading">("pending");
   const router = useRouter();
 
   const handleAccept = async () => {
+    setStatus("loading");
     try {
-      console.log("Starting handleAccept...");
-
       const [acceptResponse, addGroupResponse] = await Promise.all([
         fetch(`/api/connect/accept`, {
           method: "POST",
@@ -31,33 +31,26 @@ export default function AcceptButton({ requestId, groupId, userId }: AcceptButto
         }),
       ]);
 
-      console.log("Responses received", { acceptResponse, addGroupResponse });
-
-      // Check responses
       if (acceptResponse.ok && addGroupResponse.ok) {
         setStatus("accepted");
         toast.success("Request accepted, and user added to the group!");
         router.push(`/groupchat/${groupId}/${requestId}`);
       } else {
-        // Attempt to parse addGroupResponse for specific error details
         const addGroupResult = await addGroupResponse.json().catch(() => ({}));
-
         if (addGroupResult.code === "P2002") {
           toast.info("User is already a member of this group.");
           setStatus("already_member");
         } else {
-          toast.error("Failed to add user to group.");
-          setStatus("error");
+          throw new Error("Failed to add user to group.");
         }
       }
     } catch (error) {
       console.error("Error processing requests:", error);
-      setStatus("error");
       toast.error("Error processing requests.");
+      setStatus("error");
     }
   };
 
-  // Render based on request status
   if (status === "accepted") {
     return <p className="text-green-500 font-bold">Accepted</p>;
   }
@@ -69,12 +62,19 @@ export default function AcceptButton({ requestId, groupId, userId }: AcceptButto
   }
 
   return (
-    <button
+    <motion.button
       onClick={handleAccept}
-      className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center"
+      className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center"
+      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.05 }}
+      disabled={status === "loading"}
     >
-      <Check size={18} className="mr-2" />
+      {status === "loading" ? (
+        <Loader2 size={18} className="mr-2 animate-spin" />
+      ) : (
+        <Check size={18} className="mr-2" />
+      )}
       Accept
-    </button>
+    </motion.button>
   );
 }

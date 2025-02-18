@@ -1,12 +1,12 @@
 import { db } from '@/lib/db';
 import { redis } from '@/lib/redis';
+import { Prisma } from '@prisma/client';
 import { createHash } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
 
 const PAGE_SIZE = 20;
 const CACHE_TTL = 300;
-const QUERY_TIMEOUT = 5000;
+const QUERY_TIMEOUT = 10000;
 
 type FilterConfig = {
   [key: string]: {
@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
 
     const where = buildWhereClause(searchParams);
     const cacheKey = `users:${hashFilters({ ...where, page })}`;
-    
+
     const cachedData = await redis.get(cacheKey);
     if (cachedData) {
       clearTimeout(timeoutId);

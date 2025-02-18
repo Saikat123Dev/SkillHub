@@ -1,13 +1,13 @@
 "use client";
 
 
+import { AllGroups } from "@/actions/group";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { BsGithub, BsLinkedin } from "react-icons/bs";
 import { FaTwitterSquare } from "react-icons/fa";
 import { SiLeetcode } from "react-icons/si";
-import { useState, useEffect } from "react";
 import { useCurrentUser } from "../../../../../../../hooks/use-current-user";
-import { AllGroups } from "@/actions/group";
 
 
 function HeroSection({ details, profileUserId }) {
@@ -54,9 +54,10 @@ function HeroSection({ details, profileUserId }) {
           senderId,
           message,
           purpose,
+          groupId:group,
           skills,
           groupname,
-          groupUrl: group ? `http://localhost:3000/group/${group}` : "",
+          groupUrl: group ? `/group/${group}` : "",
         }),
       });
       if (response.ok) {
@@ -93,9 +94,9 @@ function HeroSection({ details, profileUserId }) {
 
   return (
     <section className="relative flex flex-col items-center justify-between py-4 lg:py-12 border-t border-[#25213b]  bg-gradient-to-b from-blue-50 to-white">
-     
-    
-     
+
+
+
       {notification && (
         <div
           className={`fixed top-5 right-5 px-4 py-3 rounded-lg shadow-lg transition duration-300 ease-in-out z-[100] ${
@@ -185,7 +186,7 @@ function HeroSection({ details, profileUserId }) {
           className="group flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-500 rounded-lg text-white font-semibold shadow-lg hover:opacity-90 transition duration-200"
         >
           Connect
-        
+
         </button>
       )}
     </div>
@@ -211,8 +212,8 @@ function HeroSection({ details, profileUserId }) {
                           </label>
                           <textarea
                             id="message"
-                            rows="4"
-                            maxLength="300"
+                            rows={4}
+                            maxLength={300}
                             placeholder="Provide a brief description of the project..."
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
