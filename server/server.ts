@@ -26,7 +26,13 @@ async function init() {
     });
 
     // Start Kafka message consumer
-
+    // try {
+    //   await startMessageConsumer();
+    //   console.log('Kafka consumer started successfully');
+    // } catch (kafkaError) {
+    //   console.error('Failed to start Kafka message consumer:', kafkaError);
+    //   // Continue server startup even if Kafka fails
+    // }
 
     // Enhanced error handling for socket connections
     socketService.io.on('connection_error', (error) => {
