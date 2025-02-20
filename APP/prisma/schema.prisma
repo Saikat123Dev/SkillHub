@@ -60,8 +60,8 @@ model User {
 
 model Group {
   id      String            @id @default(auto()) @map("_id") @db.ObjectId
-  grpname String            @unique
-  grpbio  String            @unique
+  grpname String            
+  grpbio  String            
   adminId String            @db.ObjectId
   members GroupMembership[]
   lanes   Lanes[]
@@ -163,7 +163,7 @@ model FriendRequest {
 
 model Post {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  description   String
+  description   String?
   techStack     String[]
   looking       String[]
   group         Group           @relation(fields: [groupId], references: [id])

@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react';
 
-import { Search, Users, BookOpen, Play, ChevronDown } from 'lucide-react';
+import { Search, Users, BookOpen, Play, ChevronDown, Rocket, PenTool, MessageCircle } from 'lucide-react';
 import { InfiniteMovingCards } from '@/components/ui/infinite-moving-cards';
 import Link from 'next/link';
 import { Button } from '@/components/ui/moving-border';
@@ -9,6 +9,7 @@ import { Facebook, Instagram, Twitter, Linkedin, Github } from 'lucide-react';
 import search from '@/public/image/search.png'
 import join from '@/public/image/join.png'
 import meet from '@/public/image/meet.png'
+import { RocketIcon, Sparkles } from 'lucide-react';
 
 const NavBar = () => (
   
@@ -60,30 +61,29 @@ const Hero = () => {
                 Connect.
               </span>
               <span className="block mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
-                Showcase.
+                Build
               </span>
               <span className="block mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                Collaborate.
+                Collaborate
               </span>
               <span className="block bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-500">
-                Succeed.
+                Succeed
               </span>
             </h1>
 
             <p className="text-xl text-gray-300 mb-12 leading-relaxed">
-              Transform your digital presence with our cutting-edge platform. 
-              Connect with industry leaders, showcase your expertise, and drive success.
+            Transform your ideas into reality with TeamBuilder. Find the right teammates, showcase your skills, and collaborate seamlessly to drive success in projects, hackathons, and startups.
             </p>
 
             <div className="flex flex-wrap gap-4">
               <button className="bg-green-500 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-green-600 transition-all transform hover:translate-y-[-2px] hover:shadow-lg">
-                Get Started
+              <Link href="/auth/register" className="text-white px-1 py-1 md:px-1 md:py-1 rounded-full">Register Now</Link>
               </button>
               <Button
                 borderRadius="1.75rem"
                 className="dark:bg-slate-900 border-neutral-200 dark:border-slate-800 font-bold transform transition-transform duration-300 hover:scale-95"
               >
-                <Link href="/auth/register" className="text-white px-1 py-1 md:px-1 md:py-1 rounded-full">Watch Demo</Link>
+                <Link href="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=0" className="text-white px-1 py-1 md:px-1 md:py-1 rounded-full">Watch Demo</Link>
               </Button>
             </div>
           </div>
@@ -131,10 +131,10 @@ const FeatureSection = () => (
     <div className="lg:grid lg:grid-cols-2 lg:gap-8">
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          Seamless Integration, Comprehensive Profiles, Endless Opportunities
+        🔹 Post-Based Collaboration – Not Just Profiles!
         </h2>
         <p className="mt-6 text-xl text-gray-500">
-          Showcase talents, connect, and collaborate professionally.
+        📢 Looking for a React + Node.js Developer? Instead of scrolling through endless profiles, post your project needs, and let skilled professionals apply to join your team.
         </p>
         <div className="mt-8">
           <div className="inline-flex rounded-md shadow">
@@ -162,16 +162,16 @@ const FeatureSection = () => (
       </div>
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          Skill-Based Search Simplified
+        Find Your Perfect Teammate, Instantly!
         </h2>
         <p className="mt-6 text-xl text-gray-500">
-          Find users by specific talents with our advanced search feature.
+        💡 No More Random Networking – Search by skills, role, college, or username to find the right teammate for your project, hackathon, or startup.
         </p>
         <div className="mt-8">
           <div className="inline-flex rounded-md shadow">
-            <a href="#" className="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-5 py-3 text-base font-medium text-white hover:bg-green-700">
+            <Link href="/search" className="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-5 py-3 text-base font-medium text-white hover:bg-green-700">
               Try Now
-            </a>
+            </Link>
           </div>
           <div className="inline-flex ml-3">
             <a href="#" className="inline-flex items-center justify-center rounded-md border border-transparent text-base font-medium text-green-600 hover:text-green-500">
@@ -188,11 +188,20 @@ const FeatureSection = () => (
     <div className="lg:grid lg:grid-cols-2 lg:gap-8">
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          Seamless Integration, Comprehensive Profiles, Endless Opportunities
+        🔹 All-in-One Project Execution Hub
         </h2>
-        <p className="mt-6 text-xl text-gray-500">
-          Showcase talents, connect, and collaborate professionally.
-        </p>
+        <p className="mt-6 text-xl text-gray-600 leading-relaxed">
+  <span className="font-semibold text-gray-800">🚀 Hub: All-in-One Project Management</span>  
+  <br />  
+  Ditch third-party tools! Manage your project seamlessly from start to finish with:
+  <ul className="mt-4 space-y-2">
+    <li>📌 <span className="font-medium">Drag & Drop Task Boards</span> – Stay organized effortlessly.</li>
+    <li>✏️ <span className="font-medium">Collaborative Whiteboard</span> – Brainstorm and visualize ideas.</li>
+    <li>💬 <span className="font-medium">Real-Time Chat & Updates</span> – Stay connected with your team.</li>
+    <li>📅 <span className="font-medium">Calendly-Based Scheduling</span> – Streamline your meetings.</li>
+  </ul>
+</p>
+
         <div className="mt-8">
           <div className="inline-flex rounded-md shadow">
             <a href="#" className="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-5 py-3 text-base font-medium text-white hover:bg-green-700">
@@ -247,170 +256,131 @@ const Features = ({testimonials}) => (
   </div>
 );
 
-const Footer = () => (
-  <footer className="bg-white shadow-lg py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Logo Section */}
-          <div className="flex flex-col items-center space-y-6">
-          <div className="md:col-span-2">
-              <h2 className="text-2xl font-bold text-black dark:text-white">TeamMadeEasy</h2>
-              <p className="mt-2 mb-2 text-zinc-400 dark:text-zinc-300">
-                Connect, Collaborate, Grow Together
-              </p>
-              {/* Button component */}
-              <Button
-                borderRadius="1.75rem"
-                className="dark:bg-slate-900 border-neutral-200 dark:border-slate-800 font-bold transform transition-transform duration-300 hover:scale-95"
-              >
-                <Link href="/auth/register" className="text-white px-1 py-1 md:px-1 md:py-1 rounded-full">Join Now</Link>
-              </Button>
-            </div>
-            
-            <div className="flex space-x-6">
-              <SocialLink 
-                href="https://github.com/jwoc-jgec" 
-                icon={<Github className="w-8 h-8 text-gray-500 hover:text-blue-600" />} 
-                label="GitHub" 
-              />
-              <SocialLink 
-                href="https://discord.gg/7xwWUTdb" 
-                icon={<DiscordIcon className="w-8 h-8 text-gray-500 hover:text-blue-600" />} 
-                label="Discord" 
-              />
-             
-              <SocialLink 
-                href="https://www.linkedin.com/company/jwoc" 
-                icon={<Linkedin className="w-8 h-8 text-gray-500 hover:text-blue-600" />} 
-                label="LinkedIn" 
-              />
-            </div>
-            
-            <p className="text-xs text-gray-500">
-              © JWoC {new Date().getFullYear()}. All rights reserved.
-            </p>
-          </div>
-          
-          {/* Archives Section */}
-          <div className="flex justify-center">
-            <div className="w-full max-w-md bg-gray-50 p-8 rounded-2xl shadow-lg">
-              <h2 className="text-2xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
-                Archives
-              </h2>
-              
-              <ArchiveLink year="2024" link="https://jwoc-5.vercel.app/" />
-              <ArchiveLink year="2023" link="https://jwoc-2k23.vercel.app/" />
-              <ArchiveLink year="2022" link="https://jwoc-2k22.vercel.app/" />
-              <ArchiveLink year="2021" link="https://jwoc-2k21.vercel.app/" />
-              <ArchiveLink year="2020" link="https://jwoc-2k20.vercel.app/" />
-            </div>
-          </div>
-          
-          {/* Contact Section */}
-          <div className="flex justify-center">
-            <form 
-             
-              className="w-full max-w-xs bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md"
-            >
-              <h3 className="text-xl font-semibold text-center mb-6 text-gray-800 dark:text-white">
-                Contact Us
-              </h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label 
-                    htmlFor="name" 
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                   
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="John Doe"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label 
-                    htmlFor="email" 
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    Your Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                   
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="john@example.com"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label 
-                    htmlFor="message" 
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                   
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-                    placeholder="Your message here..."
-                    required
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  Send Message
-                </button>
-
-                {status && (
-                  <p className={`text-center text-sm mt-2 ${status.includes('successfully') ? 'text-green-600' : 'text-red-600'}`}>
-                    {status}
-                  </p>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </footer>
-);
-
 const SocialLink = ({ href, icon, label }) => (
   <a 
-    href={href} 
-    target="_blank" 
-    rel="noopener noreferrer" 
-    className="transition transform hover:scale-110"
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="transform transition-all duration-300 hover:scale-110"
     aria-label={label}
   >
     {icon}
   </a>
 );
 
-const ArchiveLink = ({ year, link }) => (
-  <div className="mb-4 group">
-    <a 
-      href={link} 
-      className="flex items-center text-gray-700 hover:text-blue-600 transition"
-    >
-      <span className="mr-2 opacity-0 group-hover:opacity-100 transition">→</span>
-      Jwoc {year}
-    </a>
-  </div>
+const Footer = () => (
+  <footer className="bg-gradient-to-r from-blue-950  to-indigo-950 py-12 text-white">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        {/* Logo Section */}
+        <div className="flex flex-col items-center space-y-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
+              TeamMadeEasy
+            </h2>
+            <p className="mt-2 mb-4 text-blue-200">
+              Connect, Collaborate, Grow Together
+            </p>
+            <Button
+                borderRadius="1.75rem"
+                className="dark:bg-slate-900 border-neutral-200 dark:border-slate-800 font-bold transform transition-transform duration-300 hover:scale-95"
+              >
+                <Link href="/auth/register" className="text-white px-1 py-1 md:px-1 md:py-1 rounded-full">Join Now</Link>
+              </Button>
+          </div>
+          
+          <div className="flex space-x-8 mt-6">
+            <SocialLink 
+              href="https://github.com/jwoc-jgec" 
+              icon={<Github className="w-8 h-8 text-blue-200 hover:text-yellow-300 transition-colors duration-300" />} 
+              label="GitHub" 
+            />
+            {/* <SocialLink 
+              href="https://discord.gg/7xwWUTdb" 
+              icon={<Discord className="w-8 h-8 text-blue-200 hover:text-yellow-300 transition-colors duration-300" />} 
+              label="Discord" 
+            /> */}
+            <SocialLink 
+              href="https://www.linkedin.com/company/jwoc" 
+              icon={<Linkedin className="w-8 h-8 text-blue-200 hover:text-yellow-300 transition-colors duration-300" />} 
+              label="LinkedIn" 
+            />
+          </div>
+          
+          <p className="text-sm text-blue-200">
+            © TeamMadeEasy {new Date().getFullYear()}. All rights reserved.
+          </p>
+        </div>
+        
+        {/* Support Section */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-md p-8 rounded-2xl bg-white/5 backdrop-blur-lg">
+            <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
+              Support
+            </h2>
+            
+            <ul className="space-y-4">
+              {['Home', 'About Us', 'Privacy', "FAQ's"].map((item) => (
+                <li key={item} className="transform transition-all duration-300">
+                  <a 
+                    href="#" 
+                    className="text-blue-200 hover:text-yellow-300 hover:translate-x-2 inline-block transition-all duration-300 hover:scale-105"
+                  >
+                    {item}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        
+        {/* Contact Section */}
+        <div className="flex justify-center">
+          <form className="w-full max-w-md bg-white/5 backdrop-blur-lg p-8 rounded-2xl">
+            <h3 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
+              Contact Us
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 bg-white/10 border border-blue-200/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300/50 text-white placeholder-blue-200 transition-all"
+                  placeholder="Your Name"
+                />
+              </div>
+
+              <div>
+                <input
+                  type="email"
+                  className="w-full px-4 py-3 bg-white/10 border border-blue-200/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300/50 text-white placeholder-blue-200 transition-all"
+                  placeholder="Your Email"
+                />
+              </div>
+
+              <div>
+                <textarea
+                  rows={3}
+                  className="w-full px-4 py-3 bg-white/10 border border-blue-200/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300/50 text-white placeholder-blue-200 resize-none transition-all"
+                  placeholder="Your Message"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-300/50"
+              >
+                Send Message
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </footer>
 );
+
+
 
 const DiscordIcon = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" fill="currentColor" {...props}>
@@ -432,24 +402,104 @@ const App = () => {
       icon:    <Users className="w-12 h-12 text-green-500 mb-4" />
     },
     {
-    
-      name: "Skill Validation",
-      title: "Verify your expertise with certificates and peer endorsements.",
-      icon:    <BookOpen className="w-12 h-12 text-green-500 mb-4" />
+      name: "Collaborative Whiteboard",
+      title: "Brainstorm and visualize ideas together with an interactive whiteboard.",
+      icon: <PenTool className="w-12 h-12 text-green-500 mb-4" />,
     },
     {
-      quote:
-        "Call me Ishmael. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.",
-      name: "Herman Melville",
-      title: "Moby-Dick",
+      name: "Real-Time Chat & Task Boards",
+      title: "Communicate seamlessly and manage tasks with Kanban-style boards.",
+      icon: <MessageCircle className="w-12 h-12 text-green-500 mb-4" />,
     },
   ];
+  const ComingSoonPage = () => (
+    <div className="flex items-center justify-center p-4 bg-gray-50 min-h-screen">
+      <div className="w-full animate-fade-in-up max-w-6xl">
+        <div className="bg-white rounded-2xl p-8 md:p-12 shadow-xl border border-gray-100">
+          {/* Badge */}
+          <div className="flex justify-center mb-8">
+            <span className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-sm font-medium inline-flex items-center gap-2 hover:bg-blue-100 transition-colors">
+              <Sparkles className="w-4 h-4" />
+              Coming Soon
+            </span>
+          </div>
+  
+          {/* Main Title */}
+          <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-900 mb-6 hover:scale-105 transition-transform">
+            AI-Powered Smart Matching
+          </h1>
+  
+          {/* Subtitle */}
+          <h2 className="text-xl md:text-2xl text-center text-gray-600 mb-8 font-light">
+            Find Your Perfect Teammate Instantly!
+          </h2>
+  
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            {/* Feature 1 */}
+            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100">
+              <Rocket className="w-8 h-8 text-blue-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Instant Matching
+              </h3>
+              <p className="text-gray-600">
+                Advanced AI algorithms find your ideal teammates in seconds
+              </p>
+            </div>
+  
+            {/* Feature 2 */}
+            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100">
+              <Users className="w-8 h-8 text-blue-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Perfect Compatibility
+              </h3>
+              <p className="text-gray-600">
+                Match based on skills, experience, and work style
+              </p>
+            </div>
+  
+            {/* Feature 3 */}
+            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100">
+              <Sparkles className="w-8 h-8 text-blue-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Smart Analysis
+              </h3>
+              <p className="text-gray-600">
+                Data-driven insights for optimal team composition
+              </p>
+            </div>
+          </div>
+  
+          {/* Description */}
+          <p className="text-center text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+            No more endless searching! Our intelligent AI analyzes your project needs, 
+            skills, and preferences to instantly suggest the best teammates—ensuring 
+            seamless collaboration and success.
+          </p>
+            {/* Email Input */}
+          <div className="max-w-md mx-auto">
+            <div className="flex gap-4 flex-col sm:flex-row">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-6 py-3 rounded-lg bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              />
+              <button className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5">
+                Notify Me
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   return (
     <div className="min-h-screen bg-white">
       <NavBar />
       <Hero />
       <FeatureSection />
       <Features testimonials={testimonials}/>
+     <ComingSoonPage/>
      
       <Footer />
     </div>

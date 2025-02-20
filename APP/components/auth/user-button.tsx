@@ -37,7 +37,7 @@ export const UserButton = () => {
         <div>
           <DropdownMenuItem>
             <FaUser className="h-4 w-4 mr-2" />
-            <Link href={`https://skill-hub-ftc6.vercel.app/profile/${userId}`}>
+            <Link href={`/profile/${userId}`}>
               Profile
             </Link>
           </DropdownMenuItem>
