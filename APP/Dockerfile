@@ -6,7 +6,7 @@ COPY package*.json ./
 
 RUN npm install
 RUN npm install eslint eslint-config-next --save-dev
-RUN npm install -g prisma
+RUN npm install -g prisma1
 
 COPY . .
 ENV DISABLE_ESLINT_PLUGIN=true
