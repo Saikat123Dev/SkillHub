@@ -4,7 +4,7 @@ services:
     image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper_service
     ports:
-      - "2181:2181"
+      - "2181:2182"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
