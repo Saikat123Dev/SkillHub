@@ -1,6 +1,5 @@
 import { findMembers, IndividualGroup } from '@/actions/group';
 import GitHubRepos from "@/components/Github";
-import WhatsAppGroupClient from '@/components/GroupPage';
 import { getUserById } from '@/data/user';
 import { currentUser } from '@/lib/auth';
 import { AlertTriangle, Code, Github, Target, UserCog, Users } from 'lucide-react';
@@ -58,7 +57,7 @@ const WhatsAppGroup = async ({ params }) => {
         </div>
 
         {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid  grid-cols-1 min-h-screen lg:grid-cols-3 gap-8">
           {/* Left Column: Group Info */}
           <div className="lg:col-span-1 space-y-8">
             {/* Group Bio */}
@@ -109,19 +108,12 @@ const WhatsAppGroup = async ({ params }) => {
 
             {/* GitHub Repos */}
             {grp.githubLink && (
+              <div className='bg-white shadow-xl rounded-2xl p-6 transform transition-all hover:shadow-2xl '>
               <GitHubRepos githublink={grp.githubLink} />
+              </div>
             )}
 
-            {/* WhatsApp Group Client */}
-            <div className="bg-white shadow-xl rounded-2xl p-6 transform transition-all hover:shadow-2xl">
-              <WhatsAppGroupClient
-                group={grp}
-                admin={admin}
-                requestId={requestId}
-                currentUser={user}
-                members={members[0].members}
-              />
-            </div>
+
           </div>
         </div>
       </div>

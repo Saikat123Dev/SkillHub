@@ -5,14 +5,31 @@ import { db } from "@/lib/db";
 
 export const Creategroup = async (formData: { get: (arg0: string) => any }) => {
   try {
+    // Extract form data
     const grpname = formData.get("Name");
     const grpbio = formData.get("description");
-    console.log("Received form data:", { grpname, grpbio });
+    const projectTitle = formData.get("projectTitle");
+    const projectDescription = formData.get("projectDescription");
+    const githubLink = formData.get("githubLink");
+    const techStack = JSON.parse(formData.get("techStack"));
+    const projectGoals = formData.get("projectGoals");
 
-    if (!grpname || !grpbio) {
-      throw new Error("Missing required fields: grpname, grpbio");
+    console.log("Received form data:", {
+      grpname,
+      grpbio,
+      projectTitle,
+      projectDescription,
+      githubLink,
+      techStack,
+      projectGoals,
+    });
+
+    // Validate required fields
+    if (!grpname || !grpbio || !projectTitle || !projectDescription || !projectGoals) {
+      throw new Error("Missing required fields: name, description, projectTitle, projectDescription, projectGoals");
     }
 
+    // Get the current user
     const user = await currentUser();
     console.log("currentuser", user);
 
@@ -20,16 +37,23 @@ export const Creategroup = async (formData: { get: (arg0: string) => any }) => {
       return { error: "Unauthorized" };
     }
 
+    // Fetch the user from the database
     const dbUser = await getUserById(user.id);
     if (!dbUser) {
       return { error: "Unauthorized" };
     }
     console.log("dbUser", dbUser);
 
-    const new_grp = await db.group.create({
+    // Create the new group
+    const newGroup = await db.group.create({
       data: {
         grpname,
         grpbio,
+        projectTitle,
+        projectDescription,
+        githubLink,
+        techStack,
+        projectGoals,
         adminId: dbUser.id,
         members: {
           create: {
@@ -43,10 +67,10 @@ export const Creategroup = async (formData: { get: (arg0: string) => any }) => {
       },
     });
 
-    console.log("New group created:", new_grp);
-    return new_grp;
+    console.log("New group created:", newGroup);
+    return newGroup;
   } catch (error) {
-    console.error("Error in creategroup function:", error);
+    console.error("Error in Creategroup function:", error);
     throw new Error("Failed to create group");
   }
 };
@@ -145,7 +169,7 @@ export const findMyAllGroups = async () => {
   try {
     const groups = await db.groupMembership.findMany({
       where: {
-        userId: dbUser.id,
+        userId: dbUser.id
       },
       include: {
         group: {
@@ -174,8 +198,8 @@ export const findMyAllGroups = async () => {
         },
       },
     });
+
     return groups;
-    console.log("groups", groups);
   } catch (error) {
     console.error("Error in findAllGroups function:", error);
     throw new Error("Failed to find all groups");

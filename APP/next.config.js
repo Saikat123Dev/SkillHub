@@ -31,6 +31,8 @@ const nextConfig = {
       "media.dev.to",
       "utfs.io",
       "assets.aceternity.com",
+      "avatars.githubusercontent.com",
+      "camo.githubusercontent.com"
     ],
   },
 };

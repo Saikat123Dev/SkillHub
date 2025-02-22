@@ -59,19 +59,22 @@ model User {
 }
 
 model Group {
-  id      String            @id @default(auto()) @map("_id") @db.ObjectId
-  grpname String            
-  grpbio  String            
-  adminId String            @db.ObjectId
-  members GroupMembership[]
-  lanes   Lanes[]
-
-  calenders Calendy[]
-
-  admin         User            @relation(fields: [adminId], references: [id])
-  Message       Message[]
-  Post          Post[]
-  FriendRequest FriendRequest[]
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  grpname            String // Group name
+  grpbio             String // Group description
+  projectTitle       String? // Project title
+  projectDescription String? // Project description
+  githubLink         String? // GitHub repository link
+  techStack          String[] // Tech stack used in the project
+  projectGoals       String? // Project goals and milestones
+  adminId            String            @db.ObjectId
+  members            GroupMembership[]
+  lanes              Lanes[]
+  calendars          Calendy[]
+  admin              User              @relation(fields: [adminId], references: [id])
+  messages           Message[]
+  posts              Post[]
+  friendRequests     FriendRequest[]
 }
 
 model GroupMembership {
