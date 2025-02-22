@@ -1,13 +1,11 @@
 "use server";
-import { Prisma } from "@prisma/client";
-import * as z from "zod";
-import bcrypt from "bcryptjs";
-import { unstable_update } from "@/auth";
-import { db } from "@/lib/db";
-import { SettingsSchema } from "@/schemas";
 import { getUserByEmail, getUserById } from "@/data/user";
 import { currentUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { generateVerificationToken } from "@/lib/tokens";
+import { SettingsSchema } from "@/schemas";
+import bcrypt from "bcryptjs";
+import * as z from "zod";
 // import { sendVerificationEmail } from "@/lib/mail";
 
 export const settings = async (values: z.infer<typeof SettingsSchema>) => {
@@ -62,12 +60,12 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
     email: values.email,
     username: values.username,
     password: values.password,
-    Roles: Array.isArray(values.Roles) ? values.Roles : [], 
+    Roles: Array.isArray(values.Roles) ? values.Roles : [],
     Skills: Array.isArray(values.Skills) ? values.Skills : [],
     country: values.country,
     location: values.location,
     about: values.about,
-    profilePic: values.profilePic,
+    image: values.profilePic,
     gender: values.gender,
     linkedin: values.linkedin,
     github: values.github,
@@ -82,7 +80,7 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
     shortIntro:values.shortIntro,
     leetcode :values.leetcode,
     duration :values.duration,
-    
+
     domain: values.domain,
   };
 
@@ -95,20 +93,13 @@ export const settings = async (values: z.infer<typeof SettingsSchema>) => {
       data: updateData,
     });
 
-    unstable_update({
-      user: {
-        name: updatedUser.name,
-        email: updatedUser.email,
-      },
-    });
-
+    // No need for unstable_update; session will update via callbacks
     return { success: "Settings Updated!" };
   } catch (error) {
     console.error("Update failed:", error);
     return { error: "Failed to update settings." };
   }
 };
-
 export const getSettings = async () => {
   const user = await currentUser();
 

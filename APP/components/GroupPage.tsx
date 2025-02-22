@@ -8,17 +8,15 @@ import AcceptButton from "./acceptButton";
 
 const WhatsAppGroupClient = ({ admin, currentUser, requestId, members, group }) => {
   const [hoveredMember, setHoveredMember] = useState(null);
+  const isMember = members.some((member) => member.user.id === currentUser.id);
+  const isAdmin = admin.id === currentUser.id; // Check if current user is the admin
+
+  console.log(members);
 
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 transform transition-all hover:shadow-2xl border border-gray-100">
-      {/* Header */}
-
-
       {/* Content */}
       <div className="p-6 space-y-6">
-        {/* Group Bio */}
-
-
         {/* Members */}
         <div>
           <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -34,7 +32,7 @@ const WhatsAppGroupClient = ({ admin, currentUser, requestId, members, group }) 
                 className="relative group hover:z-50"
               >
                 <img
-                  src={profile.user.profilePic}
+                  src={profile.user.image}
                   alt={profile.user.name}
                   className="w-12 h-12 rounded-full border-3 border-white shadow-md transition-all hover:scale-125 hover:border-blue-500 cursor-pointer"
                 />
@@ -53,22 +51,15 @@ const WhatsAppGroupClient = ({ admin, currentUser, requestId, members, group }) 
 
         {/* Actions */}
         <div className="flex justify-between mt-6">
-          {currentUser.id !== group.adminId ? (
+          {!isMember && currentUser.id !== group.adminId ? (
             <div className="flex space-x-4">
-              <AcceptButton
-                groupId={group.id}
-                requestId={requestId}
-                userId={currentUser.id}
-
-              />
-              <button
-                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg flex items-center transition-all hover:shadow-md"
-              >
+              <AcceptButton groupId={group.id} requestId={requestId} userId={currentUser.id} />
+              <button className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg flex items-center transition-all hover:shadow-md">
                 <X size={18} className="mr-2" />
                 Decline
               </button>
             </div>
-          ) : (
+          ) : isAdmin ? (
             <Dialog>
               <DialogTrigger asChild>
                 <Link
@@ -86,7 +77,7 @@ const WhatsAppGroupClient = ({ admin, currentUser, requestId, members, group }) 
                 <p className="text-gray-600">Search and invite new members to join the group (future implementation).</p>
               </DialogContent>
             </Dialog>
-          )}
+          ) : null} {/* Hide the Add Members button for normal members */}
         </div>
       </div>
     </div>

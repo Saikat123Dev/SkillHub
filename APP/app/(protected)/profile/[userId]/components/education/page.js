@@ -4,32 +4,33 @@ import { Badge } from "../../../../../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../../../components/ui/card";
 
 export const Education = (details) => {
+
   const educationData = [
     {
       level: "Secondary Education",
       icon: <School className="h-8 w-8" />,
       type: "Class 10th",
-      institution: details?.class10 || "Enter your School's Name",
-      score: details?.percentage_10 || "Enter your percentage marks",
+      institution: details?.details?.class10 || "Enter your School's Name",
+      score: details?.details?.percentage_10+'%' || "Enter your percentage marks",
       badge: "Secondary"
     },
     {
       level: "Higher Secondary",
       icon: <School className="h-8 w-8" />,
       type: "Class 12th",
-      institution: details?.class12 || "Enter your School's Name",
-      score: details?.percentage_12  || "Enter your percentage marks",
+      institution: details?.details?.class12 || "Enter your School's Name",
+      score: details?.details?.percentage_12+'%'  || "Enter your percentage marks",
       badge: "Higher Secondary"
     },
     {
       level: "University Education",
       icon: <GraduationCap className="h-8 w-8" />,
       type: "College",
-      institution: details?.college || "Enter your College's Name",
+      institution: details?.details?.college || "Enter your College's Name",
       additionalInfo: [
-        { label: "Current Year", value: details?.currentYear || "Enter your Current Year" },
-        { label: "Department", value: details?.dept || "Enter your Department" },
-        { label: "Field of Study", value: details?.domain || "Enter your Domain" }
+        { label: "Current Year", value: details?.details?.currentYear || "Enter your Current Year" },
+        { label: "Department", value: details?.details?.dept || "Enter your Department" },
+        { label: "Field of Study", value: details?.details?.domain || "Enter your Domain" }
       ],
       badge: "Undergraduate"
     }

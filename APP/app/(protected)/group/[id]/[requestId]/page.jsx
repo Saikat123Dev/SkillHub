@@ -21,6 +21,7 @@ const WhatsAppGroup = async ({ params }) => {
 
   // Authentication Check
   const user = await currentUser();
+  console.log("user",user);
   if (!user) return <ErrorDisplay message="Unauthorized Access" />;
 
   // Fetch Group Data

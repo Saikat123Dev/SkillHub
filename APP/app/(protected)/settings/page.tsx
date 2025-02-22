@@ -105,7 +105,7 @@ const SettingsPage = () => {
           data.getsettingdetails.country && form.setValue('country', data.getsettingdetails.country);
           data.getsettingdetails.gender && form.setValue('gender', data.getsettingdetails.gender);
           data.getsettingdetails.location && form.setValue('location', data.getsettingdetails.location);
-          data.getsettingdetails.profilePic && form.setValue('profilePic', data.getsettingdetails.profilePic);
+          data.getsettingdetails.image && form.setValue('profilePic', data.getsettingdetails.image);
           data.getsettingdetails.linkedin && form.setValue('linkedin', data.getsettingdetails.linkedin);
           data.getsettingdetails.github && form.setValue('github', data.getsettingdetails.github);
           data.getsettingdetails.twitter && form.setValue('twitter', data.getsettingdetails.twitter);

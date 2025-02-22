@@ -198,7 +198,7 @@ export const findMyAllGroups = async () => {
         },
       },
     });
-
+   console.log(groups);
     return groups;
   } catch (error) {
     console.error("Error in findAllGroups function:", error);
@@ -220,10 +220,12 @@ export const findMembers = async (groupId: any) => {
               select: {
                 name: true,
                 id: true,
+                image:true
               },
             },
           },
         },
+
       },
     });
     return members;
