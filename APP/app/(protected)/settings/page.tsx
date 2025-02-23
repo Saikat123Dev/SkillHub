@@ -60,7 +60,7 @@ const SettingsPage = () => {
   const [success, setSuccess] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
   const initialValues = {
-    password: undefined,
+    password:user?.password || undefined,
     newPassword: undefined,
     name: user?.name || undefined,
     email: user?.email || undefined,
