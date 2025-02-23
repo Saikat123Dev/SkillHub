@@ -1,45 +1,135 @@
 "use client";
-import { Eye, File, Folder, GitFork, Github, Star } from 'lucide-react';
+import { Eye, File, Folder, GitFork, Github, Star } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import Tree from "react-d3-tree";
 
-// Dynamically import Monaco Editor and xterm, disable SSR
+// Dynamically import Monaco Editor
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
-
-
-import "xterm/css/xterm.css";
 
 const GITHUB_API_URL = "https://api.github.com/graphql";
 const GITHUB_REST_API_URL = "https://api.github.com";
 const GITHUB_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 
-type Contributor = { login: string; avatarUrl: string; contributions: number; url: string; };
-type Issue = { id: string; number: number; title: string; state: string; url: string; createdAt: string; author: { login: string; avatarUrl: string; }; };
-type Commit = { oid: string; messageHeadline: string; committedDate: string; url: string; author: { name: string; avatarUrl: string; }; };
-type PullRequest = { id: string; number: number; title: string; state: string; url: string; createdAt: string; author: { login: string; avatarUrl: string; }; };
-type Language = { name: string; color: string; percentage: number; };
-type Release = { name: string; tagName: string; createdAt: string; url: string; description: string; };
-type FileItem = { name: string; path: string; type: "file" | "dir"; url: string; downloadUrl?: string; sha?: string; };
+type Contributor = { login: string; avatarUrl: string; contributions: number; url: string };
+type Issue = { id: string; number: number; title: string; state: string; url: string; createdAt: string; author: { login: string; avatarUrl: string } };
+type Commit = { oid: string; messageHeadline: string; committedDate: string; url: string; author: { name: string; avatarUrl: string } };
+type PullRequest = { id: string; number: number; title: string; state: string; url: string; createdAt: string; author: { login: string; avatarUrl: string } };
+type Language = { name: string; color: string; percentage: number };
+type Release = { name: string; tagName: string; createdAt: string; url: string; description: string };
+type FileItem = { name: string; path: string; type: "file" | "dir"; url: string; downloadUrl?: string; sha?: string };
 type RepoDetails = {
   owner: string; name: string; description: string; stargazerCount: number; forkCount: number; watcherCount: number;
   url: string; homepageUrl: string | null; createdAt: string; updatedAt: string; isArchived: boolean; isPrivate: boolean;
-  defaultBranch: string; licenseInfo: { name: string; } | null; languages: Language[]; contributors: Contributor[];
-  issues: { totalCount: number; openCount: number; closedCount: number; items: Issue[]; };
-  pullRequests: { totalCount: number; openCount: number; closedCount: number; mergedCount: number; items: PullRequest[]; };
-  commits: Commit[]; releases: { totalCount: number; items: Release[]; }; topics: string[];
+  defaultBranch: string; licenseInfo: { name: string } | null; languages: Language[]; contributors: Contributor[];
+  issues: { totalCount: number; openCount: number; closedCount: number; items: Issue[] };
+  pullRequests: { totalCount: number; openCount: number; closedCount: number; mergedCount: number; items: PullRequest[] };
+  commits: Commit[]; releases: { totalCount: number; items: Release[] }; topics: string[];
   files: FileItem[];
 };
 
-const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
+// New type for folder structure
+type FolderStructureItem = {
+  name: string;
+  type: "file" | "dir";
+  path: string;
+  children?: FolderStructureItem[];
+};
+
+const fetchFolderStructureRecursively = async (
+  owner: string,
+  repo: string,
+  path: string = "",
+  branch: string = "main"
+): Promise<FolderStructureItem[]> => {
+  try {
+    const response = await fetch(
+      `${GITHUB_REST_API_URL}/repos/${owner}/${repo}/contents/${path}?ref=${branch}`,
+      {
+        headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
+      }
+    );
+
+    if (!response.ok) return [];
+    const items = await response.json();
+
+    const processItems = async (items: any[]): Promise<FolderStructureItem[]> => {
+      return Promise.all(
+        items.map(async (item) => {
+          const node: FolderStructureItem = {
+            name: item.name,
+            type: item.type,
+            path: item.path,
+            children: [],
+          };
+
+          if (item.type === "dir") {
+            node.children = await fetchFolderStructureRecursively(
+              owner,
+              repo,
+              item.path,
+              branch
+            );
+          }
+          return node;
+        })
+      );
+    };
+
+    return processItems(Array.isArray(items) ? items : [items]);
+  } catch (error) {
+    console.error("Error fetching folder structure:", error);
+    return [];
+  }
+};
+
+const FolderTree = ({ data }: { data: FolderStructureItem[] }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    setIsExpanded(true);
+  }, []);
+
+  if (!data?.length) return null;
+
+  return (
+    <div className="pl-4">
+      {data.map((item, index) => (
+        <div
+          key={item.path}
+          className={`transition-all duration-500 ease-in-out ${
+            isExpanded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+          }`}
+          style={{ transitionDelay: `${index * 100}ms` }}
+        >
+          <div className="flex items-center py-2">
+            {item.type === "dir" ? (
+              <Folder className="text-blue-500 mr-2" size={20} />
+            ) : (
+              <File className="text-gray-500 mr-2" size={20} />
+            )}
+            <span className="text-gray-800">{item.name}</span>
+          </div>
+          {item.children && item.children.length > 0 && (
+            <FolderTree data={item.children} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupId: any }) => {
   const [repoDetails, setRepoDetails] = useState<RepoDetails | null>(null);
+  const [summaryData, setSummaryData] = useState({ summary: "", folderStructure: "", folderStructureJSON: null });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [currentPath, setCurrentPath] = useState<string>("");
   const [editorFile, setEditorFile] = useState<{ path: string; content: string; sha: string } | null>(null);
-  const terminalRef = useRef<HTMLDivElement>(null);
-  const terminalInstance = useRef<any>(null); // Using 'any' for simplicity with dynamic imports
+  const [folderStructure, setFolderStructure] = useState<FolderStructureItem[] | null>(null);
+
 
   const parseGitHubUrl = (url: string): { owner: string; repo: string } | null => {
     try {
@@ -51,7 +141,7 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
     }
   };
 
-  const fetchRepoDetails = async (url: string) => {
+ const fetchRepoDetails = async (url: string) => {
     setLoading(true);
     setError(null);
     setRepoDetails(null);
@@ -67,60 +157,16 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
 
     const query = `{
       repository(owner: "${owner}", name: "${repo}") {
-        name
-        owner { login }
-        description
-        url
-        homepageUrl
-        stargazerCount
-        forkCount
-        watchers { totalCount }
-        createdAt
-        updatedAt
-        isArchived
-        isPrivate
-        defaultBranchRef {
-          name
-          target {
-            ... on Commit {
-              history(first: 100) {
-                nodes {
-                  oid
-                  messageHeadline
-                  committedDate
-                  url
-                  author { name avatarUrl }
-                }
-              }
-            }
-          }
-        }
-        licenseInfo { name }
-        languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
-          edges { size node { name color } }
-          totalSize
-        }
-        mentionableUsers(first: 10) {
-          nodes { login avatarUrl url }
-        }
-        issues(first: 10, states: OPEN, orderBy: {field: CREATED_AT, direction: DESC}) {
-          totalCount
-          nodes { id number title state url createdAt author { login avatarUrl } }
-        }
+        name owner { login } description url homepageUrl stargazerCount forkCount watchers { totalCount }
+        createdAt updatedAt isArchived isPrivate defaultBranchRef { name target { ... on Commit { history(first: 100) { nodes { oid messageHeadline committedDate url author { name avatarUrl } } } } } }
+        licenseInfo { name } languages(first: 10, orderBy: {field: SIZE, direction: DESC}) { edges { size node { name color } } totalSize }
+        mentionableUsers(first: 10) { nodes { login avatarUrl url } }
+        issues(first: 10, states: OPEN, orderBy: {field: CREATED_AT, direction: DESC}) { totalCount nodes { id number title state url createdAt author { login avatarUrl } } }
         closedIssues: issues(states: CLOSED) { totalCount }
-        pullRequests(first: 100, states: OPEN, orderBy: {field: CREATED_AT, direction: DESC}) {
-          totalCount
-          nodes { id number title state url createdAt author { login avatarUrl } }
-        }
-        closedPullRequests: pullRequests(states: CLOSED) { totalCount }
-        mergedPullRequests: pullRequests(states: MERGED) { totalCount }
-        releases(first: 5, orderBy: {field: CREATED_AT, direction: DESC}) {
-          totalCount
-          nodes { name tagName createdAt url description }
-        }
-        repositoryTopics(first: 10) {
-          nodes { topic { name } }
-        }
+        pullRequests(first: 100, states: OPEN, orderBy: {field: CREATED_AT, direction: DESC}) { totalCount nodes { id number title state url createdAt author { login avatarUrl } } }
+        closedPullRequests: pullRequests(states: CLOSED) { totalCount } mergedPullRequests: pullRequests(states: MERGED) { totalCount }
+        releases(first: 5, orderBy: {field: CREATED_AT, direction: DESC}) { totalCount nodes { name tagName createdAt url description } }
+        repositoryTopics(first: 10) { nodes { topic { name } } }
       }
     }`;
 
@@ -221,6 +267,26 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
       };
 
       const topics = repoData.repositoryTopics.nodes.map((node: any) => node.topic.name);
+      const fetchSummary = async (data: RepoDetails) => {
+        try {
+          const id = groupId.id;
+          const response = await fetch("/api/summarize-repo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ repoData: data, groupId:id }),
+          });
+          console.log("response",response);
+          const result = await response.json();
+          if (response.ok) {
+            setSummaryData(result);
+          } else {
+            throw new Error(result.error || "Failed to fetch summary");
+          }
+        } catch (error) {
+          console.error("Error fetching summary:", error);
+          setSummaryData({ summary: "Failed to load summary", folderStructure: "", folderStructureJSON: null });
+        }
+      };
 
       const fetchFiles = async (path: string = ""): Promise<FileItem[]> => {
         const filesResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/contents/${path}?ref=${repoData.defaultBranchRef?.name || "main"}`, {
@@ -240,7 +306,7 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
 
       const files = await fetchFiles("");
 
-      setRepoDetails({
+      const details: RepoDetails = {
         owner: repoData.owner.login,
         name: repoData.name,
         description: repoData.description || "",
@@ -263,7 +329,10 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
         releases,
         topics,
         files,
-      });
+      };
+
+      setRepoDetails(details);
+      fetchSummary(details); // Fetch summary after setting repo details
     } catch (error) {
       setError("Failed to fetch repository details.");
       console.error(error);
@@ -272,59 +341,24 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
     }
   };
 
-  useEffect(() => {
-    if (githublink) fetchRepoDetails(githublink);
-  }, [githublink]);
+  const fetchFullFolderStructure = async () => {
+    if (!repoDetails) return;
+    const { owner, name, defaultBranch } = repoDetails;
 
-  // useEffect(() => {
-  //   if (!editorFile || !terminalRef.current || terminalInstance.current) return;
+    try {
+      const structure = await fetchFolderStructureRecursively(
+        owner,
+        name,
+        "",
+        defaultBranch
+      );
+      setFolderStructure(structure);
+    } catch (error) {
+      console.error("Error fetching folder structure:", error);
+    }
+  };
 
-  //   const initTerminal = async () => {
-  //     const { Terminal } = await import("xterm");
-  //     const { FitAddon } = await import("xterm-addon-fit");
-
-  //     const term = new Terminal({
-  //       rows: 10,
-  //       cols: 80,
-  //       cursorBlink: true,
-  //     });
-  //     const fitAddon = new FitAddon();
-  //     term.loadAddon(fitAddon);
-  //     term.open(terminalRef.current!);
-  //     fitAddon.fit();
-  //     term.writeln("Terminal initialized. Use 'save' to update file, 'pr' to create pull request.");
-  //     terminalInstance.current = term;
-
-  //     // Handle terminal input
-  //     let command = "";
-  //     term.onData((data) => {
-  //       if (data === "\r") { // Enter key
-  //         if (command === "save") saveFile();
-  //         else if (command === "pr") createPullRequest();
-  //         term.writeln(`> ${command}`);
-  //         command = "";
-  //       } else if (data === "\b") { // Backspace
-  //         command = command.slice(0, -1);
-  //         term.write("\b \b");
-  //       } else {
-  //         command += data;
-  //         term.write(data);
-  //       }
-  //     });
-  //   };
-
-  //   if (typeof window !== "undefined") {
-  //     initTerminal().catch((err) => console.error("Terminal initialization failed:", err));
-  //   }
-
-  //   // Cleanup on unmount
-  //   return () => {
-  //     if (terminalInstance.current) {
-  //       terminalInstance.current.dispose();
-  //       terminalInstance.current = null;
-  //     }
-  //   };
-  // }, [editorFile]);
+  // [Previous fetchRepoDetails function remains the same]
 
   const fetchFolderContents = async (path: string) => {
     if (!repoDetails) return;
@@ -348,6 +382,16 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
     }
   };
 
+  useEffect(() => {
+    if (repoDetails) {
+      fetchFullFolderStructure();
+    }
+  }, [repoDetails]);
+
+  useEffect(() => {
+    if (githublink) fetchRepoDetails(githublink);
+  }, [githublink]);
+
   const handleFolderClick = (path: string) => {
     setCurrentPath(path);
     fetchFolderContents(path);
@@ -367,266 +411,82 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
     setEditorFile({ path: file.path, content, sha: file.sha || "" });
   };
 
-  const saveFile = async () => {
-    if (!repoDetails || !editorFile) {
-      terminalInstance.current?.writeln("Error: Repository details or editor file not available.");
-      return null;
-    }
-
-    const { owner, name, defaultBranch } = repoDetails;
-    const branchName = `edit-${editorFile.path.replace(/\//g, "-")}-${Date.now()}`;
-    const content = btoa(unescape(encodeURIComponent(editorFile.content))); // Properly encode content
-
-    try {
-      // Step 1: Get the latest SHA for the file
-      const fileResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${name}/contents/${editorFile.path}?ref=${defaultBranch}`, {
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
-      });
-      if (!fileResponse.ok) {
-        const errorData = await fileResponse.json();
-        terminalInstance.current?.writeln(`Error fetching file info: ${errorData.message || "Unknown error"}`);
-        if (fileResponse.status === 403) {
-          terminalInstance.current?.writeln("Permission denied: Check if token has 'repo' scope and repository access.");
-        }
-        return null;
-      }
-      const fileData = await fileResponse.json();
-      const latestSha = fileData.sha;
-      terminalInstance.current?.writeln(`Fetched latest SHA for ${editorFile.path}: ${latestSha}`);
-
-      // Step 2: Get the latest commit SHA from the default branch
-      const branchResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${name}/branches/${defaultBranch}`, {
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
-      });
-      if (!branchResponse.ok) {
-        const errorData = await branchResponse.json();
-        terminalInstance.current?.writeln(`Error fetching branch info: ${errorData.message || "Unknown error"}`);
-        if (branchResponse.status === 403) {
-          terminalInstance.current?.writeln("Permission denied: Check if token has 'repo' scope and repository access.");
-        }
-        return null;
-      }
-      const branchData = await branchResponse.json();
-      const latestCommitSha = branchData.commit.sha;
-      terminalInstance.current?.writeln(`Fetched latest commit SHA: ${latestCommitSha}`);
-
-      // Step 3: Create a new branch from the latest commit
-      const refResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${name}/git/refs`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ref: `refs/heads/${branchName}`,
-          sha: latestCommitSha,
-        }),
-      });
-      if (!refResponse.ok) {
-        const errorData = await refResponse.json();
-        terminalInstance.current?.writeln(`Error creating branch: ${errorData.message || "Unknown error"}`);
-        if (refResponse.status === 403) {
-          terminalInstance.current?.writeln("Permission denied: Token may lack 'repo' scope or repository write access.");
-        }
-        return null;
-      }
-      terminalInstance.current?.writeln(`Created branch: ${branchName}`);
-
-      // Step 4: Commit the file update to the new branch using the latest SHA
-      const updateResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${name}/contents/${editorFile.path}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: `Update ${editorFile.path} via web editor`,
-          content,
-          sha: latestSha, // Use the latest SHA fetched from the file
-          branch: branchName,
-        }),
-      });
-
-      if (!updateResponse.ok) {
-        const errorData = await updateResponse.json();
-        terminalInstance.current?.writeln(`Error committing file: ${errorData.message || "Unknown error"}`);
-        if (updateResponse.status === 403) {
-          terminalInstance.current?.writeln("Permission denied: Token may lack 'repo' scope or repository write access.");
-        }
-        return null;
-      }
-
-      const data = await updateResponse.json();
-      terminalInstance.current?.writeln(`File ${editorFile.path} committed to branch ${branchName}.`);
-      setEditorFile({ ...editorFile, sha: data.content.sha }); // Update SHA for future edits
-      return branchName;
-    } catch (error) {
-      terminalInstance.current?.writeln(`Unexpected error in saveFile: ${error.message || "Unknown error"}`);
-      console.error("saveFile error:", error);
-      return null;
-    }
-  };
-
-  const createPullRequest = async () => {
-    if (!repoDetails || !editorFile) {
-      terminalInstance.current?.writeln("Error: Repository details or editor file not available.");
-      return;
-    }
-
-    const { owner, name, defaultBranch } = repoDetails;
-
-    try {
-      // Step 1: Save file and get the branch name
-      const branchName = await saveFile();
-      if (!branchName) {
-        terminalInstance.current?.writeln("Cannot create PR: File commit failed.");
-        return;
-      }
-
-      // Step 2: Create pull request from the new branch
-      const prResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${name}/pulls`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: `Update ${editorFile.path}`,
-          body: "Created via web editor",
-          head: branchName,
-          base: defaultBranch,
-        }),
-      });
-
-      if (!prResponse.ok) {
-        const errorData = await prResponse.json();
-        terminalInstance.current?.writeln(`Error creating pull request: ${errorData.message || "Unknown error"}`);
-        return;
-      }
-
-      const prData = await prResponse.json();
-      terminalInstance.current?.writeln(`Pull request created: ${prData.html_url}`);
-    } catch (error) {
-      terminalInstance.current?.writeln(`Unexpected error in createPullRequest: ${error.message || "Unknown error"}`);
-      console.error("createPullRequest error:", error);
-    }
-  };
-
-  const renderOverview = () => repoDetails ? (
-    <div className="space-y-6 animate-fade-in">
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Repository Info</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-          <div>
-            <p><span className="text-gray-500">Created:</span> {repoDetails.createdAt}</p>
-            <p><span className="text-gray-500">Last Updated:</span> {repoDetails.updatedAt}</p>
-            <p><span className="text-gray-500">Default Branch:</span> {repoDetails.defaultBranch}</p>
-            {repoDetails.licenseInfo && <p><span className="text-gray-500">License:</span> {repoDetails.licenseInfo.name}</p>}
+  const renderFolderStructure = () => (
+    <div className="bg-white p-6 rounded-lg shadow-md mt-6">
+      <h3 className="text-xl font-semibold text-gray-800 mb-4">
+        Full Repository Structure
+      </h3>
+      <div className="overflow-auto max-h-[600px]">
+        {folderStructure ? (
+          <FolderTree data={folderStructure} />
+        ) : (
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500"></div>
           </div>
-          <div>
-            <p><span className="text-gray-500">Status:</span> {repoDetails.isArchived ? "Archived" : "Active"} {repoDetails.isPrivate ? "(Private)" : "(Public)"}</p>
-            {repoDetails.homepageUrl && <p><span className="text-gray-500">Website:</span> <a href={repoDetails.homepageUrl} target="_blank" className="text-blue-500 hover:underline">{repoDetails.homepageUrl}</a></p>}
-          </div>
-        </div>
-      </div>
-      {/* ... rest of renderOverview ... */}
-    </div>
-  ) : null;
-
-  const renderCommits = () => repoDetails?.commits.length ? (
-    <div className="space-y-4 animate-fade-in">
-      <h3 className="text-xl font-semibold text-gray-800">Recent Commits</h3>
-      {repoDetails.commits.map((commit) => (
-        <div key={commit.oid} className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-3">
-            <Image src={commit.author.avatarUrl} alt={commit.author.name} width={32} height={32} className="rounded-full" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-700 font-medium">{commit.author.name} • <span className="text-gray-500">{commit.committedDate}</span></p>
-              <p className="text-gray-800"><a href={commit.url} className="text-blue-500 hover:underline font-mono mr-2">{commit.oid}</a>{commit.messageHeadline}</p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : <p className="text-gray-500">No commits available.</p>;
-
-  const renderIssues = () => repoDetails?.issues.items.length ? (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-semibold text-gray-800">Issues</h3>
-        <div className="text-sm space-x-2">
-          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">{repoDetails.issues.openCount} Open</span>
-          <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">{repoDetails.issues.closedCount} Closed</span>
-        </div>
-      </div>
-      {repoDetails.issues.items.map((issue) => (
-        <a key={issue.id} href={issue.url} target="_blank" className="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
-          <div className="flex items-center gap-3">
-            <span className="text-green-500 text-xl">●</span>
-            <div className="flex-1">
-              <h4 className="text-blue-500 font-medium hover:underline">{issue.title} <span className="text-gray-500">#{issue.number}</span></h4>
-              <p className="text-sm text-gray-600">Opened on {issue.createdAt} by <Image src={issue.author.avatarUrl} alt={issue.author.login} width={20} height={20} className="inline rounded-full mx-1" /> {issue.author.login}</p>
-            </div>
-          </div>
-        </a>
-      ))}
-    </div>
-  ) : <p className="text-gray-500">No issues available.</p>;
-
-  const renderPullRequests = () => repoDetails?.pullRequests.items.length ? (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-semibold text-gray-800">Pull Requests</h3>
-        <div className="text-sm space-x-2">
-          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">{repoDetails.pullRequests.openCount} Open</span>
-          <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">{repoDetails.pullRequests.mergedCount} Merged</span>
-          <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">{repoDetails.pullRequests.closedCount} Closed</span>
-        </div>
-      </div>
-      {repoDetails.pullRequests.items.map((pr) => (
-        <a key={pr.id} href={pr.url} target="_blank" className="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
-          <div className="flex items-center gap-3">
-            <span className="text-green-500 text-xl">↳</span>
-            <div className="flex-1">
-              <h4 className="text-blue-500 font-medium hover:underline">{pr.title} <span className="text-gray-500">#{pr.number}</span></h4>
-              <p className="text-sm text-gray-600">Opened on {pr.createdAt} by <Image src={pr.author.avatarUrl} alt={pr.author.login} width={20} height={20} className="inline rounded-full mx-1" /> {pr.author.login}</p>
-            </div>
-          </div>
-        </a>
-      ))}
-    </div>
-  ) : <p className="text-gray-500">No pull requests available.</p>;
-
-  const renderFiles = () => repoDetails?.files.length ? (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-semibold text-gray-800">Files</h3>
-        {currentPath && (
-          <button onClick={handleBack} className="text-blue-500 hover:underline">
-            Back
-          </button>
         )}
       </div>
-      <div className="text-sm text-gray-600">Path: {currentPath || "/"}</div>
-      <div className="grid grid-cols-1 gap-2">
-        {repoDetails.files.map((item) => (
-          <div
-            key={item.path}
-            className={`flex items-center gap-3 p-3 rounded-lg ${item.type === "dir" ? "hover:bg-gray-100 cursor-pointer" : "bg-white"}`}
-            onClick={item.type === "dir" ? () => handleFolderClick(item.path) : undefined}
-          >
-            {item.type === "dir" ? (
-              <Folder className="text-blue-500" size={20} />
-            ) : (
-              <File className="text-gray-500" size={20} />
-            )}
-            <span className="text-gray-800">{item.name}</span>
-            {item.type === "file" && item.downloadUrl && (
-              <div className="ml-auto space-x-2">
-                <a href={item.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline text-sm">
-                  View
-                </a>
-                <button onClick={() => openEditor(item)} className="text-blue-500 hover:underline text-sm">
-                  Open in Editor
-                </button>
-              </div>
+    </div>
+  );
+
+  // Update renderFiles to include the new folder structure
+  const renderFiles = () => (
+    <div className="space-y-4 animate-fade-in">
+      {repoDetails?.files.length ? (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold text-gray-800">Current Directory</h3>
+            {currentPath && (
+              <button onClick={handleBack} className="text-blue-500 hover:underline">
+                Back
+              </button>
             )}
           </div>
-        ))}
-      </div>
+          <div className="text-sm text-gray-600">Path: {currentPath || "/"}</div>
+          <div className="grid grid-cols-1 gap-2">
+            {repoDetails.files.map((item) => (
+              <div
+                key={item.path}
+                className={`flex items-center gap-3 p-3 rounded-lg ${
+                  item.type === "dir" ? "hover:bg-gray-100 cursor-pointer" : "bg-white"
+                }`}
+                onClick={item.type === "dir" ? () => handleFolderClick(item.path) : undefined}
+              >
+                {item.type === "dir" ? (
+                  <Folder className="text-blue-500" size={20} />
+                ) : (
+                  <File className="text-gray-500" size={20} />
+                )}
+                <span className="text-gray-800">{item.name}</span>
+                {item.type === "file" && item.downloadUrl && (
+                  <div className="ml-auto space-x-2">
+                    <a
+                      href={item.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline text-sm"
+                    >
+                      View
+                    </a>
+                    <button
+                      onClick={() => openEditor(item)}
+                      className="text-blue-500 hover:underline text-sm"
+                    >
+                      Open in Editor
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="text-gray-500">No files available.</p>
+      )}
+      {renderFolderStructure()}
     </div>
-  ) : <p className="text-gray-500">No files available.</p>;
+  );
+
+  // [Rest of the rendering functions remain the same: renderOverview, renderCommits, renderIssues, renderPullRequests]
 
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 transform transition-all hover:shadow-2xl">
@@ -642,18 +502,39 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
             <div className="flex items-center gap-3">
               <Github className="text-gray-800" size={28} />
               <h2 className="text-2xl font-bold text-gray-900">
-                <a href={repoDetails.url} target="_blank" className="hover:underline">{repoDetails.owner}/{repoDetails.name}</a>
+                <a href={repoDetails.url} target="_blank" className="hover:underline">
+                  {repoDetails.owner}/{repoDetails.name}
+                </a>
               </h2>
-              {repoDetails.isPrivate && <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">Private</span>}
-              {repoDetails.isArchived && <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full">Archived</span>}
+              {repoDetails.isPrivate && (
+                <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
+                  Private
+                </span>
+              )}
+              {repoDetails.isArchived && (
+                <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full">
+                  Archived
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-700">
-              <div className="flex items-center"><Star className="mr-1 text-yellow-500" size={16} />{repoDetails.stargazerCount.toLocaleString()}</div>
-              <div className="flex items-center"><GitFork className="mr-1 text-gray-500" size={16} />{repoDetails.forkCount.toLocaleString()}</div>
-              <div className="flex items-center"><Eye className="mr-1 text-blue-500" size={16} />{repoDetails.watcherCount.toLocaleString()}</div>
+              <div className="flex items-center">
+                <Star className="mr-1 text-yellow-500" size={16} />
+                {repoDetails.stargazerCount.toLocaleString()}
+              </div>
+              <div className="flex items-center">
+                <GitFork className="mr-1 text-gray-500" size={16} />
+                {repoDetails.forkCount.toLocaleString()}
+              </div>
+              <div className="flex items-center">
+                <Eye className="mr-1 text-blue-500" size={16} />
+                {repoDetails.watcherCount.toLocaleString()}
+              </div>
             </div>
           </div>
-          {repoDetails.description && <p className="text-gray-700 text-lg">{repoDetails.description}</p>}
+          {repoDetails.description && (
+            <p className="text-gray-700 text-lg">{repoDetails.description}</p>
+          )}
           <div className="border-b border-gray-200 pb-2">
             <div className="flex space-x-6 overflow-x-auto">
               {["overview", "commits", "issues", "pullRequests", "files"].map((tab) => (
@@ -661,19 +542,188 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`py-2 px-4 border-b-2 transition-all duration-200 ${
-                    activeTab === tab ? "border-blue-500 text-blue-500" : "border-transparent text-gray-600 hover:text-gray-800"
+                    activeTab === tab
+                      ? "border-blue-500 text-blue-500"
+                      : "border-transparent text-gray-600 hover:text-gray-800"
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
               ))}
-            </div>
+              </div>
           </div>
           <div className="pt-4">
-            {activeTab === "overview" && renderOverview()}
-            {activeTab === "commits" && renderCommits()}
-            {activeTab === "issues" && renderIssues()}
-            {activeTab === "pullRequests" && renderPullRequests()}
+            {activeTab === "overview" && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Repository Summary</h3>
+                  <p className="text-gray-700">{summaryData.summary || "Loading summary..."}</p>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Folder Structure (Text)</h3>
+                  <pre className="text-gray-700 whitespace-pre">{summaryData.folderStructure || "Loading structure..."}</pre>
+                </div>
+                {summaryData.folderStructureJSON && (
+                  <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Folder Structure (Diagram)</h3>
+                    <div style={{ height: "400px" }}>
+                      <Tree
+                        data={summaryData.folderStructureJSON}
+                        orientation="vertical"
+                        translate={{ x: 200, y: 50 }}
+                        zoom={0.8}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Repository Info</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                    <div>
+                      <p><span className="text-gray-500">Created:</span> {repoDetails.createdAt}</p>
+                      <p><span className="text-gray-500">Last Updated:</span> {repoDetails.updatedAt}</p>
+                      <p><span className="text-gray-500">Default Branch:</span> {repoDetails.defaultBranch}</p>
+                      {repoDetails.licenseInfo && (
+                        <p><span className="text-gray-500">License:</span> {repoDetails.licenseInfo.name}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p>
+                        <span className="text-gray-500">Status:</span>{" "}
+                        {repoDetails.isArchived ? "Archived" : "Active"}{" "}
+                        {repoDetails.isPrivate ? "(Private)" : "(Public)"}
+                      </p>
+                      {repoDetails.homepageUrl && (
+                        <p>
+                          <span className="text-gray-500">Website:</span>{" "}
+                          <a href={repoDetails.homepageUrl} target="_blank" className="text-blue-500 hover:underline">
+                            {repoDetails.homepageUrl}
+                          </a>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {activeTab === "commits" && (
+              <div className="space-y-4 animate-fade-in">
+                <h3 className="text-xl font-semibold text-gray-800">Recent Commits</h3>
+                {repoDetails.commits.map((commit) => (
+                  <div key={commit.oid} className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={commit.author.avatarUrl}
+                        alt={commit.author.name}
+                        width={32}
+                        height={32}
+                        className="rounded-full"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-700 font-medium">
+                          {commit.author.name} • <span className="text-gray-500">{commit.committedDate}</span>
+                        </p>
+                        <p className="text-gray-800">
+                          <a href={commit.url} className="text-blue-500 hover:underline font-mono mr-2">
+                            {commit.oid}
+                          </a>
+                          {commit.messageHeadline}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {activeTab === "issues" && (
+              <div className="space-y-4 animate-fade-in">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-semibold text-gray-800">Issues</h3>
+                  <div className="text-sm space-x-2">
+                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                      {repoDetails.issues.openCount} Open
+                    </span>
+                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
+                      {repoDetails.issues.closedCount} Closed
+                    </span>
+                  </div>
+                </div>
+                {repoDetails.issues.items.map((issue) => (
+                  <a
+                    key={issue.id}
+                    href={issue.url}
+                    target="_blank"
+                    className="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-green-500 text-xl">●</span>
+                      <div className="flex-1">
+                        <h4 className="text-blue-500 font-medium hover:underline">
+                          {issue.title} <span className="text-gray-500">#{issue.number}</span>
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Opened on {issue.createdAt} by{" "}
+                          <Image
+                            src={issue.author.avatarUrl}
+                            alt={issue.author.login}
+                            width={20}
+                            height={20}
+                            className="inline rounded-full mx-1"
+                          />{" "}
+                          {issue.author.login}
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
+            {activeTab === "pullRequests" && (
+              <div className="space-y-4 animate-fade-in">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-semibold text-gray-800">Pull Requests</h3>
+                  <div className="text-sm space-x-2">
+                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                      {repoDetails.pullRequests.openCount} Open
+                    </span>
+                    <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
+                      {repoDetails.pullRequests.mergedCount} Merged
+                    </span>
+                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
+                      {repoDetails.pullRequests.closedCount} Closed
+                    </span>
+                  </div>
+                </div>
+                {repoDetails.pullRequests.items.map((pr) => (
+                  <a
+                    key={pr.id}
+                    href={pr.url}
+                    target="_blank"
+                    className="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-green-500 text-xl">↳</span>
+                      <div className="flex-1">
+                        <h4 className="text-blue-500 font-medium hover:underline">
+                          {pr.title} <span className="text-gray-500">#{pr.number}</span>
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          Opened on {pr.createdAt} by{" "}
+                          <Image
+                            src={pr.author.avatarUrl}
+                            alt={pr.author.login}
+                            width={20}
+                            height={20}
+                            className="inline rounded-full mx-1"
+                          />{" "}
+                          {pr.author.login}
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
             {activeTab === "files" && renderFiles()}
           </div>
         </div>
@@ -683,17 +733,27 @@ const GitHubRepoDetails = ({ githublink }: { githublink: string }) => {
           <div className="bg-white rounded-lg w-3/4 h-3/4 flex flex-col">
             <div className="flex justify-between items-center p-4 border-b">
               <h3 className="text-lg font-semibold">Editing {editorFile.path}</h3>
-              <button onClick={() => setEditorFile(null)} className="text-red-500 hover:text-red-700">Close</button>
+              <button
+                onClick={() => setEditorFile(null)}
+                className="text-red-500 hover:text-red-700"
+              >
+                Close
+              </button>
             </div>
             <div className="flex-1">
               <Editor
-                height="70%"
+                height="70vh"
                 defaultLanguage="javascript"
                 value={editorFile.content}
                 onChange={(value) => setEditorFile({ ...editorFile, content: value || "" })}
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: true },
+                  scrollBeyondLastLine: false,
+                  wordWrap: "on"
+                }}
               />
             </div>
-
           </div>
         </div>
       )}

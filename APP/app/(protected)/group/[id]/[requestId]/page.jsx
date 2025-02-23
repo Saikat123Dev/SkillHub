@@ -110,7 +110,7 @@ const WhatsAppGroup = async ({ params }) => {
 
             {/* GitHub Repos */}
             {grp.githubLink && (
-              <GitHubRepos githublink={grp.githubLink} />
+              <GitHubRepos groupId={grp} githublink={grp.githubLink} />
             )}
 
             {/* WhatsApp Group Client */}

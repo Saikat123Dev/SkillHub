@@ -78,6 +78,7 @@ model Group {
   messages           Message[]
   posts              Post[]
   friendRequests     FriendRequest[]
+  repoSummaries      RepoSummary[]     @relation("GroupRepoSummaries") // Link to repo summaries
 }
 
 model GroupMembership {
@@ -195,6 +196,18 @@ model Experience {
   description String
   author      User    @relation(fields: [authorId], references: [id])
   authorId    String  @db.ObjectId
+}
+
+model RepoSummary {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  repoUrl             String   @unique
+  summary             String // Generated summary from Gemini API
+  folderStructure     String // Text-based folder structure
+  folderStructureJSON Json // JSON representation for diagrammatic visualization
+  groupId             String   @db.ObjectId
+  group               Group    @relation(fields: [groupId], references: [id], name: "GroupRepoSummaries")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 // model Post {

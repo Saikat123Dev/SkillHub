@@ -93,6 +93,7 @@
     "next-themes": "^0.2.1",
     "pre": "^0.1.3",
     "react": "latest",
+    "react-d3-tree": "^3.6.5",
     "react-day-picker": "^8.10.1",
     "react-dom": "latest",
     "react-editor-js": "^1.10.0",
