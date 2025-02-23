@@ -61,7 +61,7 @@ const SettingsPage = () => {
   const [isPending, startTransition] = useTransition();
   const initialValues = {
     password:user?.password || undefined,
-    newPassword: undefined,
+    newPassword:user?.password || undefined,
     name: user?.name || undefined,
     email: user?.email || undefined,
     Roles: user?.Roles || undefined,
