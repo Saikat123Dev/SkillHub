@@ -29,7 +29,6 @@ type RepoDetails = {
   files: FileItem[];
 };
 
-// New type for folder structure
 type FolderStructureItem = {
   name: string;
   type: "file" | "dir";
@@ -44,14 +43,21 @@ const fetchFolderStructureRecursively = async (
   branch: string = "main"
 ): Promise<FolderStructureItem[]> => {
   try {
+    const headers: HeadersInit = {};
+    if (GITHUB_TOKEN) {
+      headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
+    }
+
     const response = await fetch(
       `${GITHUB_REST_API_URL}/repos/${owner}/${repo}/contents/${path}?ref=${branch}`,
-      {
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
-      }
+      { headers }
     );
 
-    if (!response.ok) return [];
+    if (!response.ok) {
+      console.error(`Failed to fetch folder structure: ${response.status} ${response.statusText}`);
+      return [];
+    }
+    
     const items = await response.json();
 
     const processItems = async (items: any[]): Promise<FolderStructureItem[]> => {
@@ -130,7 +136,6 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
   const [editorFile, setEditorFile] = useState<{ path: string; content: string; sha: string } | null>(null);
   const [folderStructure, setFolderStructure] = useState<FolderStructureItem[] | null>(null);
 
-
   const parseGitHubUrl = (url: string): { owner: string; repo: string } | null => {
     try {
       const githubUrlRegex = /github\.com\/([^/]+)\/([^/]+)/;
@@ -141,7 +146,161 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
     }
   };
 
- const fetchRepoDetails = async (url: string) => {
+  // Fallback to REST API if GraphQL fails
+  const fetchRepoDetailsREST = async (owner: string, repo: string) => {
+    try {
+      const headers: HeadersInit = {};
+      if (GITHUB_TOKEN) {
+        headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
+      }
+
+      // Fetch basic repo info
+      const repoResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}`, { headers });
+      if (!repoResponse.ok) {
+        throw new Error(`Repository not found: ${owner}/${repo}`);
+      }
+      const repoData = await repoResponse.json();
+
+      // Fetch languages
+      const languagesResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/languages`, { headers });
+      const languagesData = languagesResponse.ok ? await languagesResponse.json() : {};
+      
+      const totalBytes = Object.values(languagesData).reduce((sum: number, bytes: any) => sum + bytes, 0);
+      const languages = Object.entries(languagesData).map(([name, bytes]: [string, any]) => ({
+        name,
+        color: '#' + Math.floor(Math.random()*16777215).toString(16), // Random color fallback
+        percentage: totalBytes ? Math.round((bytes / totalBytes) * 100) : 0,
+      }));
+
+      // Fetch contributors
+      const contributorsResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/contributors?per_page=10`, { headers });
+      const contributors = contributorsResponse.ok ? 
+        (await contributorsResponse.json()).map((c: any) => ({
+          login: c.login,
+          avatarUrl: c.avatar_url,
+          contributions: c.contributions,
+          url: c.html_url,
+        })) : [];
+
+      // Fetch issues
+      const issuesResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/issues?state=open&per_page=10`, { headers });
+      const issuesData = issuesResponse.ok ? await issuesResponse.json() : [];
+      
+      const issues = {
+        totalCount: repoData.open_issues_count || 0,
+        openCount: repoData.open_issues_count || 0,
+        closedCount: 0, // Would need separate API call
+        items: issuesData.filter((issue: any) => !issue.pull_request).map((issue: any) => ({
+          id: issue.id.toString(),
+          number: issue.number,
+          title: issue.title,
+          state: issue.state,
+          url: issue.html_url,
+          createdAt: new Date(issue.created_at).toLocaleDateString(),
+          author: {
+            login: issue.user?.login || "ghost",
+            avatarUrl: issue.user?.avatar_url || "",
+          },
+        })),
+      };
+
+      // Fetch pull requests
+      const prsResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/pulls?state=open&per_page=10`, { headers });
+      const prsData = prsResponse.ok ? await prsResponse.json() : [];
+      
+      const pullRequests = {
+        totalCount: prsData.length,
+        openCount: prsData.length,
+        closedCount: 0,
+        mergedCount: 0,
+        items: prsData.map((pr: any) => ({
+          id: pr.id.toString(),
+          number: pr.number,
+          title: pr.title,
+          state: pr.state,
+          url: pr.html_url,
+          createdAt: new Date(pr.created_at).toLocaleDateString(),
+          author: {
+            login: pr.user?.login || "ghost",
+            avatarUrl: pr.user?.avatar_url || "",
+          },
+        })),
+      };
+
+      // Fetch commits
+      const commitsResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/commits?per_page=10`, { headers });
+      const commitsData = commitsResponse.ok ? await commitsResponse.json() : [];
+      
+      const commits = commitsData.map((commit: any) => ({
+        oid: commit.sha.substring(0, 7),
+        messageHeadline: commit.commit.message.split('\n')[0],
+        committedDate: new Date(commit.commit.committer.date).toLocaleDateString(),
+        url: commit.html_url,
+        author: {
+          name: commit.commit.author.name,
+          avatarUrl: commit.author?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(commit.commit.author.name)}`,
+        },
+      }));
+
+      // Fetch releases
+      const releasesResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/releases?per_page=5`, { headers });
+      const releasesData = releasesResponse.ok ? await releasesResponse.json() : [];
+      
+      const releases = {
+        totalCount: releasesData.length,
+        items: releasesData.map((release: any) => ({
+          name: release.name || release.tag_name,
+          tagName: release.tag_name,
+          createdAt: new Date(release.created_at).toLocaleDateString(),
+          url: release.html_url,
+          description: release.body || "",
+        })),
+      };
+
+      // Fetch files
+      const filesResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/contents?ref=${repoData.default_branch}`, { headers });
+      const filesData = filesResponse.ok ? await filesResponse.json() : [];
+      
+      const files = filesData.map((item: any) => ({
+        name: item.name,
+        path: item.path,
+        type: item.type as "file" | "dir",
+        url: item.html_url,
+        downloadUrl: item.download_url || undefined,
+        sha: item.sha,
+      }));
+
+      return {
+        owner: repoData.owner.login,
+        name: repoData.name,
+        description: repoData.description || "",
+        stargazerCount: repoData.stargazers_count || 0,
+        forkCount: repoData.forks_count || 0,
+        watcherCount: repoData.watchers_count || 0,
+        url: repoData.html_url,
+        homepageUrl: repoData.homepage,
+        createdAt: new Date(repoData.created_at).toLocaleDateString(),
+        updatedAt: new Date(repoData.updated_at).toLocaleDateString(),
+        isArchived: repoData.archived || false,
+        isPrivate: repoData.private || false,
+        defaultBranch: repoData.default_branch || "main",
+        licenseInfo: repoData.license ? { name: repoData.license.name } : null,
+        languages,
+        contributors,
+        issues,
+        pullRequests,
+        commits,
+        releases,
+        topics: repoData.topics || [],
+        files,
+      };
+    } catch (error) {
+      console.error("REST API error:", error);
+      throw error;
+    }
+  };
+
+  const fetchRepoDetails = async (url: string) => {
     setLoading(true);
     setError(null);
     setRepoDetails(null);
@@ -155,15 +314,21 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
 
     const { owner, repo } = parsedUrl;
 
+    // Check if token is available
+    if (!GITHUB_TOKEN) {
+      console.warn("No GitHub token found. API rate limits will be very restrictive.");
+    }
+
+    // Try GraphQL first, fallback to REST API
     const query = `{
       repository(owner: "${owner}", name: "${repo}") {
         name owner { login } description url homepageUrl stargazerCount forkCount watchers { totalCount }
-        createdAt updatedAt isArchived isPrivate defaultBranchRef { name target { ... on Commit { history(first: 100) { nodes { oid messageHeadline committedDate url author { name avatarUrl } } } } } }
+        createdAt updatedAt isArchived isPrivate defaultBranchRef { name target { ... on Commit { history(first: 10) { nodes { oid messageHeadline committedDate url author { name avatarUrl } } } } } }
         licenseInfo { name } languages(first: 10, orderBy: {field: SIZE, direction: DESC}) { edges { size node { name color } } totalSize }
         mentionableUsers(first: 10) { nodes { login avatarUrl url } }
         issues(first: 10, states: OPEN, orderBy: {field: CREATED_AT, direction: DESC}) { totalCount nodes { id number title state url createdAt author { login avatarUrl } } }
         closedIssues: issues(states: CLOSED) { totalCount }
-        pullRequests(first: 100, states: OPEN, orderBy: {field: CREATED_AT, direction: DESC}) { totalCount nodes { id number title state url createdAt author { login avatarUrl } } }
+        pullRequests(first: 10, states: OPEN, orderBy: {field: CREATED_AT, direction: DESC}) { totalCount nodes { id number title state url createdAt author { login avatarUrl } } }
         closedPullRequests: pullRequests(states: CLOSED) { totalCount } mergedPullRequests: pullRequests(states: MERGED) { totalCount }
         releases(first: 5, orderBy: {field: CREATED_AT, direction: DESC}) { totalCount nodes { name tagName createdAt url description } }
         repositoryTopics(first: 10) { nodes { topic { name } } }
@@ -171,171 +336,199 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
     }`;
 
     try {
-      const response = await fetch(GITHUB_API_URL, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
+      let details: RepoDetails;
 
-      const result = await response.json();
-      if (result.errors || !result.data.repository) {
-        setError(result.errors?.[0]?.message || `Repository not found: ${owner}/${repo}`);
-        setLoading(false);
-        return;
-      }
+      if (GITHUB_TOKEN) {
+        try {
+          const response = await fetch(GITHUB_API_URL, {
+            method: "POST",
+            headers: { 
+              Authorization: `Bearer ${GITHUB_TOKEN}`, 
+              "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({ query }),
+          });
 
-      const repoData = result.data.repository;
+          const result = await response.json();
+          
+          if (result.errors || !result.data?.repository) {
+            console.warn("GraphQL failed, falling back to REST API:", result.errors?.[0]?.message);
+            details = await fetchRepoDetailsREST(owner, repo);
+          } else {
+            // Process GraphQL response (your existing logic)
+            const repoData = result.data.repository;
+            const totalSize = repoData.languages.totalSize;
+            const languages = repoData.languages.edges.map((edge: any) => ({
+              name: edge.node.name,
+              color: edge.node.color,
+              percentage: totalSize ? Math.round((edge.size / totalSize) * 100) : 0,
+            }));
 
-      const totalSize = repoData.languages.totalSize;
-      const languages = repoData.languages.edges.map((edge: any) => ({
-        name: edge.node.name,
-        color: edge.node.color,
-        percentage: totalSize ? Math.round((edge.size / totalSize) * 100) : 0,
-      }));
+            let contributors: Contributor[] = [];
+            try {
+              const contributorsResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/contributors?per_page=10`, {
+                headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
+              });
+              if (contributorsResponse.ok) {
+                const contributorsData = await contributorsResponse.json();
+                contributors = contributorsData.map((c: any) => ({
+                  login: c.login,
+                  avatarUrl: c.avatar_url,
+                  contributions: c.contributions,
+                  url: c.html_url,
+                }));
+              }
+            } catch {
+              contributors = repoData.mentionableUsers.nodes.map((user: any) => ({
+                login: user.login,
+                avatarUrl: user.avatarUrl,
+                contributions: 0,
+                url: user.url,
+              }));
+            }
 
-      let contributors: Contributor[] = [];
-      try {
-        const contributorsResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/contributors?per_page=10`, {
-          headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
-        });
-        if (contributorsResponse.ok) {
-          const contributorsData = await contributorsResponse.json();
-          contributors = contributorsData.map((c: any) => ({
-            login: c.login,
-            avatarUrl: c.avatar_url,
-            contributions: c.contributions,
-            url: c.html_url,
-          }));
+            const issues = {
+              totalCount: repoData.issues.totalCount + repoData.closedIssues.totalCount,
+              openCount: repoData.issues.totalCount,
+              closedCount: repoData.closedIssues.totalCount,
+              items: repoData.issues.nodes.map((node: any) => ({
+                id: node.id,
+                number: node.number,
+                title: node.title,
+                state: node.state,
+                url: node.url,
+                createdAt: new Date(node.createdAt).toLocaleDateString(),
+                author: node.author ? { login: node.author.login, avatarUrl: node.author.avatarUrl } : { login: "ghost", avatarUrl: "" },
+              })),
+            };
+
+            const pullRequests = {
+              totalCount: repoData.pullRequests.totalCount + repoData.closedPullRequests.totalCount + repoData.mergedPullRequests.totalCount,
+              openCount: repoData.pullRequests.totalCount,
+              closedCount: repoData.closedPullRequests.totalCount,
+              mergedCount: repoData.mergedPullRequests.totalCount,
+              items: repoData.pullRequests.nodes.map((node: any) => ({
+                id: node.id,
+                number: node.number,
+                title: node.title,
+                state: node.state,
+                url: node.url,
+                createdAt: new Date(node.createdAt).toLocaleDateString(),
+                author: node.author ? { login: node.author.login, avatarUrl: node.author.avatarUrl } : { login: "ghost", avatarUrl: "" },
+              })),
+            };
+
+            const commits = repoData.defaultBranchRef?.target.history.nodes.map((node: any) => ({
+              oid: node.oid.substring(0, 7),
+              messageHeadline: node.messageHeadline,
+              committedDate: new Date(node.committedDate).toLocaleDateString(),
+              url: node.url,
+              author: { name: node.author.name, avatarUrl: node.author.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(node.author.name)}` },
+            })) || [];
+
+            const releases = {
+              totalCount: repoData.releases.totalCount,
+              items: repoData.releases.nodes.map((node: any) => ({
+                name: node.name || node.tagName,
+                tagName: node.tagName,
+                createdAt: new Date(node.createdAt).toLocaleDateString(),
+                url: node.url,
+                description: node.description || "",
+              })),
+            };
+
+            const topics = repoData.repositoryTopics.nodes.map((node: any) => node.topic.name);
+
+            const fetchFiles = async (path: string = ""): Promise<FileItem[]> => {
+              const filesResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/contents/${path}?ref=${repoData.defaultBranchRef?.name || "main"}`, {
+                headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
+              });
+              if (!filesResponse.ok) return [];
+              const filesData = await filesResponse.json();
+              return filesData.map((item: any) => ({
+                name: item.name,
+                path: item.path,
+                type: item.type as "file" | "dir",
+                url: item.html_url,
+                downloadUrl: item.download_url || undefined,
+                sha: item.sha,
+              }));
+            };
+
+            const files = await fetchFiles("");
+
+            details = {
+              owner: repoData.owner.login,
+              name: repoData.name,
+              description: repoData.description || "",
+              stargazerCount: repoData.stargazerCount,
+              forkCount: repoData.forkCount,
+              watcherCount: repoData.watchers.totalCount,
+              url: repoData.url,
+              homepageUrl: repoData.homepageUrl,
+              createdAt: new Date(repoData.createdAt).toLocaleDateString(),
+              updatedAt: new Date(repoData.updatedAt).toLocaleDateString(),
+              isArchived: repoData.isArchived,
+              isPrivate: repoData.isPrivate,
+              defaultBranch: repoData.defaultBranchRef?.name || "main",
+              licenseInfo: repoData.licenseInfo,
+              languages,
+              contributors,
+              issues,
+              pullRequests,
+              commits,
+              releases,
+              topics,
+              files,
+            };
+          }
+        } catch (graphqlError) {
+          console.warn("GraphQL request failed, falling back to REST API:", graphqlError);
+          details = await fetchRepoDetailsREST(owner, repo);
         }
-      } catch {
-        contributors = repoData.mentionableUsers.nodes.map((user: any) => ({
-          login: user.login,
-          avatarUrl: user.avatarUrl,
-          contributions: 0,
-          url: user.url,
-        }));
+      } else {
+        // No token available, use REST API only
+        details = await fetchRepoDetailsREST(owner, repo);
       }
 
-      const issues = {
-        totalCount: repoData.issues.totalCount + repoData.closedIssues.totalCount,
-        openCount: repoData.issues.totalCount,
-        closedCount: repoData.closedIssues.totalCount,
-        items: repoData.issues.nodes.map((node: any) => ({
-          id: node.id,
-          number: node.number,
-          title: node.title,
-          state: node.state,
-          url: node.url,
-          createdAt: new Date(node.createdAt).toLocaleDateString(),
-          author: node.author ? { login: node.author.login, avatarUrl: node.author.avatarUrl } : { login: "ghost", avatarUrl: "" },
-        })),
-      };
-
-      const pullRequests = {
-        totalCount: repoData.pullRequests.totalCount + repoData.closedPullRequests.totalCount + repoData.mergedPullRequests.totalCount,
-        openCount: repoData.pullRequests.totalCount,
-        closedCount: repoData.closedPullRequests.totalCount,
-        mergedCount: repoData.mergedPullRequests.totalCount,
-        items: repoData.pullRequests.nodes.map((node: any) => ({
-          id: node.id,
-          number: node.number,
-          title: node.title,
-          state: node.state,
-          url: node.url,
-          createdAt: new Date(node.createdAt).toLocaleDateString(),
-          author: node.author ? { login: node.author.login, avatarUrl: node.author.avatarUrl } : { login: "ghost", avatarUrl: "" },
-        })),
-      };
-
-      const commits = repoData.defaultBranchRef?.target.history.nodes.map((node: any) => ({
-        oid: node.oid.substring(0, 7),
-        messageHeadline: node.messageHeadline,
-        committedDate: new Date(node.committedDate).toLocaleDateString(),
-        url: node.url,
-        author: { name: node.author.name, avatarUrl: node.author.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(node.author.name)}` },
-      })) || [];
-
-      const releases = {
-        totalCount: repoData.releases.totalCount,
-        items: repoData.releases.nodes.map((node: any) => ({
-          name: node.name || node.tagName,
-          tagName: node.tagName,
-          createdAt: new Date(node.createdAt).toLocaleDateString(),
-          url: node.url,
-          description: node.description || "",
-        })),
-      };
-
-      const topics = repoData.repositoryTopics.nodes.map((node: any) => node.topic.name);
+      setRepoDetails(details);
+      
+      // Fetch summary after setting repo details
       const fetchSummary = async (data: RepoDetails) => {
         try {
-          const id = groupId.id;
+          const id = groupId?.id;
           const response = await fetch("/api/summarize-repo", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ repoData: data, groupId:id }),
+            body: JSON.stringify({ repoData: data, groupId: id }),
           });
-          console.log("response",response);
-          const result = await response.json();
+          
           if (response.ok) {
+            const result = await response.json();
             setSummaryData(result);
           } else {
-            throw new Error(result.error || "Failed to fetch summary");
+            console.error("Failed to fetch summary:", await response.text());
+            setSummaryData({ 
+              summary: "Summary temporarily unavailable", 
+              folderStructure: "Folder structure temporarily unavailable", 
+              folderStructureJSON: null 
+            });
           }
         } catch (error) {
           console.error("Error fetching summary:", error);
-          setSummaryData({ summary: "Failed to load summary", folderStructure: "", folderStructureJSON: null });
+          setSummaryData({ 
+            summary: "Summary temporarily unavailable", 
+            folderStructure: "Folder structure temporarily unavailable", 
+            folderStructureJSON: null 
+          });
         }
       };
 
-      const fetchFiles = async (path: string = ""): Promise<FileItem[]> => {
-        const filesResponse = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${repo}/contents/${path}?ref=${repoData.defaultBranchRef?.name || "main"}`, {
-          headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
-        });
-        if (!filesResponse.ok) return [];
-        const filesData = await filesResponse.json();
-        return filesData.map((item: any) => ({
-          name: item.name,
-          path: item.path,
-          type: item.type as "file" | "dir",
-          url: item.html_url,
-          downloadUrl: item.download_url || undefined,
-          sha: item.sha,
-        }));
-      };
-
-      const files = await fetchFiles("");
-
-      const details: RepoDetails = {
-        owner: repoData.owner.login,
-        name: repoData.name,
-        description: repoData.description || "",
-        stargazerCount: repoData.stargazerCount,
-        forkCount: repoData.forkCount,
-        watcherCount: repoData.watchers.totalCount,
-        url: repoData.url,
-        homepageUrl: repoData.homepageUrl,
-        createdAt: new Date(repoData.createdAt).toLocaleDateString(),
-        updatedAt: new Date(repoData.updatedAt).toLocaleDateString(),
-        isArchived: repoData.isArchived,
-        isPrivate: repoData.isPrivate,
-        defaultBranch: repoData.defaultBranchRef?.name || "main",
-        licenseInfo: repoData.licenseInfo,
-        languages,
-        contributors,
-        issues,
-        pullRequests,
-        commits,
-        releases,
-        topics,
-        files,
-      };
-
-      setRepoDetails(details);
-      fetchSummary(details); // Fetch summary after setting repo details
+      fetchSummary(details);
+      
     } catch (error) {
-      setError("Failed to fetch repository details.");
-      console.error(error);
+      console.error("Final error:", error);
+      setError(`Failed to fetch repository details: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -358,13 +551,17 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
     }
   };
 
-  // [Previous fetchRepoDetails function remains the same]
-
   const fetchFolderContents = async (path: string) => {
     if (!repoDetails) return;
     const { owner, name, defaultBranch } = repoDetails;
+    
+    const headers: HeadersInit = {};
+    if (GITHUB_TOKEN) {
+      headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
+    }
+    
     const response = await fetch(`${GITHUB_REST_API_URL}/repos/${owner}/${name}/contents/${path}?ref=${defaultBranch}`, {
-      headers: { Authorization: `Bearer ${GITHUB_TOKEN}` },
+      headers,
     });
     if (response.ok) {
       const data = await response.json();
@@ -406,9 +603,13 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
 
   const openEditor = async (file: FileItem) => {
     if (!repoDetails || !file.downloadUrl) return;
-    const response = await fetch(file.downloadUrl);
-    const content = await response.text();
-    setEditorFile({ path: file.path, content, sha: file.sha || "" });
+    try {
+      const response = await fetch(file.downloadUrl);
+      const content = await response.text();
+      setEditorFile({ path: file.path, content, sha: file.sha || "" });
+    } catch (error) {
+      console.error("Error opening file:", error);
+    }
   };
 
   const renderFolderStructure = () => (
@@ -428,7 +629,6 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
     </div>
   );
 
-  // Update renderFiles to include the new folder structure
   const renderFiles = () => (
     <div className="space-y-4 animate-fade-in">
       {repoDetails?.files.length ? (
@@ -486,8 +686,6 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
     </div>
   );
 
-  // [Rest of the rendering functions remain the same: renderOverview, renderCommits, renderIssues, renderPullRequests]
-
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 transform transition-all hover:shadow-2xl">
       {loading && (
@@ -495,266 +693,370 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
         </div>
       )}
-      {error && <p className="text-red-500 text-center py-4">{error}</p>}
+      
+      {error && (
+        <div className="text-center py-8">
+          <p className="text-red-500 mb-4">{error}</p>
+          {!GITHUB_TOKEN && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+              <p className="text-yellow-800 text-sm">
+                <strong>Note:</strong> No GitHub token detected. This may cause rate limiting issues.
+                <br />
+                Add <code>NEXT_PUBLIC_GITHUB_TOKEN</code> to your environment variables for better performance.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+      
       {repoDetails && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center gap-3">
-              <Github className="text-gray-800" size={28} />
-              <h2 className="text-2xl font-bold text-gray-900">
-                <a href={repoDetails.url} target="_blank" className="hover:underline">
-                  {repoDetails.owner}/{repoDetails.name}
-                </a>
-              </h2>
-              {repoDetails.isPrivate && (
-                <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
-                  Private
-                </span>
-              )}
-              {repoDetails.isArchived && (
-                <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full">
-                  Archived
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-6 text-sm text-gray-700">
-              <div className="flex items-center">
-                <Star className="mr-1 text-yellow-500" size={16} />
-                {repoDetails.stargazerCount.toLocaleString()}
-              </div>
-              <div className="flex items-center">
-                <GitFork className="mr-1 text-gray-500" size={16} />
-                {repoDetails.forkCount.toLocaleString()}
-              </div>
-              <div className="flex items-center">
-                <Eye className="mr-1 text-blue-500" size={16} />
-                {repoDetails.watcherCount.toLocaleString()}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {repoDetails.owner}/{repoDetails.name}
+              </h1>
+              <p className="text-gray-600 mt-1">{repoDetails.description}</p>
+              <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-1 text-gray-700">
+                  <Star size={16} />
+                  <span>{repoDetails.stargazerCount.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center gap-1 text-gray-700">
+                  <GitFork size={16} />
+                  <span>{repoDetails.forkCount.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center gap-1 text-gray-700">
+                  <Eye size={16} />
+                  <span>{repoDetails.watcherCount.toLocaleString()}</span>
+                </div>
               </div>
             </div>
+            <a
+              href={repoDetails.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              <Github size={18} />
+              <span>View on GitHub</span>
+            </a>
           </div>
-          {repoDetails.description && (
-            <p className="text-gray-700 text-lg">{repoDetails.description}</p>
-          )}
-          <div className="border-b border-gray-200 pb-2">
-            <div className="flex space-x-6 overflow-x-auto">
-              {["overview", "commits", "issues", "pullRequests", "files"].map((tab) => (
+
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8">
+              {['overview', 'files', 'commits', 'issues', 'prs', 'releases'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`py-2 px-4 border-b-2 transition-all duration-200 ${
+                  className={`py-4 px-1 font-medium text-sm border-b-2 ${
                     activeTab === tab
-                      ? "border-blue-500 text-blue-500"
-                      : "border-transparent text-gray-600 hover:text-gray-800"
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
               ))}
-              </div>
+            </nav>
           </div>
-          <div className="pt-4">
-            {activeTab === "overview" && (
-              <div className="space-y-6 animate-fade-in">
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Repository Summary</h3>
-                  <p className="text-gray-700">{summaryData.summary || "Loading summary..."}</p>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Folder Structure (Text)</h3>
-                  <pre className="text-gray-700 whitespace-pre">{summaryData.folderStructure || "Loading structure..."}</pre>
-                </div>
-                {summaryData.folderStructureJSON && (
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Folder Structure (Diagram)</h3>
-                    <div style={{ height: "400px" }}>
-                      <Tree
-                        data={summaryData.folderStructureJSON}
-                        orientation="vertical"
-                        translate={{ x: 200, y: 50 }}
-                        zoom={0.8}
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Repository Info</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-                    <div>
-                      <p><span className="text-gray-500">Created:</span> {repoDetails.createdAt}</p>
-                      <p><span className="text-gray-500">Last Updated:</span> {repoDetails.updatedAt}</p>
-                      <p><span className="text-gray-500">Default Branch:</span> {repoDetails.defaultBranch}</p>
-                      {repoDetails.licenseInfo && (
-                        <p><span className="text-gray-500">License:</span> {repoDetails.licenseInfo.name}</p>
-                      )}
-                    </div>
-                    <div>
+
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-lg mb-3">About</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="font-medium">Created:</span> {repoDetails.createdAt}</p>
+                    <p><span className="font-medium">Last updated:</span> {repoDetails.updatedAt}</p>
+                    {repoDetails.licenseInfo && (
+                      <p><span className="font-medium">License:</span> {repoDetails.licenseInfo.name}</p>
+                    )}
+                    {repoDetails.homepageUrl && (
                       <p>
-                        <span className="text-gray-500">Status:</span>{" "}
-                        {repoDetails.isArchived ? "Archived" : "Active"}{" "}
-                        {repoDetails.isPrivate ? "(Private)" : "(Public)"}
+                        <span className="font-medium">Website:</span>{' '}
+                        <a href={repoDetails.homepageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                          {repoDetails.homepageUrl}
+                        </a>
                       </p>
-                      {repoDetails.homepageUrl && (
-                        <p>
-                          <span className="text-gray-500">Website:</span>{" "}
-                          <a href={repoDetails.homepageUrl} target="_blank" className="text-blue-500 hover:underline">
-                            {repoDetails.homepageUrl}
-                          </a>
-                        </p>
-                      )}
-                    </div>
+                    )}
+                    <p><span className="font-medium">Default branch:</span> {repoDetails.defaultBranch}</p>
+                    <p><span className="font-medium">Status:</span> {repoDetails.isArchived ? 'Archived' : 'Active'}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-lg mb-3">Languages</h3>
+                  <div className="space-y-2">
+                    {repoDetails.languages.map((lang) => (
+                      <div key={lang.name} className="flex items-center">
+                        <div
+                          className="h-4 rounded-full"
+                          style={{
+                            width: `${lang.percentage}%`,
+                            backgroundColor: lang.color,
+                          }}
+                        />
+                        <span className="ml-2 text-sm">
+                          {lang.name} ({lang.percentage}%)
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-            )}
-            {activeTab === "commits" && (
-              <div className="space-y-4 animate-fade-in">
-                <h3 className="text-xl font-semibold text-gray-800">Recent Commits</h3>
+
+              {summaryData.summary && (
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Repository Summary</h3>
+                  <p className="text-gray-700 whitespace-pre-line">{summaryData.summary}</p>
+                </div>
+              )}
+
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">Top Contributors</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                  {repoDetails.contributors.map((contributor) => (
+                    <a
+                      key={contributor.login}
+                      href={contributor.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col items-center hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                    >
+                      <Image
+                        src={contributor.avatarUrl}
+                        alt={contributor.login}
+                        width={64}
+                        height={64}
+                        className="rounded-full"
+                      />
+                      <span className="mt-2 font-medium text-center">{contributor.login}</span>
+                      <span className="text-xs text-gray-500">{contributor.contributions} commits</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'files' && renderFiles()}
+
+          {activeTab === 'commits' && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-gray-800">Recent Commits</h3>
+              <div className="space-y-2">
                 {repoDetails.commits.map((commit) => (
-                  <div key={commit.oid} className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <a
+                    key={commit.oid}
+                    href={commit.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-4 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
                     <div className="flex items-center gap-3">
                       <Image
                         src={commit.author.avatarUrl}
                         alt={commit.author.name}
-                        width={32}
-                        height={32}
+                        width={40}
+                        height={40}
                         className="rounded-full"
                       />
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-700 font-medium">
-                          {commit.author.name} • <span className="text-gray-500">{commit.committedDate}</span>
-                        </p>
-                        <p className="text-gray-800">
-                          <a href={commit.url} className="text-blue-500 hover:underline font-mono mr-2">
-                            {commit.oid}
-                          </a>
-                          {commit.messageHeadline}
+                      <div>
+                        <p className="font-medium text-gray-900">{commit.messageHeadline}</p>
+                        <p className="text-sm text-gray-500">
+                          {commit.author.name} committed on {commit.committedDate}
                         </p>
                       </div>
+                      <span className="ml-auto font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                        {commit.oid}
+                      </span>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
-            )}
-            {activeTab === "issues" && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold text-gray-800">Issues</h3>
-                  <div className="text-sm space-x-2">
-                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                      {repoDetails.issues.openCount} Open
-                    </span>
-                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
-                      {repoDetails.issues.closedCount} Closed
-                    </span>
-                  </div>
+            </div>
+          )}
+
+          {activeTab === 'issues' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Issues ({repoDetails.issues.totalCount})
+                </h3>
+                <div className="flex gap-2 text-sm">
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                    Open: {repoDetails.issues.openCount}
+                  </span>
+                  <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
+                    Closed: {repoDetails.issues.closedCount}
+                  </span>
                 </div>
+              </div>
+              <div className="space-y-2">
                 {repoDetails.issues.items.map((issue) => (
                   <a
                     key={issue.id}
                     href={issue.url}
                     target="_blank"
-                    className="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+                    rel="noopener noreferrer"
+                    className="block p-4 hover:bg-gray-50 rounded-lg transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-green-500 text-xl">●</span>
+                    <div className="flex items-start gap-3">
+                      <Image
+                        src={issue.author.avatarUrl}
+                        alt={issue.author.login}
+                        width={40}
+                        height={40}
+                        className="rounded-full"
+                      />
                       <div className="flex-1">
-                        <h4 className="text-blue-500 font-medium hover:underline">
-                          {issue.title} <span className="text-gray-500">#{issue.number}</span>
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          Opened on {issue.createdAt} by{" "}
-                          <Image
-                            src={issue.author.avatarUrl}
-                            alt={issue.author.login}
-                            width={20}
-                            height={20}
-                            className="inline rounded-full mx-1"
-                          />{" "}
-                          {issue.author.login}
+                        <p className="font-medium text-gray-900">{issue.title}</p>
+                        <p className="text-sm text-gray-500">
+                          #{issue.number} opened on {issue.createdAt} by {issue.author.login}
                         </p>
                       </div>
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${
+                          issue.state === 'OPEN'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {issue.state}
+                      </span>
                     </div>
                   </a>
                 ))}
               </div>
-            )}
-            {activeTab === "pullRequests" && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold text-gray-800">Pull Requests</h3>
-                  <div className="text-sm space-x-2">
-                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                      {repoDetails.pullRequests.openCount} Open
-                    </span>
-                    <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
-                      {repoDetails.pullRequests.mergedCount} Merged
-                    </span>
-                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
-                      {repoDetails.pullRequests.closedCount} Closed
-                    </span>
-                  </div>
+            </div>
+          )}
+
+          {activeTab === 'prs' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Pull Requests ({repoDetails.pullRequests.totalCount})
+                </h3>
+                <div className="flex gap-2 text-sm">
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                    Open: {repoDetails.pullRequests.openCount}
+                  </span>
+                  <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
+                    Closed: {repoDetails.pullRequests.closedCount}
+                  </span>
+                  <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                    Merged: {repoDetails.pullRequests.mergedCount}
+                  </span>
                 </div>
+              </div>
+              <div className="space-y-2">
                 {repoDetails.pullRequests.items.map((pr) => (
                   <a
                     key={pr.id}
                     href={pr.url}
                     target="_blank"
-                    className="block bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+                    rel="noopener noreferrer"
+                    className="block p-4 hover:bg-gray-50 rounded-lg transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-green-500 text-xl">↳</span>
+                    <div className="flex items-start gap-3">
+                      <Image
+                        src={pr.author.avatarUrl}
+                        alt={pr.author.login}
+                        width={40}
+                        height={40}
+                        className="rounded-full"
+                      />
                       <div className="flex-1">
-                        <h4 className="text-blue-500 font-medium hover:underline">
-                          {pr.title} <span className="text-gray-500">#{pr.number}</span>
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          Opened on {pr.createdAt} by{" "}
-                          <Image
-                            src={pr.author.avatarUrl}
-                            alt={pr.author.login}
-                            width={20}
-                            height={20}
-                            className="inline rounded-full mx-1"
-                          />{" "}
-                          {pr.author.login}
+                        <p className="font-medium text-gray-900">{pr.title}</p>
+                        <p className="text-sm text-gray-500">
+                          #{pr.number} opened on {pr.createdAt} by {pr.author.login}
                         </p>
                       </div>
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${
+                          pr.state === 'OPEN'
+                            ? 'bg-green-100 text-green-800'
+                            : pr.state === 'MERGED'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {pr.state}
+                      </span>
                     </div>
                   </a>
                 ))}
               </div>
-            )}
-            {activeTab === "files" && renderFiles()}
-          </div>
-        </div>
-      )}
-      {editorFile && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-3/4 h-3/4 flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-semibold">Editing {editorFile.path}</h3>
-              <button
-                onClick={() => setEditorFile(null)}
-                className="text-red-500 hover:text-red-700"
-              >
-                Close
-              </button>
             </div>
-            <div className="flex-1">
-              <Editor
-                height="70vh"
-                defaultLanguage="javascript"
-                value={editorFile.content}
-                onChange={(value) => setEditorFile({ ...editorFile, content: value || "" })}
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: true },
-                  scrollBeyondLastLine: false,
-                  wordWrap: "on"
-                }}
-              />
+          )}
+
+          {activeTab === 'releases' && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-gray-800">
+                Releases ({repoDetails.releases.totalCount})
+              </h3>
+              <div className="space-y-4">
+                {repoDetails.releases.items.map((release) => (
+                  <a
+                    key={release.tagName}
+                    href={release.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold text-lg">
+                          {release.name} ({release.tagName})
+                        </h4>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Released on {release.createdAt}
+                        </p>
+                      </div>
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                        Latest
+                      </span>
+                    </div>
+                    {release.description && (
+                      <div className="mt-3 text-gray-700 whitespace-pre-line text-sm">
+                        {release.description}
+                      </div>
+                    )}
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {editorFile && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                <div className="flex justify-between items-center border-b p-4">
+                  <h3 className="font-semibold">{editorFile.path}</h3>
+                  <button
+                    onClick={() => setEditorFile(null)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="flex-1 overflow-auto">
+                  <Editor
+                    height="60vh"
+                    language={editorFile.path.split('.').pop()}
+                    value={editorFile.content}
+                    options={{
+                      readOnly: true,
+                      minimap: { enabled: false },
+                      fontSize: 14,
+                      wordWrap: 'on',
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
