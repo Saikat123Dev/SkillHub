@@ -55,7 +55,10 @@ export const UserButton = () => {
         >
           {/* User Info Header */}
           <div className="px-6 py-5 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 border-b border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center space-x-4">
+            <div 
+              onClick={() => window.location.href = `/profile/${userId}`}
+              className="flex items-center space-x-4 cursor-pointer hover:bg-white/30 dark:hover:bg-gray-800/30 rounded-xl p-2 -m-2 transition-all duration-200"
+            >
               <div className="relative">
                 <Avatar className="w-14 h-14 ring-4 ring-white/50 dark:ring-gray-800/50 shadow-lg">
                   <AvatarImage 
@@ -101,8 +104,9 @@ export const UserButton = () => {
                   <FaCog className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div
-                onClick={()=>window.location.href = "/settings"}
-                className="flex-1">
+                  onClick={() => window.location.href = "/settings"}
+                  className="flex-1"
+                >
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     Settings
                   </p>
