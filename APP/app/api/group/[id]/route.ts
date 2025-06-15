@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const { groupId, userId, role = "MEMBER" } = await request.json();
     console.log(groupId, userId, role);
-    const existingMembership = await prisma.groupMembership.findUnique({
+    const existingMembership = await db.groupMembership.findUnique({
       where: {
         userId_groupId: {
           userId,
