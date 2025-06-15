@@ -41,7 +41,7 @@ export function SidebarDemo({ children, id, requestId, groupName }: SidebarDemoP
     return (
         <div
             className={cn(
-                "flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full h-screen max-w-full mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden"
+                "flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full min-h-screen max-w-full mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden"
             )}
         >
             {/* Sidebar */}

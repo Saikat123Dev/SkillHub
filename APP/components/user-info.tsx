@@ -11,7 +11,7 @@ const fetchProfilePic = async (): Promise<string | null> => {
     const response = await fetch("/api/upload");
     if (!response.ok) throw new Error("Failed to fetch profile picture");
     const data = await response.json();
-    return data.image;
+    return data.image || null;
   } catch (error) {
     console.error("Fetch error:", error);
     return null;
@@ -19,17 +19,23 @@ const fetchProfilePic = async (): Promise<string | null> => {
 };
 
 const updateProfilePic = async (url: string): Promise<void> => {
-  await fetch("/api/upload", {
+  const response = await fetch("/api/upload", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ profilePic: url }),
   });
+  
+  if (!response.ok) {
+    throw new Error("Failed to update profile picture");
+  }
 };
 
 export const UserInfo = () => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const currentUser = useCurrentUser();
 
   useEffect(() => {
@@ -37,29 +43,21 @@ export const UserInfo = () => {
       if (!currentUser?.id) return;
 
       setIsLoading(true);
+      setFetchError(null);
+      
       try {
-        // Check cache first
-        const cacheKey = `profilePic_${currentUser.id}`;
-        const cachedPic = localStorage.getItem(cacheKey);
-        if (cachedPic) {
-          setImageUrl(cachedPic);
-        }
-
         // Fetch from API
         const uploadedImage = await fetchProfilePic();
+        
+        // Priority: uploaded image -> current user image -> null
         const newImageUrl = uploadedImage || currentUser?.image || null;
-
-        // Update state and cache if server response differs
-        if (uploadedImage !== cachedPic) {
-          setImageUrl(newImageUrl);
-          if (uploadedImage) {
-            localStorage.setItem(cacheKey, uploadedImage);
-          } else {
-            localStorage.removeItem(cacheKey);
-          }
-        }
+        setImageUrl(newImageUrl);
+        
       } catch (error) {
         console.error("Fetch error:", error);
+        setFetchError("Failed to load profile picture");
+        // Fallback to currentUser image if API fails
+        setImageUrl(currentUser?.image || null);
       } finally {
         setIsLoading(false);
       }
@@ -73,13 +71,44 @@ export const UserInfo = () => {
 
     setIsLoading(true);
     try {
-      await updateProfilePic("");
-      setImageUrl(currentUser?.image || null);
-      localStorage.removeItem(`profilePic_${currentUser.id}`);
+      await updateProfilePic(""); // Send empty string to remove image
+      setImageUrl(currentUser?.image || null); // Fallback to default user image
+      setIsEditing(false);
     } catch (error) {
       console.error("Reset error:", error);
+      alert("Failed to remove profile picture");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleUploadComplete = async (res: any) => {
+    if (res?.[0]?.url && currentUser?.id) {
+      setIsLoading(true);
+      try {
+        await updateProfilePic(res[0].url);
+        setImageUrl(res[0].url);
+        setIsEditing(false);
+      } catch (error) {
+        console.error("Upload complete error:", error);
+        alert("Failed to update profile picture");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleUploadError = (error: Error) => {
+    console.error("Upload error:", error);
+    alert(`Upload failed: ${error.message}`);
   };
 
   return (
@@ -100,6 +129,10 @@ export const UserInfo = () => {
                 src={imageUrl}
                 alt="Profile"
                 className="h-full w-full object-cover rounded-full transition-all group-hover:brightness-90"
+                onError={() => {
+                  console.error("Image failed to load:", imageUrl);
+                  setImageUrl(currentUser?.image || null);
+                }}
               />
               <div className={`absolute inset-0 bg-black/20 rounded-full transition-opacity
                 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
@@ -112,41 +145,55 @@ export const UserInfo = () => {
             </div>
           )}
 
-          {imageUrl && (
+          {imageUrl && !isEditing && (
             <button
-              onClick={handleImageReset}
+              onClick={handleEditClick}
               className="absolute -bottom-2 -right-2 p-2.5 bg-white rounded-full shadow-lg
                 hover:scale-110 transition-transform"
+              title="Edit profile picture"
             >
               <Pencil className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {!imageUrl && !isLoading && (
+        {/* Show error message if fetch failed */}
+        {fetchError && (
+          <div className="mt-2 text-sm text-red-500 text-center">
+            {fetchError}
+          </div>
+        )}
+
+        {/* Show upload button when editing or no image */}
+        {(isEditing || !imageUrl) && !isLoading && (
           <div className="mt-4">
             <UploadButton<OurFileRouter>
               endpoint="imageUploader"
-              onClientUploadComplete={async (res) => {
-                if (res?.[0]?.url && currentUser?.id) {
-                  setIsLoading(true);
-                  try {
-                    await updateProfilePic(res[0].url);
-                    setImageUrl(res[0].url);
-                    localStorage.setItem(`profilePic_${currentUser.id}`, res[0].url);
-                  } finally {
-                    setIsLoading(false);
-                  }
-                }
-              }}
-              onUploadError={(error) => {
-                alert(`Upload failed: ${error.message}`);
-              }}
+              onClientUploadComplete={handleUploadComplete}
+              onUploadError={handleUploadError}
               appearance={{
                 button: "bg-blue-600 ut-ready:bg-blue-700 ut-uploading:cursor-not-allowed",
                 allowedContent: "hidden"
               }}
             />
+            
+            {/* Show cancel and reset buttons when editing */}
+            {isEditing && (
+              <div className="flex gap-2 mt-2 justify-center">
+                <button
+                  onClick={handleCancelEdit}
+                  className="px-3 py-1 text-sm bg-gray-300 hover:bg-gray-400 rounded-md transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleImageReset}
+                  className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+                >
+                  Remove Image
+                </button>
+              </div>
+            )}
           </div>
         )}
 

@@ -100,7 +100,9 @@ export const UserButton = () => {
                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-slate-100 dark:from-gray-800/30 dark:to-slate-800/30 group-hover:from-gray-200 group-hover:to-slate-200 dark:group-hover:from-gray-700/40 dark:group-hover:to-slate-700/40 transition-all duration-200 mr-4">
                   <FaCog className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
-                <div className="flex-1">
+                <div
+                onClick={()=>window.location.href = "/settings"}
+                className="flex-1">
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     Settings
                   </p>

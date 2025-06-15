@@ -687,7 +687,7 @@ const GitHubRepoDetails = ({ githublink, groupId }: { githublink: string; groupI
   );
 
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-6 transform transition-all hover:shadow-2xl">
+    <div className="bg-white min-h-screen bg-gray-800 shadow-xl rounded-2xl p-6 transform transition-all hover:shadow-2xl">
       {loading && (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>

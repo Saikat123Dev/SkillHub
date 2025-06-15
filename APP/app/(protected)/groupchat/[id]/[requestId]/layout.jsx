@@ -13,7 +13,7 @@ const Layout =async ({ params, children }) => {
     const grp = await IndividualGroup(id);
     console.log('grp', grp);
   return (
-    <div className="h-screen flex z-10">
+    <div className="min-h-screen flex z-10">
 {/*      <div className="bg-[#080f29] rounded-lg text-white p-4 flex justify-between items-center">*/}
 {/*      <Link href={`/group/${id}/${requestId}`} className="relative group">*/}
 {/*  <h1 className="text-lg font-bold">Comprehensive Collaboration Hub</h1>*/}
@@ -87,7 +87,7 @@ const Layout =async ({ params, children }) => {
         {/*    />*/}
         {/*</Sidebar>*/}
 
-        <SidebarDemo  children={children} id={id} requestId={requestId} groupName={grp.grpname} />
+     <SidebarDemo  children={children} id={id} requestId={requestId} groupName={grp.grpname} />
 
     </div>
   );
