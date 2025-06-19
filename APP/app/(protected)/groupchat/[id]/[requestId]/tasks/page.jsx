@@ -1,5 +1,6 @@
 "use client";
-import { Lock, Plus, PlusCircle, Trash2, X } from "lucide-react";
+
+import { Lock, Plus, PlusCircle, Trash2, X, Calendar, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   createCard,
@@ -14,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const KanbanBoard = ({ params }) => {
   const groupId = params.id;
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,10 +24,7 @@ const KanbanBoard = ({ params }) => {
   const [showNewLaneForm, setShowNewLaneForm] = useState(false);
   const [draggedCard, setDraggedCard] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
-  const [showNewCardForm, setShowNewCardForm] = useState({
-    visible: false,
-    laneId: null,
-  });
+  const [showNewCardForm, setShowNewCardForm] = useState({ visible: false, laneId: null });
   const [newCard, setNewCard] = useState({
     title: "",
     description: "",
@@ -35,30 +34,25 @@ const KanbanBoard = ({ params }) => {
   });
 
   const priorities = [
-    { id: "high", label: "High", color: "bg-red-500 text-red-50" },
-    { id: "medium", label: "Medium", color: "bg-yellow-500 text-yellow-50" },
-    { id: "low", label: "Low", color: "bg-green-500 text-green-50" },
+    { id: "high", label: "High", color: "bg-red-50 text-red-700 border-red-200", dot: "bg-red-500" },
+    { id: "medium", label: "Medium", color: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-500" },
+    { id: "low", label: "Low", color: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-500" },
   ];
 
   useEffect(() => {
     const initialize = async () => {
       try {
-        const [roleResponse, membersResponse, lanesResponse] = await Promise.all([
+        const [roleRes, membersRes, lanesRes] = await Promise.all([
           Findgrouprole(groupId),
           findMembers(groupId),
           getLanesByGroup(groupId),
         ]);
 
-        setIsAdmin(roleResponse.isAdmin === true);
-        setTeamMembers(membersResponse[0].members);
-        console.log(membersResponse)
-        
+        setIsAdmin(roleRes.isAdmin === true);
+        setTeamMembers(membersRes[0].members);
 
-        console.log(teamMembers)
-        console.log(membersResponse[0].members)
-
-        if (lanesResponse.success) {
-          const formattedLanes = lanesResponse.lanes.map((lane) => ({
+        if (lanesRes.success) {
+          const formattedLanes = lanesRes.lanes.map((lane) => ({
             ...lane,
             cards: lane.cards.map((card) => ({
               ...card,
@@ -68,8 +62,8 @@ const KanbanBoard = ({ params }) => {
           setLanes(formattedLanes);
         }
       } catch (error) {
-        console.error("Initialization error:", error);
-        setError("Failed to load board data. Please try again later.");
+        console.error(error);
+        setError("Something went wrong while loading the board.");
       } finally {
         setIsLoading(false);
       }
@@ -82,9 +76,7 @@ const KanbanBoard = ({ params }) => {
     setDraggedCard({ ...card, sourceLaneId });
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
+  const handleDragOver = (e) => e.preventDefault();
 
   const handleDrop = async (targetLaneId) => {
     if (!isAdmin || !draggedCard || draggedCard.sourceLaneId === targetLaneId) return;
@@ -92,32 +84,28 @@ const KanbanBoard = ({ params }) => {
     try {
       const { success } = await moveCard(draggedCard.id, targetLaneId);
       if (success) {
-        setLanes(lanes.map((lane) => {
-          if (lane.id === draggedCard.sourceLaneId) {
-            return {
-              ...lane,
-              cards: lane.cards.filter((card) => card.id !== draggedCard.id),
-            };
-          }
-          if (lane.id === targetLaneId) {
-            return {
-              ...lane,
-              cards: [...lane.cards, draggedCard],
-            };
-          }
-          return lane;
-        }));
+        setLanes((prev) =>
+          prev.map((lane) => {
+            if (lane.id === draggedCard.sourceLaneId) {
+              return { ...lane, cards: lane.cards.filter((c) => c.id !== draggedCard.id) };
+            }
+            if (lane.id === targetLaneId) {
+              return { ...lane, cards: [...lane.cards, draggedCard] };
+            }
+            return lane;
+          })
+        );
       }
-    } catch (error) {
-      setError("Failed to move card. Please try again.");
+    } catch {
+      setError("Failed to move card.");
+    } finally {
+      setDraggedCard(null);
     }
-    setDraggedCard(null);
   };
 
   const handleNewCardSubmit = async (laneId) => {
-    if (!isAdmin || !newCard.title.trim() || !newCard.assignee || !newCard.priority) {
-      setError("Please fill in all required fields");
-      return;
+    if (!newCard.title || !newCard.priority || !newCard.assignee) {
+      return setError("Please fill in all required fields.");
     }
 
     try {
@@ -127,200 +115,216 @@ const KanbanBoard = ({ params }) => {
           ...card,
           priority: priorities.find((p) => p.id === card.priority),
         };
-        setLanes(lanes.map((lane) => {
-          if (lane.id === laneId) {
-            return {
-              ...lane,
-              cards: [...lane.cards, formattedCard],
-            };
-          }
-          return lane;
-        }));
-        setNewCard({
-          title: "",
-          description: "",
-          label: "",
-          assignee: null,
-          priority: null,
-        });
+
+        setLanes((prev) =>
+          prev.map((lane) =>
+            lane.id === laneId
+              ? { ...lane, cards: [...lane.cards, formattedCard] }
+              : lane
+          )
+        );
+        setNewCard({ title: "", description: "", label: "", assignee: null, priority: null });
         setShowNewCardForm({ visible: false, laneId: null });
       }
-    } catch (error) {
-      setError("Failed to create card. Please try again.");
+    } catch {
+      setError("Failed to create card.");
     }
   };
 
   const handleDeleteCard = async (cardId, laneId) => {
-    if (!isAdmin) return;
-
     try {
       const { success } = await deleteCard(cardId);
       if (success) {
-        setLanes(lanes.map((lane) => {
-          if (lane.id === laneId) {
-            return {
-              ...lane,
-              cards: lane.cards.filter((card) => card.id !== cardId),
-            };
-          }
-          return lane;
-        }));
+        setLanes((prev) =>
+          prev.map((lane) =>
+            lane.id === laneId
+              ? { ...lane, cards: lane.cards.filter((c) => c.id !== cardId) }
+              : lane
+          )
+        );
       }
-    } catch (error) {
-      setError("Failed to delete card. Please try again.");
+    } catch {
+      setError("Failed to delete card.");
     }
   };
 
   const handleAddLane = async () => {
-    if (!isAdmin || !newLaneTitle.trim()) {
-      setError("Please enter a lane title");
-      return;
-    }
+    if (!newLaneTitle.trim()) return setError("Enter a lane title.");
 
     try {
       const { success, lane } = await createLane(groupId, newLaneTitle);
       if (success) {
-        setLanes([...lanes, { ...lane, cards: [] }]);
+        setLanes((prev) => [...prev, { ...lane, cards: [] }]);
         setNewLaneTitle("");
         setShowNewLaneForm(false);
       }
-    } catch (error) {
-      setError("Failed to create lane. Please try again.");
+    } catch {
+      setError("Failed to create lane.");
     }
   };
 
   const handleDeleteLane = async (laneId) => {
-    if (!isAdmin) return;
-
     try {
       const { success } = await deleteLane(laneId);
       if (success) {
-        setLanes(lanes.filter((lane) => lane.id !== laneId));
+        setLanes((prev) => prev.filter((l) => l.id !== laneId));
       }
-    } catch (error) {
-      setError("Failed to delete lane. Please try again.");
+    } catch {
+      setError("Failed to delete lane.");
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-navy-50">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-navy-600" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 font-medium">Loading your workspace...</p>
+        </div>
       </div>
     );
   }
+
   return (
-    <div className="max-h-screen bg-slate-100 text-navy-800 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+      <div className="max-w-[1600px] mx-auto px-6 py-8">
         {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">{error}</AlertDescription>
           </Alert>
         )}
 
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-navy-800">Kanban Board</h1>
-          {!isAdmin && (
-            <div className="flex items-center gap-2 bg-blue-100 px-3 py-1 rounded-lg">
-              <Lock size={16} className="text-navy-600" />
-              <span className="text-sm text-navy-600">Read-only mode</span>
-            </div>
-          )}
-          {isAdmin && (
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-200">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900 mb-1">Project Board</h1>
+            <p className="text-slate-600 text-sm">Manage tasks and track progress</p>
+          </div>
+          
+          {isAdmin ? (
             <button
               onClick={() => setShowNewLaneForm(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all"
-              aria-label="Add new lane"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-all duration-200 hover:shadow-md"
             >
-              <Plus size={20} />
-              <span>Add Lane</span>
+              <Plus size={18} />
+              <span>Add Column</span>
             </button>
+          ) : (
+            <div className="bg-slate-100 text-slate-700 text-sm px-4 py-2 rounded-lg flex items-center gap-2 font-medium">
+              <Lock size={16} />
+              View Only
+            </div>
           )}
         </div>
 
+        {/* New Lane Form */}
         {showNewLaneForm && (
-          <div className="mb-4 flex gap-2">
-            <input
-              type="text"
-              placeholder="Enter lane title"
-              className="flex-1 p-2 border border-navy-200 rounded"
-              value={newLaneTitle}
-              onChange={(e) => setNewLaneTitle(e.target.value)}
-            />
-            <button
-              onClick={handleAddLane}
-              className="bg-blue-600 text-white px-4 py-2 rounded"
-            >
-              Add
-            </button>
-            <button
-              onClick={() => setShowNewLaneForm(false)}
-              className="bg-navy-100 text-navy-800 px-4 py-2 rounded"
-            >
-              Cancel
-            </button>
+          <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8 shadow-sm">
+            <h3 className="text-lg font-medium text-slate-900 mb-4">Create New Column</h3>
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Column Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter column name..."
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  value={newLaneTitle}
+                  onChange={(e) => setNewLaneTitle(e.target.value)}
+                />
+              </div>
+              <button 
+                onClick={handleAddLane} 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
+              >
+                Create
+              </button>
+              <button
+                onClick={() => setShowNewLaneForm(false)}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-2.5 rounded-lg font-medium transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         )}
 
-        <div className="flex gap-6 overflow-x-auto pb-8">
+        {/* Kanban Lanes */}
+        <div className="flex gap-6 overflow-x-auto pb-6">
           {lanes.map((lane) => (
             <div
               key={lane.id}
-              className="flex-shrink-0 w-80 bg-navy-50 rounded-xl p-4 border border-navy-100"
+              className="flex-shrink-0 w-80 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300"
               onDragOver={handleDragOver}
               onDrop={() => handleDrop(lane.id)}
             >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-bold text-lg text-navy-800">
-                  {lane.title} ({lane.cards.length})
-                </h2>
+              {/* Lane Header */}
+              <div className="flex items-center justify-between p-5 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <div>
+                    <h2 className="font-semibold text-slate-900">{lane.title}</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {lane.cards.length} {lane.cards.length === 1 ? 'task' : 'tasks'}
+                    </p>
+                  </div>
+                </div>
                 {isAdmin && (
                   <button
                     onClick={() => handleDeleteLane(lane.id)}
-                    className="text-navy-600 hover:text-red-500 transition-colors"
-                    aria-label={`Delete ${lane.title} lane`}
+                    className="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
+                    aria-label={`Delete ${lane.title} column`}
                   >
                     <Trash2 size={16} />
                   </button>
                 )}
               </div>
 
-              <div className="space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto">
+              {/* Cards Container */}
+              <div className="p-4 space-y-3 max-h-[calc(100vh-16rem)] overflow-y-auto">
                 {lane.cards.map((card) => (
                   <div
                     key={card.id}
-                    className="bg-white border border-navy-100 rounded-xl p-4 shadow-sm"
+                    className="group bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer"
                     draggable={isAdmin}
                     onDragStart={() => handleDragStart(card, lane.id)}
                   >
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-semibold text-navy-800">{card.title}</h3>
+                    {/* Card Header */}
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="font-medium text-slate-900 leading-snug pr-2">{card.title}</h3>
                       {isAdmin && (
                         <button
                           onClick={() => handleDeleteCard(card.id, lane.id)}
-                          className="text-navy-500 hover:text-red-500"
+                          className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1 rounded"
                           aria-label="Delete card"
                         >
-                          <X size={16} />
+                          <X size={14} />
                         </button>
                       )}
                     </div>
-                    <p className="text-sm text-navy-600 mt-2">{card.description}</p>
-                    <div className="flex flex-wrap gap-2 mt-3">
+
+                    {/* Card Description */}
+                    {card.description && (
+                      <p className="text-sm text-slate-600 mb-3 leading-relaxed">{card.description}</p>
+                    )}
+
+                    {/* Card Meta */}
+                    <div className="flex flex-wrap gap-2">
                       {card.assignee && (
-                        <span className="inline-block bg-blue-100 text-black text-xs px-2 py-1 rounded">
-                          {card.assignee.name}
-                        </span>
+                        <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs px-2.5 py-1.5 rounded-md border border-blue-200">
+                          <User size={12} />
+                          <span className="font-medium">{card.assignee.name}</span>
+                        </div>
                       )}
+                      
                       {card.priority && (
-                        <span
-                          className={`inline-block ${card.priority.color} text-xs px-2 py-1 rounded`}
-                        >
-                          {card.priority.label}
-                        </span>
+                        <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border font-medium ${card.priority.color}`}>
+                          <div className={`w-2 h-2 rounded-full ${card.priority.dot}`}></div>
+                          <span>{card.priority.label}</span>
+                        </div>
                       )}
+                      
                       {card.label && (
-                        <span className="inline-block bg-blue-100 text-navy-800 text-xs px-2 py-1 rounded">
+                        <span className="bg-slate-100 text-slate-700 text-xs px-2.5 py-1.5 rounded-md border border-slate-200 font-medium">
                           {card.label}
                         </span>
                       )}
@@ -328,85 +332,98 @@ const KanbanBoard = ({ params }) => {
                   </div>
                 ))}
 
+                {/* New Card Form */}
                 {showNewCardForm.visible && showNewCardForm.laneId === lane.id && (
-                  <div className="bg-white border border-navy-100 p-4 rounded-lg shadow-sm mt-4">
-                    <input
-                      type="text"
-                      placeholder="Card Title"
-                      className="w-full mb-2 p-2 bg-navy-50 border border-navy-100 rounded"
-                      value={newCard.title}
-                      onChange={(e) => setNewCard({ ...newCard, title: e.target.value })}
-                    />
-                    <textarea
-                      placeholder="Description"
-                      className="w-full mb-2 p-2 bg-navy-50 border border-navy-100 rounded"
-                      value={newCard.description}
-                      onChange={(e) => setNewCard({ ...newCard, description: e.target.value })}
-                    />
-                    <select
-                      className="w-full mb-2 p-2 bg-navy-50 border border-navy-100 rounded"
-                      value={newCard.priority?.id || ""}
-                      onChange={(e) => {
-                        const selectedPriority = priorities.find(p => p.id === e.target.value);
-                        setNewCard({ ...newCard, priority: selectedPriority });
-                      }}
-                    >
-                      <option value="">Select Priority *</option>
-                      {priorities.map((priority) => (
-                        <option key={priority.id} value={priority.id}>
-                          {priority.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="w-full mb-2 p-2 bg-navy-50 border border-navy-100 rounded"
-                      value={newCard.assignee?.user.name || ""}
-                      onChange={(e) => {
-                        const selectedassignee = teamMembers.find(p => p.user.name === e.target.value);
-                        setNewCard({ ...newCard, assignee: selectedassignee });
-                      }}
-                    >
-                      <option value="">Assign To</option>
-                      {teamMembers.map((member) => (
-                        <option key={member.user.id} value={member.user.name}>
-                          {member.user.name}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="text"
-                      placeholder="Label (optional)"
-                      className="w-full mb-2 p-2 bg-navy-50 border border-navy-100 rounded"
-                      value={newCard.label}
-                      onChange={(e) => setNewCard({ ...newCard, label: e.target.value })}
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleNewCardSubmit(lane.id)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-all flex-1"
-                      >
-                        Add
-                      </button>
-                      <button
-                        onClick={() => setShowNewCardForm({ visible: false, laneId: null })}
-                        className="bg-navy-100 hover:bg-navy-200 text-navy-800 px-4 py-2 rounded transition-all flex-1"
-                      >
-                        Cancel
-                      </button>
+                  <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4">
+                    <h4 className="font-medium text-slate-900 mb-3">Create New Task</h4>
+                    
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        placeholder="Task title..."
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={newCard.title}
+                        onChange={(e) => setNewCard({ ...newCard, title: e.target.value })}
+                      />
+                      
+                      <textarea
+                        placeholder="Task description..."
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        rows={2}
+                        value={newCard.description}
+                        onChange={(e) => setNewCard({ ...newCard, description: e.target.value })}
+                      />
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          value={newCard.priority?.id || ""}
+                          onChange={(e) => setNewCard({ ...newCard, priority: e.target.value })}
+                        >
+                          <option value="">Select Priority</option>
+                          {priorities.map((priority) => (
+                            <option key={priority.id} value={priority.id}>
+                              {priority.label}
+                            </option>
+                          ))}
+                        </select>
+                        
+                        <select
+                          className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          value={newCard.assignee?.id || ""}
+                          onChange={(e) => {
+                            const member = teamMembers.find(m => m.id === e.target.value);
+                            setNewCard({ ...newCard, assignee: member });
+                          }}
+                        >
+                          <option value="">Assign to...</option>
+                          {teamMembers.map((member) => (
+                            <option key={member.id} value={member.id}>
+                              {member.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <input
+                        type="text"
+                        placeholder="Label (optional)"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={newCard.label}
+                        onChange={(e) => setNewCard({ ...newCard, label: e.target.value })}
+                      />
+                      
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={() => handleNewCardSubmit(lane.id)}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition-colors"
+                        >
+                          Create Task
+                        </button>
+                        <button
+                          onClick={() => setShowNewCardForm({ visible: false, laneId: null })}
+                          className="px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm py-2 rounded-lg font-medium transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
 
+              {/* Add Card Button */}
               {isAdmin && !showNewCardForm.visible && (
-                <button
-                  onClick={() => setShowNewCardForm({ visible: true, laneId: lane.id })}
-                  className="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors w-full justify-center mt-4 py-2"
-                  aria-label={`Add card to ${lane.title}`}
-                >
-                  <PlusCircle size={16} />
-                  <span>Add Card</span>
-                </button>
+                <div className="p-4 border-t border-slate-100">
+                  <button
+                    onClick={() => setShowNewCardForm({ visible: true, laneId: lane.id })}
+                    className="w-full text-slate-600 hover:text-blue-600 hover:bg-blue-50 text-sm py-3 rounded-lg border-2 border-dashed border-slate-300 hover:border-blue-300 flex items-center justify-center gap-2 font-medium transition-all"
+                    aria-label={`Add task to ${lane.title}`}
+                  >
+                    <PlusCircle size={16} />
+                    Add Task
+                  </button>
+                </div>
               )}
             </div>
           ))}
@@ -415,6 +432,5 @@ const KanbanBoard = ({ params }) => {
     </div>
   );
 };
-
 
 export default KanbanBoard;
